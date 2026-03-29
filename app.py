@@ -10,6 +10,14 @@ from docx.oxml import OxmlElement
 import re
 import os
 
+api_key = st.secrets.get("GEMINI_API_KEY", "")
+
+if not api_key:
+    api_key = st.sidebar.text_input("Clé API Gemini", type="password")
+
+if api_key:
+    genai.configure(api_key=api_key)
+    
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
