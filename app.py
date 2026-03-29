@@ -17,7 +17,7 @@ if not api_key:
 
 if api_key:
     genai.configure(api_key=api_key)
-    
+
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -422,7 +422,6 @@ def call_gemini(api_key, prompt, image=None):
             return response.text
         return "L'IA a répondu mais le texte est vide. Réessayez."
     except Exception as e:
-        # Fallback avec le préfixe complet si erreur 404
         if "404" in str(e):
             try:
                 model_alt = genai.GenerativeModel("models/gemini-2.5-flash")
@@ -503,6 +502,22 @@ def set_cell_border(cell):
     tcPr.append(tcBorders)
 
 
+def set_run(paragraph, text, bold=False, size=10):
+    """Ajoute un run stylé — évite le crash sur paragraphe vide."""
+    run = paragraph.add_run(text)
+    run.bold = bold
+    run.font.size = Pt(size)
+    return run
+
+
+def fill_cell(cell, text, bold=False, size=10):
+    """Remplit une cellule proprement sans crasher sur runs vides."""
+    p = cell.paragraphs[0]
+    p.clear()
+    set_run(p, text, bold=bold, size=size)
+    set_cell_border(cell)
+
+
 def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Établissement"):
     try:
         doc = DocxDocument()
@@ -576,24 +591,22 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
         ]
         for i, row_data in enumerate(candidat_data):
             for j, text in enumerate(row_data):
-                cell = table_c.cell(i, j)
-                cell.text = text
-                cell.paragraphs[0].runs[0].font.size = Pt(10)
-                set_cell_border(cell)
+                fill_cell(table_c.cell(i, j), text, size=10)
 
         doc.add_paragraph()
 
         # ── CONTENU DU SUJET ──────────────────────────────────
+        skip_keywords = ["Établissement :", "Baccalauréat Professionnel —", "Épreuve E3", "Calculatrice autorisée"]
         for line in content_md.split("\n"):
             line = line.rstrip()
-            # Supprime les lignes de l'en-tête déjà générées par l'IA (redondant dans le docx)
-            if any(kw in line for kw in ["Établissement :", "Nom :", "Prénom :", "Baccalauréat Professionnel —", "Épreuve E3", "Calculatrice"]):
+            if any(kw in line for kw in skip_keywords):
                 continue
-            if line.startswith("### ") or line.startswith("#### "):
-                lvl = 2 if line.startswith("### ") else 3
-                doc.add_heading(line.lstrip("#").strip(), level=lvl)
+            if line.startswith("#### "):
+                doc.add_heading(line[5:].strip(), level=3)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:].strip(), level=2)
             elif line.startswith("## "):
-                doc.add_heading(line[3:], level=2)
+                doc.add_heading(line[3:].strip(), level=2)
             elif "APPELER L'EXAMINATEUR" in line.upper() or "🛎️" in line:
                 p = doc.add_paragraph()
                 logo_appel = os.path.join(APP_DIR, "logo_appel.png")
@@ -603,7 +616,6 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
                 run = p.add_run("APPELER L'EXAMINATEUR")
                 run.bold = True
                 run.font.size = Pt(11)
-                # Encadré visuel via bordure paragraphe
                 pPr = p._p.get_or_add_pPr()
                 pBdr = OxmlElement("w:pBdr")
                 for side in ("top", "left", "bottom", "right"):
@@ -634,7 +646,7 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
                     else:
                         p.add_run(part)
 
-        # ── FICHE D'ÉVALUATION OFFICIELLE (page 2) ───────────────
+        # ── FICHE D'ÉVALUATION OFFICIELLE (page 2) ───────────
         doc.add_page_break()
 
         titre_fiche = doc.add_heading("FICHE INDIVIDUELLE D'ÉVALUATION", level=1)
@@ -642,121 +654,76 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
 
         # En-tête fiche
         table_ef = doc.add_table(rows=2, cols=2)
-        ef_data = [
-            [f"Session : {metadata.get('annee_scolaire','2025/2026')}\nÉtablissement : {nom_etablissement}\nAcadémie : Créteil",
-             f"Spécialité : {metadata.get('matiere','')}\nNom de l'évaluateur : _______________\nDate de l'épreuve : _______________"],
-            [f"Situation d'évaluation n° {metadata.get('num_situation','1')} — {metadata.get('filiere','')}",
-             ""],
-        ]
-        for i, row_data in enumerate(ef_data):
-            for j, text in enumerate(row_data):
-                cell = table_ef.cell(i, j)
-                for line in text.split("\n"):
-                    p = cell.add_paragraph(line) if cell.paragraphs[0].text else cell.paragraphs[0]
-                    if cell.paragraphs[0].text == line:
-                        p = cell.paragraphs[0]
-                    p.runs[0].bold = (i == 0 and j == 0)
-                    for run in p.runs:
-                        run.font.size = Pt(10)
-                set_cell_border(cell)
+        fill_cell(table_ef.cell(0, 0),
+                  f"Session : {metadata.get('annee_scolaire','2025/2026')} — Établissement : {nom_etablissement} — Académie : Créteil",
+                  bold=True, size=9)
+        fill_cell(table_ef.cell(0, 1),
+                  f"Spécialité : {metadata.get('matiere','')} — Évaluateur : _______________ — Date : _______________",
+                  size=9)
+        fill_cell(table_ef.cell(1, 0),
+                  f"Situation n° {metadata.get('num_situation','1')} — {metadata.get('filiere','')}",
+                  bold=True, size=9)
+        fill_cell(table_ef.cell(1, 1), "", size=9)
 
         doc.add_paragraph()
-        cand_p = doc.add_paragraph("Nom et prénom du candidat : _______________________________________________")
-        cand_p.runs[0].bold = True
-        cand_p.runs[0].font.size = Pt(10)
+        cand_p = doc.add_paragraph()
+        set_run(cand_p, "Nom et prénom du candidat : _______________________________________________",
+                bold=True, size=10)
 
         doc.add_paragraph()
 
         # 1. Capacités et connaissances évaluées
-        cap_titre = doc.add_paragraph("1.  Liste des capacités et connaissances évaluées")
-        cap_titre.runs[0].bold = True
-        cap_titre.runs[0].font.size = Pt(11)
+        cap_titre = doc.add_paragraph()
+        set_run(cap_titre, "1.  Liste des capacités et connaissances évaluées", bold=True, size=11)
 
         table_cap = doc.add_table(rows=2, cols=2)
-        table_cap.cell(0, 0).text = "Capacités"
-        table_cap.cell(0, 1).text = "(complétées par l'IA dans le sujet généré)"
-        table_cap.cell(1, 0).text = "Connaissances"
-        table_cap.cell(1, 1).text = "(complétées par l'IA dans le sujet généré)"
-        for i in range(2):
-            for j in range(2):
-                cell = table_cap.cell(i, j)
-                if cell.paragraphs[0].runs:
-                    cell.paragraphs[0].runs[0].bold = (j == 0)
-                    cell.paragraphs[0].runs[0].font.size = Pt(10)
-                set_cell_border(cell)
+        fill_cell(table_cap.cell(0, 0), "Capacités", bold=True, size=10)
+        fill_cell(table_cap.cell(0, 1), "(voir section Fiche d'évaluation du sujet généré)", size=10)
+        fill_cell(table_cap.cell(1, 0), "Connaissances", bold=True, size=10)
+        fill_cell(table_cap.cell(1, 1), "(voir section Fiche d'évaluation du sujet généré)", size=10)
 
         doc.add_paragraph()
 
         # 2. Tableau d'évaluation officiel
-        eval_titre = doc.add_paragraph("2.  Évaluation")
-        eval_titre.runs[0].bold = True
-        eval_titre.runs[0].font.size = Pt(11)
+        eval_titre = doc.add_paragraph()
+        set_run(eval_titre, "2.  Évaluation", bold=True, size=11)
 
-        # Calcul nb lignes : 1 en-tête + somme des indicateurs par compétence (2 lignes par indicateur)
-        # Structure : pour chaque compétence, une ligne par indicateur
-        total_rows = 1  # en-tête
+        # Calcul nb lignes : 1 en-tête + 1 ligne par indicateur + 1 ligne note
+        total_rows = 1
         for comp in COMPETENCES_CCF:
             total_rows += len(comp["indicateurs"])
         total_rows += 1  # ligne note finale
 
         grid = doc.add_table(rows=total_rows, cols=5)
 
-        # En-têtes
-        headers_grid = ["Compétences", "", "", "Capacités", "Questions", "Appréciation\ndu niveau\nd'acquisition"]
-        # Tableau à 5 colonnes : Compétence | (vide) | (vide) | Indicateurs | Questions | 0 1 2
+        # En-têtes colonnes
         h_texts = ["Compétences", "", "Indicateurs / Capacités", "Questions", "Appréciation\n(0 / 1 / 2)"]
         for j, h in enumerate(h_texts):
-            cell = grid.cell(0, j)
-            cell.text = h
-            if cell.paragraphs[0].runs:
-                cell.paragraphs[0].runs[0].bold = True
-                cell.paragraphs[0].runs[0].font.size = Pt(9)
-            set_cell_border(cell)
+            fill_cell(grid.cell(0, j), h, bold=True, size=9)
 
-        # Remplissage des compétences et indicateurs
+        # Remplissage compétences et indicateurs
         row_idx = 1
         for comp in COMPETENCES_CCF:
             for k, indicateur in enumerate(comp["indicateurs"]):
-                for j in range(5):
-                    cell = grid.cell(row_idx, j)
-                    if j == 0 and k == 0:
-                        # Nom compétence seulement sur la première ligne
-                        cell.text = comp["nom"]
-                        if cell.paragraphs[0].runs:
-                            cell.paragraphs[0].runs[0].bold = True
-                            cell.paragraphs[0].runs[0].font.size = Pt(9)
-                    elif j == 2:
-                        cell.text = indicateur
-                        if cell.paragraphs[0].runs:
-                            cell.paragraphs[0].runs[0].font.size = Pt(9)
-                    elif j == 3:
-                        cell.text = ""  # Questions à remplir par le prof
-                    elif j == 4:
-                        cell.text = "0    1    2"
-                        if cell.paragraphs[0].runs:
-                            cell.paragraphs[0].runs[0].font.size = Pt(9)
-                    set_cell_border(cell)
+                fill_cell(grid.cell(row_idx, 0),
+                          comp["nom"] if k == 0 else "",
+                          bold=(k == 0), size=9)
+                fill_cell(grid.cell(row_idx, 1), "", size=9)
+                fill_cell(grid.cell(row_idx, 2), indicateur, size=9)
+                fill_cell(grid.cell(row_idx, 3), "", size=9)
+                fill_cell(grid.cell(row_idx, 4), "0    1    2", size=9)
                 row_idx += 1
 
         # Ligne note finale
-        for j in range(5):
-            cell = grid.cell(row_idx, j)
-            if j == 3:
-                cell.text = "Note :"
-                if cell.paragraphs[0].runs:
-                    cell.paragraphs[0].runs[0].bold = True
-                    cell.paragraphs[0].runs[0].font.size = Pt(10)
-            elif j == 4:
-                cell.text = "          / 10"
-                if cell.paragraphs[0].runs:
-                    cell.paragraphs[0].runs[0].bold = True
-                    cell.paragraphs[0].runs[0].font.size = Pt(11)
-            set_cell_border(cell)
+        fill_cell(grid.cell(row_idx, 0), "", size=9)
+        fill_cell(grid.cell(row_idx, 1), "", size=9)
+        fill_cell(grid.cell(row_idx, 2), "", size=9)
+        fill_cell(grid.cell(row_idx, 3), "Note :", bold=True, size=10)
+        fill_cell(grid.cell(row_idx, 4), "          / 10", bold=True, size=11)
 
         doc.add_paragraph()
-        obs = doc.add_paragraph("Observations : ___________________________________________________________________")
-        if obs.runs:
-            obs.runs[0].font.size = Pt(10)
+        obs_p = doc.add_paragraph()
+        set_run(obs_p, "Observations : ___________________________________________________________________", size=10)
 
         buf = BytesIO()
         doc.save(buf)
@@ -832,7 +799,7 @@ with st.sidebar:
     annee_scolaire = st.text_input("Année scolaire", value="2025/2026")
 
     st.divider()
-    st.caption("Version 5.0 · Gemini 1.5 Flash")
+    st.caption("Version 6.0 · Gemini 2.5 Flash")
 
 # ── TITRE ────────────────────────────────────────────────────
 st.title("🎓 Assistant Professeur IA")
@@ -890,7 +857,6 @@ with tab_gen:
                     else:
                         st.error(f"Erreur API : {e}")
 
-    # ── Affichage résultat GÉNÉRATEUR (corrigé — était generated_ccf_md par erreur)
     if st.session_state.generated_md:
         m = st.session_state.meta_gen or {}
         st.divider()
@@ -954,9 +920,7 @@ with tab_ccf:
     with col2:
         ccf_mat = st.selectbox("Matière", MATIERES, key="ccf_mat")
         ccf_chap = st.selectbox("Chapitre (BO)", get_chapitres(ccf_mat, ccf_niv, ccf_cat), key="ccf_chap")
-        # Durée : selectbox pour éviter les saisies incohérentes
         ccf_duree = st.selectbox("Durée de l'épreuve", ["30 min", "45 min", "1h00", "1h30", "2h00"], index=1, key="ccf_duree")
-        # N° de situation : number_input pour éviter les erreurs de saisie
         num_sit = st.number_input("N° de situation CCF", min_value=1, max_value=3, value=1, step=1, key="ccf_num_sit")
 
     ccf_consignes = st.text_area("Consignes spécifiques (optionnel)", height=80, key="ccf_consignes",
@@ -1020,7 +984,6 @@ with tab_ccf:
         st.subheader("📥 Télécharger")
 
         if is_officiel:
-            # Mode officiel : Word officiel en priorité + .md en option
             c1, c2 = st.columns(2)
             with c1:
                 docx_off = generate_ccf_officiel_docx(
@@ -1039,7 +1002,6 @@ with tab_ccf:
                 st.download_button("📥 .md (brut)", st.session_state.generated_ccf_md,
                                    file_name=f"{titre_doc}.md", mime="text/markdown", key="dl2_md_off")
         else:
-            # Mode entraînement : Word standard + .md + .txt
             c1, c2, c3 = st.columns(3)
             with c1:
                 st.download_button("📝 .docx",
