@@ -10,14 +10,6 @@ from docx.oxml import OxmlElement
 import re
 import os
 
-api_key = st.secrets.get("GEMINI_API_KEY", "")
-
-if not api_key:
-    api_key = st.sidebar.text_input("Clé API Gemini", type="password")
-
-if api_key:
-    genai.configure(api_key=api_key)
-
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,6 +32,7 @@ MATIERES = [
 ]
 
 CHAPITRES_MATHS_BAC_PRO = {
+    # ── 2nde Pro ── (programme déjà conforme au BO)
     "2nde Pro": [
         "Calcul numérique et algébrique",
         "Puissances et notations scientifiques",
@@ -54,34 +47,49 @@ CHAPITRES_MATHS_BAC_PRO = {
         "Statistiques descriptives — série à une variable",
         "Notion de probabilité — expériences aléatoires",
     ],
+
+    # ── 1ère Pro ── conforme au BO Annexe 1 (Mathématiques — Classe de première professionnelle)
     "1ère Pro": [
-        "Calcul littéral — développement, factorisation",
-        "Systèmes d'équations du 1er degré",
-        "Suites numériques — arithmétiques et géométriques",
-        "Fonctions du 2nd degré",
-        "Fonction valeur absolue",
-        "Lecture et interprétation de courbes",
-        "Trigonométrie — sin, cos, tan dans le cercle trigonométrique",
-        "Géométrie dans l'espace — solides usuels",
-        "Vecteurs dans le plan — coordonnées",
-        "Statistiques — série à deux variables, ajustement affine",
-        "Probabilités conditionnelles — indépendance",
-        "Loi binomiale",
+        # Statistique et probabilités
+        "Statistique à deux variables — ajustement affine et coefficient de détermination",
+        "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+        # Algèbre – Analyse
+        "Suites numériques — suites arithmétiques",
+        "Résolution graphique d'équations et d'inéquations f(x)=g(x)",
+        "Fonctions polynômes de degré 2 — racines, signe, forme factorisée",
+        "Fonction dérivée — variations, extremums, fonction inverse",
+        "Calculs commerciaux et financiers — intérêts simples, coûts (filières sans physique-chimie)",
+        # Géométrie
+        "Géométrie dans l'espace — solides usuels et sections par un plan",
+        "Vecteurs du plan — coordonnées, opérations, norme (groupements A et B)",
+        "Trigonométrie — cercle trigonométrique, fonctions sinus et cosinus (groupements A et B)",
+        # Modules transversaux
+        "Algorithmique et programmation Python — listes, fonctions, boucles",
+        "Automatismes — calcul, grandeurs, lecture graphique",
     ],
+
+    # ── Term Pro ── conforme au BO Annexe 2 (Mathématiques — Classe terminale professionnelle)
     "Term Pro": [
-        "Dérivation — règles de calcul",
-        "Sens de variation et extrema via la dérivée",
-        "Fonction exponentielle de base e",
-        "Fonction logarithme décimal et népérien",
-        "Suites arithmétiques et géométriques — applications financières",
-        "Intérêts simples et composés — actualisation",
-        "Équation cartésienne d'une droite",
-        "Produit scalaire et applications",
-        "Loi normale — loi de Gauss",
-        "Intervalles de fluctuation et de confiance",
-        "Échantillonnage et prise de décision",
-        "Algorithmique et programmation — Python/tableur",
-    ]
+        # Statistique et probabilités
+        "Statistiques à deux variables — ajustements non affines, changements de variable",
+        "Probabilités — arbres pondérés, formule des probabilités totales, indépendance",
+        # Algèbre – Analyse
+        "Suites géométriques — terme général, sens de variation, somme",
+        "Fonctions polynômes de degré 3 — dérivée, variations, extremums",
+        "Fonctions exponentielles de base q et logarithme décimal",
+        "Calculs commerciaux et financiers — intérêts composés, amortissements (filières sans physique-chimie)",
+        # Géométrie
+        "Vecteurs dans l'espace — coordonnées, norme, colinéarité (groupement B)",
+        "Trigonométrie — équations, vecteurs de Fresnel (groupement A)",
+        # Modules transversaux
+        "Algorithmique et programmation Python — approfondissement listes et fonctions",
+        "Automatismes — probabilités, suites, dérivation, vecteurs",
+        # Programme complémentaire (poursuite d'études)
+        "Calcul intégral — primitives, intégrale, aire (programme complémentaire)",
+        "Fonctions logarithme népérien et exponentielle de base e (programme complémentaire)",
+        "Nombres complexes — forme algébrique et trigonométrique (programme complémentaire)",
+        "Produit scalaire de deux vecteurs du plan (programme complémentaire)",
+    ],
 }
 
 CHAPITRES_PAR_MATIERE_GENERAL = {
