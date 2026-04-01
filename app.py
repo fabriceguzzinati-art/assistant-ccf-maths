@@ -540,61 +540,47 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
         doc.styles["Normal"].font.name = "Arial"
         doc.styles["Normal"].font.size = Pt(11)
 
-        # ── EN-TÊTE : tableau 3 colonnes (logo gauche | titre centré | logo matière droite)
-        # Conforme au document officiel de l'établissement
+        # ── EN-TÊTE : tableau 3 colonnes avec bordures visibles
+        # Conforme au document de référence de l'établissement
         table_h = doc.add_table(rows=3, cols=3)
-        table_h.autofit = False
+        table_h.style = "Table Grid"  # bordures visibles sur toutes les cellules
 
-        # Largeurs colonnes : gauche 30%, centre 40%, droite 30%
-        from docx.oxml.ns import qn as _qn
-        from docx.oxml import OxmlElement as _OxmlEl
-        total_w = 9360  # largeur contenu en DXA (marges 1" de chaque côté)
-        col_widths = [int(total_w * 0.28), int(total_w * 0.44), int(total_w * 0.28)]
-        for i, row in enumerate(table_h.rows):
+        # Largeurs colonnes en DXA (total 9360 = contenu avec marges 1")
+        col_widths = [2620, 4120, 2620]
+        for row in table_h.rows:
             for j, cell in enumerate(row.cells):
                 tc = cell._tc
                 tcPr = tc.get_or_add_tcPr()
-                tcW = _OxmlEl("w:tcW")
-                tcW.set(_qn("w:w"), str(col_widths[j]))
-                tcW.set(_qn("w:type"), "dxa")
+                tcW = OxmlElement("w:tcW")
+                tcW.set(qn("w:w"), str(col_widths[j]))
+                tcW.set(qn("w:type"), "dxa")
                 tcPr.append(tcW)
 
-        # ── Ligne 1 : logo gauche | titre CCF | logo matière
-        # Gauche : logo Académie / République
+        # ── Ligne 1 : logo gauche | titre CCF | logo matière ──
         cell_l = table_h.cell(0, 0)
         logo_rep = os.path.join(APP_DIR, "logo_republique.png")
         if os.path.exists(logo_rep):
             cell_l.paragraphs[0].add_run().add_picture(logo_rep, width=Inches(1.2))
         else:
-            p_l = cell_l.paragraphs[0]
-            run = p_l.add_run("ACADÉMIE DE CRÉTEIL")
-            run.bold = True
-            run.font.size = Pt(10)
+            r_fallback = cell_l.paragraphs[0].add_run("ACADÉMIE DE CRÉTEIL")
+            r_fallback.bold = True
+            r_fallback.font.size = Pt(10)
 
-        # Centre : titre et infos CCF
         cell_c = table_h.cell(0, 1)
         p_c = cell_c.paragraphs[0]
         p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p_c.add_run("CONTRÔLE EN COURS DE FORMATION\n")
-        r.bold = True
-        r.font.size = Pt(12)
-        r2 = p_c.add_run("Baccalauréat professionnel\n")
-        r2.bold = True
-        r2.font.size = Pt(11)
-        r3 = p_c.add_run(f"{metadata.get('matiere', '')}\n")
-        r3.bold = True
-        r3.font.size = Pt(11)
-        r4 = p_c.add_run(f"Situation d'évaluation n°{metadata.get('num_situation', '...')}\n")
-        r4.bold = True
-        r4.font.size = Pt(10)
-        r5 = p_c.add_run(f"Intitulé du diplôme : {metadata.get('filiere', '').ljust(20, '.')}\n")
-        r5.bold = True
-        r5.font.size = Pt(10)
-        r6 = p_c.add_run(f"Durée : {metadata.get('duree', '45 min')}")
-        r6.bold = True
-        r6.font.size = Pt(10)
+        def _rb(para, text, size=10):
+            r = para.add_run(text)
+            r.bold = True
+            r.font.size = Pt(size)
+            return r
+        _rb(p_c, "CONTRÔLE EN COURS DE FORMATION\n", 12)
+        _rb(p_c, "Baccalauréat professionnel\n", 11)
+        _rb(p_c, f"{metadata.get('matiere', '')}\n", 11)
+        _rb(p_c, f"Situation d'évaluation n°{metadata.get('num_situation', '...')}\n", 10)
+        _rb(p_c, f"Intitulé du diplôme : {'.' * 31}\n", 10)
+        _rb(p_c, f"Durée : {metadata.get('duree', '45 min')}", 10)
 
-        # Droite : logo matière
         cell_r = table_h.cell(0, 2)
         p_r = cell_r.paragraphs[0]
         p_r.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -602,57 +588,63 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
         if os.path.exists(logo_mat):
             p_r.add_run().add_picture(logo_mat, width=Inches(0.8))
 
-        # ── Ligne 2 : Nom/Prénom candidat (centré sur les 3 colonnes)
-        # On fusionne les 3 cellules de la ligne 2
-        cell_nom = table_h.cell(1, 0)
-        cell_nom.merge(table_h.cell(1, 1))
-        cell_nom.merge(table_h.cell(1, 2))
+        # ── Ligne 2 : vide | Nom/Prénom candidat (centré) | vide ──
+        # Conforme au document de référence : colonne centre uniquement
+        cell_nom = table_h.cell(1, 1)
         p_nom = cell_nom.paragraphs[0]
         p_nom.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_nom = p_nom.add_run("Nom, Prénom du candidat : _______________________________________________")
-        r_nom.bold = True
-        r_nom.font.size = Pt(10)
-        set_cell_border(cell_nom)
+        _rb(p_nom, "Nom, Prénom du candidat : _______________________________________________", 10)
 
-        # ── Ligne 3 : Date | Établissement + Ville
+        # ── Ligne 3 : Date | Établissement | vide ──
         cell_date = table_h.cell(2, 0)
-        p_date = cell_date.paragraphs[0]
-        p_date.add_run("Date : ........................").font.size = Pt(10)
-        set_cell_border(cell_date)
+        cell_date.paragraphs[0].add_run("Date : .......................").font.size = Pt(10)
 
         cell_etab = table_h.cell(2, 1)
-        cell_etab.merge(table_h.cell(2, 2))
         p_etab = cell_etab.paragraphs[0]
-        r_etab = p_etab.add_run(f"Nom de l'établissement : {nom_etablissement}")
-        r_etab.bold = True
-        r_etab.font.size = Pt(10)
-        set_cell_border(cell_etab)
+        _rb(p_etab, f"Nom de l'établissement : {nom_etablissement}", 10)
 
         doc.add_paragraph()
 
-        # ── NOTICE CALCULATRICE (conforme au document officiel) ────
+        # ── NOTICE CALCULATRICE ────────────────────────────────
         logo_appel_path = os.path.join(APP_DIR, "logo_appel.png")
         p_notice = doc.add_paragraph()
         if os.path.exists(logo_appel_path):
-            p_notice.add_run().add_picture(logo_appel_path, width=Inches(0.35))
+            p_notice.add_run().add_picture(logo_appel_path, width=Inches(0.53))
             p_notice.add_run("  ")
-        r_notice = p_notice.add_run("Dans la suite du document, ce symbole signifie « Appeler l'examinateur ».")
-        r_notice.font.size = Pt(10)
+        p_notice.add_run("Dans la suite du document, ce symbole signifie « Appeler l'examinateur ».").font.size = Pt(10)
 
         for ligne_calc in [
             "L'usage de la calculatrice avec mode examen actif est autorisé.",
             "L'usage de la calculatrice sans mémoire, « type collège » est autorisé.",
             "L'échange de calculatrices entre les candidats pendant l'épreuve est interdit.",
         ]:
-            p_calc = doc.add_paragraph()
-            p_calc.add_run(ligne_calc).font.size = Pt(10)
+            doc.add_paragraph().add_run(ligne_calc).font.size = Pt(10)
 
         doc.add_paragraph()
 
         # ── CONTENU DU SUJET ──────────────────────────────────
-        skip_keywords = ["Établissement :", "Baccalauréat Professionnel —", "Épreuve E3", "Calculatrice autorisée"]
+        # Filtre les lignes parasites que l'IA peut générer avant le vrai sujet
+        skip_keywords = [
+            "Établissement :", "Baccalauréat Professionnel —", "Épreuve E3",
+            "Calculatrice autorisée", "Ministère de l'Éducation",
+            "sujet de CCF officiel", "Voici le sujet", "stricte conformité",
+            "accompagné de", "fiche d'évaluation et de son corrigé",
+            "Filière :", "Niveau :", "Situation d'évaluation n°",
+            "Durée :", "Nom & Prénom",
+        ]
+        # On démarre l'écriture dès qu'on trouve une vraie section du sujet
+        contenu_commence = False
         for line in content_md.split("\n"):
             line = line.rstrip()
+            if not contenu_commence:
+                if any(line.startswith(m) for m in [
+                    "### MISE EN SITUATION", "### PARTIE", "### PROBLÉMATIQUE",
+                    "## MISE EN SITUATION", "## PARTIE", "## PROBLÉMATIQUE",
+                    "#### MISE", "#### PARTIE",
+                ]):
+                    contenu_commence = True
+                else:
+                    continue
             if any(kw in line for kw in skip_keywords):
                 continue
             if line.startswith("#### "):
