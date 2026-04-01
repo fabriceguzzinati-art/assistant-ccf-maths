@@ -540,66 +540,112 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
         doc.styles["Normal"].font.name = "Arial"
         doc.styles["Normal"].font.size = Pt(11)
 
-        # ── EN-TÊTE : tableau 2 colonnes ─────────────────────
-        table_h = doc.add_table(rows=1, cols=2)
-        table_h.autofit = True
+        # ── EN-TÊTE : tableau 3 colonnes (logo gauche | titre centré | logo matière droite)
+        # Conforme au document officiel de l'établissement
+        table_h = doc.add_table(rows=3, cols=3)
+        table_h.autofit = False
 
-        # Gauche : logo Académie de Créteil
+        # Largeurs colonnes : gauche 30%, centre 40%, droite 30%
+        from docx.oxml.ns import qn as _qn
+        from docx.oxml import OxmlElement as _OxmlEl
+        total_w = 9360  # largeur contenu en DXA (marges 1" de chaque côté)
+        col_widths = [int(total_w * 0.28), int(total_w * 0.44), int(total_w * 0.28)]
+        for i, row in enumerate(table_h.rows):
+            for j, cell in enumerate(row.cells):
+                tc = cell._tc
+                tcPr = tc.get_or_add_tcPr()
+                tcW = _OxmlEl("w:tcW")
+                tcW.set(_qn("w:w"), str(col_widths[j]))
+                tcW.set(_qn("w:type"), "dxa")
+                tcPr.append(tcW)
+
+        # ── Ligne 1 : logo gauche | titre CCF | logo matière
+        # Gauche : logo Académie / République
         cell_l = table_h.cell(0, 0)
         logo_rep = os.path.join(APP_DIR, "logo_republique.png")
         if os.path.exists(logo_rep):
-            cell_l.paragraphs[0].add_run().add_picture(logo_rep, width=Inches(1.4))
+            cell_l.paragraphs[0].add_run().add_picture(logo_rep, width=Inches(1.2))
         else:
             p_l = cell_l.paragraphs[0]
-            run = p_l.add_run("ACADÉMIE DE CRÉTEIL\n")
+            run = p_l.add_run("ACADÉMIE DE CRÉTEIL")
             run.bold = True
-            run.font.size = Pt(11)
-            p_l.add_run("Liberté • Égalité • Fraternité").font.size = Pt(9)
+            run.font.size = Pt(10)
 
-        # Droite : logo matière + infos session
-        cell_r = table_h.cell(0, 1)
+        # Centre : titre et infos CCF
+        cell_c = table_h.cell(0, 1)
+        p_c = cell_c.paragraphs[0]
+        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p_c.add_run("CONTRÔLE EN COURS DE FORMATION\n")
+        r.bold = True
+        r.font.size = Pt(12)
+        r2 = p_c.add_run("Baccalauréat professionnel\n")
+        r2.bold = True
+        r2.font.size = Pt(11)
+        r3 = p_c.add_run(f"{metadata.get('matiere', '')}\n")
+        r3.bold = True
+        r3.font.size = Pt(11)
+        r4 = p_c.add_run(f"Situation d'évaluation n°{metadata.get('num_situation', '...')}\n")
+        r4.bold = True
+        r4.font.size = Pt(10)
+        r5 = p_c.add_run(f"Intitulé du diplôme : {metadata.get('filiere', '').ljust(20, '.')}\n")
+        r5.bold = True
+        r5.font.size = Pt(10)
+        r6 = p_c.add_run(f"Durée : {metadata.get('duree', '45 min')}")
+        r6.bold = True
+        r6.font.size = Pt(10)
+
+        # Droite : logo matière
+        cell_r = table_h.cell(0, 2)
         p_r = cell_r.paragraphs[0]
         p_r.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         logo_mat = os.path.join(APP_DIR, "logo_matiere.png")
         if os.path.exists(logo_mat):
             p_r.add_run().add_picture(logo_mat, width=Inches(0.8))
-            p_r.add_run("\n")
-        r1 = p_r.add_run(f"Session : {metadata.get('annee_scolaire', '2025/2026')}\n")
-        r1.bold = True
-        r1.font.size = Pt(10)
-        p_r.add_run(f"Situation d'évaluation n° {metadata.get('num_situation', '1')}\n").font.size = Pt(10)
-        p_r.add_run(f"Durée : {metadata.get('duree', '45 min')}").font.size = Pt(10)
+
+        # ── Ligne 2 : Nom/Prénom candidat (centré sur les 3 colonnes)
+        # On fusionne les 3 cellules de la ligne 2
+        cell_nom = table_h.cell(1, 0)
+        cell_nom.merge(table_h.cell(1, 1))
+        cell_nom.merge(table_h.cell(1, 2))
+        p_nom = cell_nom.paragraphs[0]
+        p_nom.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r_nom = p_nom.add_run("Nom, Prénom du candidat : _______________________________________________")
+        r_nom.bold = True
+        r_nom.font.size = Pt(10)
+        set_cell_border(cell_nom)
+
+        # ── Ligne 3 : Date | Établissement + Ville
+        cell_date = table_h.cell(2, 0)
+        p_date = cell_date.paragraphs[0]
+        p_date.add_run("Date : ........................").font.size = Pt(10)
+        set_cell_border(cell_date)
+
+        cell_etab = table_h.cell(2, 1)
+        cell_etab.merge(table_h.cell(2, 2))
+        p_etab = cell_etab.paragraphs[0]
+        r_etab = p_etab.add_run(f"Nom de l'établissement : {nom_etablissement}")
+        r_etab.bold = True
+        r_etab.font.size = Pt(10)
+        set_cell_border(cell_etab)
 
         doc.add_paragraph()
 
-        # ── TITRE ─────────────────────────────────────────────
-        titre = doc.add_heading("CONTRÔLE EN COURS DE FORMATION", level=1)
-        titre.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # ── NOTICE CALCULATRICE (conforme au document officiel) ────
+        logo_appel_path = os.path.join(APP_DIR, "logo_appel.png")
+        p_notice = doc.add_paragraph()
+        if os.path.exists(logo_appel_path):
+            p_notice.add_run().add_picture(logo_appel_path, width=Inches(0.35))
+            p_notice.add_run("  ")
+        r_notice = p_notice.add_run("Dans la suite du document, ce symbole signifie « Appeler l'examinateur ».")
+        r_notice.font.size = Pt(10)
 
-        sous_titre = doc.add_paragraph(
-            f"Baccalauréat Professionnel — {metadata.get('filiere', '')}"
-        )
-        sous_titre.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        for run in sous_titre.runs:
-            run.bold = True
-            run.font.size = Pt(11)
-
-        mat_p = doc.add_paragraph(f"Matière : {metadata.get('matiere', '')} | {metadata.get('niveau', '')}")
-        mat_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        for run in mat_p.runs:
-            run.font.size = Pt(10)
-
-        doc.add_paragraph()
-
-        # ── CADRE CANDIDAT ────────────────────────────────────
-        table_c = doc.add_table(rows=2, cols=2)
-        candidat_data = [
-            ["Nom, Prénom du candidat : ___________________________", "Date : _______________"],
-            [f"Établissement : {nom_etablissement}", f"Classe : {metadata.get('niveau', '')} — {metadata.get('filiere', '')}"],
-        ]
-        for i, row_data in enumerate(candidat_data):
-            for j, text in enumerate(row_data):
-                fill_cell(table_c.cell(i, j), text, size=10)
+        for ligne_calc in [
+            "L'usage de la calculatrice avec mode examen actif est autorisé.",
+            "L'usage de la calculatrice sans mémoire, « type collège » est autorisé.",
+            "L'échange de calculatrices entre les candidats pendant l'épreuve est interdit.",
+        ]:
+            p_calc = doc.add_paragraph()
+            p_calc.add_run(ligne_calc).font.size = Pt(10)
 
         doc.add_paragraph()
 
