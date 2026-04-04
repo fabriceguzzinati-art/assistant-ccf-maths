@@ -444,6 +444,109 @@ def call_gemini(api_key, prompt, image=None):
 # 5. EXPORT WORD — VERSION STANDARD
 # ============================================================
 
+def clean_math(text):
+    """
+    Supprime la notation LaTeX/Markdown mathématique pour la rendre lisible dans Word.
+    - $$...$$  et  $...$  → contenu sans les $
+    - \\frac{a}{b} → a/b
+    - ^{n} ou ^2 → exposants simplifiés
+    - _{n} → indices simplifiés
+    - \\ → espace
+    """
+    import re as _re
+    # Blocs $$ ... $$ (multiline)
+    text = _re.sub(r'\$\$(.+?)\$\$', lambda m: m.group(1).strip(), text, flags=_re.DOTALL)
+    # Inline $ ... $
+    text = _re.sub(r'\$([^$\n]+?)\$', lambda m: m.group(1).strip(), text)
+    # \frac{a}{b} → a/b
+    text = _re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1/\2', text)
+    # Exposants ^{...} → ^...
+    text = _re.sub(r'\^\{([^}]+)\}', r'^\1', text)
+    # Indices _{...} → _...
+    text = _re.sub(r'_\{([^}]+)\}', r'_\1', text)
+    # Commandes LaTeX restantes : \times → ×, \leq → ≤, etc.
+    replacements = {
+        r'\times': '×', r'\cdot': '·', r'\leq': '≤', r'\geq': '≥',
+        r'\neq': '≠', r'\approx': '≈', r'\infty': '∞', r'\pi': 'π',
+        r'\alpha': 'α', r'\beta': 'β', r'\sigma': 'σ', r'\mu': 'μ',
+        r'\rightarrow': '→', r'\leftarrow': '←', r'\in': '∈',
+        r'\subset': '⊂', r'\cup': '∪', r'\cap': '∩',
+    }
+    for latex, unicode_char in replacements.items():
+        text = text.replace(latex, unicode_char)
+    # Supprimer les backslashes restants isolés
+    text = _re.sub(r'\\([a-zA-Z]+)', r'\1', text)
+    return text
+
+
+def parse_md_tables(md_text):
+    """
+    Transforme un texte Markdown en liste de blocs :
+    - ('text', 'contenu')     pour les lignes normales
+    - ('table', [[row], ...]) pour les tableaux Markdown
+    """
+    import re as _re
+    lines = md_text.split('\n')
+    blocks = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Début d'un tableau : ligne commençant par |
+        if line.strip().startswith('|'):
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                raw = lines[i].strip()
+                # Ignorer les lignes séparateurs (|---|---|)
+                if _re.match(r'^\|[\s\-:|]+\|', raw):
+                    i += 1
+                    continue
+                # Découper les cellules
+                cells = [c.strip() for c in raw.strip('|').split('|')]
+                table_lines.append(cells)
+                i += 1
+            if table_lines:
+                blocks.append(('table', table_lines))
+        else:
+            blocks.append(('text', line))
+            i += 1
+    return blocks
+
+
+def add_md_table_to_doc(doc, rows, font_size=10):
+    """Crée un vrai tableau Word à partir d'une liste de lignes [[cell, cell, ...]]."""
+    if not rows:
+        return
+    max_cols = max(len(r) for r in rows)
+    table = doc.add_table(rows=len(rows), cols=max_cols)
+    table.style = "Table Grid"
+    for i, row in enumerate(rows):
+        for j in range(max_cols):
+            cell = table.cell(i, j)
+            text = clean_math(row[j]) if j < len(row) else ""
+            p = cell.paragraphs[0]
+            p.clear()
+            run = p.add_run(text)
+            run.font.size = Pt(font_size)
+            run.font.name = "Arial"
+            # 1ère ligne en gras (en-tête)
+            if i == 0:
+                run.bold = True
+    doc.add_paragraph()
+
+
+def render_inline(paragraph, text):
+    """Écrit une ligne avec gras/italique et nettoie les $ mathématiques."""
+    text = clean_math(text)
+    parts = re.split(r'(\*\*.*?\*\*|\*.*?\*)', text)
+    for part in parts:
+        if part.startswith("**") and part.endswith("**") and len(part) > 4:
+            paragraph.add_run(part[2:-2]).bold = True
+        elif part.startswith("*") and part.endswith("*") and len(part) > 2:
+            paragraph.add_run(part[1:-1]).italic = True
+        else:
+            paragraph.add_run(part)
+
+
 def markdown_to_docx(md_text, titre="Document"):
     doc = DocxDocument()
     doc.styles["Normal"].font.name = "Arial"
@@ -452,38 +555,34 @@ def markdown_to_docx(md_text, titre="Document"):
     h = doc.add_heading(titre, level=0)
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    for line in md_text.split("\n"):
-        line = line.rstrip()
+    blocks = parse_md_tables(md_text)
+
+    for kind, content in blocks:
+        if kind == "table":
+            add_md_table_to_doc(doc, content, font_size=10)
+            continue
+
+        line = content.rstrip()
         if line.startswith("### "):
-            doc.add_heading(line[4:], level=3)
+            doc.add_heading(clean_math(line[4:]), level=3)
         elif line.startswith("## "):
-            doc.add_heading(line[3:], level=2)
+            doc.add_heading(clean_math(line[3:]), level=2)
         elif line.startswith("# "):
-            doc.add_heading(line[2:], level=1)
+            doc.add_heading(clean_math(line[2:]), level=1)
         elif line.startswith("---"):
             p = doc.add_paragraph()
             p.paragraph_format.space_after = Pt(4)
-        elif line.startswith("| "):
-            p = doc.add_paragraph(line)
-            for run in p.runs:
-                run.font.name = "Courier New"
-                run.font.size = Pt(9)
         elif re.match(r"^\d+\.", line):
-            doc.add_paragraph(line, style="List Number")
+            p = doc.add_paragraph(style="List Number")
+            render_inline(p, re.sub(r"^\d+\.\s*", "", line))
         elif line.startswith("- ") or line.startswith("* "):
-            doc.add_paragraph(line[2:], style="List Bullet")
+            p = doc.add_paragraph(style="List Bullet")
+            render_inline(p, line[2:])
         elif line == "":
             doc.add_paragraph("")
         else:
             p = doc.add_paragraph()
-            parts = re.split(r"(\*\*.*?\*\*|\*.*?\*)", line)
-            for part in parts:
-                if part.startswith("**") and part.endswith("**") and len(part) > 4:
-                    p.add_run(part[2:-2]).bold = True
-                elif part.startswith("*") and part.endswith("*") and len(part) > 2:
-                    p.add_run(part[1:-1]).italic = True
-                else:
-                    p.add_run(part)
+            render_inline(p, line)
 
     buf = BytesIO()
     doc.save(buf)
@@ -524,6 +623,70 @@ def fill_cell(cell, text, bold=False, size=10):
     p.clear()
     set_run(p, text, bold=bold, size=size)
     set_cell_border(cell)
+
+
+def parse_questions_competences(content_md):
+    """
+    Parcourt le Markdown du sujet CCF et construit un dictionnaire
+    { nom_compétence_normalisé : [liste de références questions ex: 'A.1', 'B.2'] }
+    
+    Détecte les patterns :
+      ### PARTIE A  →  lettre de partie courante = 'A'
+      1. **S'APPROPRIER**  →  question A.1 → compétence S'approprier
+    """
+    # Mapping des mots-clés détectés vers les noms officiels des compétences
+    COMP_KEYWORDS = {
+        "S'APPROPRIER":        "S'approprier",
+        "APPROPRIER":          "S'approprier",
+        "ANALYSER / RAISONNER":"Analyser / Raisonner",
+        "ANALYSER":            "Analyser / Raisonner",
+        "RAISONNER":           "Analyser / Raisonner",
+        "RÉALISER":            "Réaliser",
+        "REALISER":            "Réaliser",
+        "VALIDER":             "Valider",
+        "COMMUNIQUER":         "Communiquer",
+    }
+
+    # Initialisation : une liste vide par compétence officielle
+    result = {
+        "S'approprier":       [],
+        "Analyser / Raisonner": [],
+        "Réaliser":           [],
+        "Valider":            [],
+        "Communiquer":        [],
+    }
+
+    current_part = ""
+
+    for line in content_md.split("\n"):
+        line_s = line.strip()
+
+        # Détecter changement de partie : ### PARTIE A, ## PARTIE B, etc.
+        part_match = re.match(r"#+\s+PARTIE\s+([A-Z])", line_s, re.IGNORECASE)
+        if part_match:
+            current_part = part_match.group(1).upper()
+            continue
+
+        # Si pas encore de partie détectée, on ne peut pas construire de référence
+        if not current_part:
+            continue
+
+        # Détecter une question numérotée avec sa compétence en gras
+        # Exemples : "1. **S'APPROPRIER**"  "4. **RÉALISER** 🛎️ APPELER..."
+        q_match = re.match(r"^(\d+)\.\s+\*\*([^*]+)\*\*", line_s)
+        if q_match:
+            q_num   = q_match.group(1)
+            comp_raw = q_match.group(2).strip().upper()
+            q_ref   = f"{current_part}.{q_num}"
+
+            # Chercher la compétence correspondante
+            for keyword, comp_name in COMP_KEYWORDS.items():
+                if keyword in comp_raw:
+                    if q_ref not in result[comp_name]:
+                        result[comp_name].append(q_ref)
+                    break
+
+    return result
 
 
 def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Établissement"):
@@ -632,12 +795,14 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
             "Filière :", "Niveau :", "Situation d'évaluation n°",
             "Durée :", "Nom & Prénom",
         ]
-        # On démarre l'écriture dès qu'on trouve une vraie section du sujet
+
+        # Filtrer le contenu avant de le parser
+        filtered_lines = []
         contenu_commence = False
         for line in content_md.split("\n"):
-            line = line.rstrip()
+            ls = line.rstrip()
             if not contenu_commence:
-                if any(line.startswith(m) for m in [
+                if any(ls.startswith(m) for m in [
                     "### MISE EN SITUATION", "### PARTIE", "### PROBLÉMATIQUE",
                     "## MISE EN SITUATION", "## PARTIE", "## PROBLÉMATIQUE",
                     "#### MISE", "#### PARTIE",
@@ -645,14 +810,29 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
                     contenu_commence = True
                 else:
                     continue
-            if any(kw in line for kw in skip_keywords):
+            if any(kw in ls for kw in skip_keywords):
                 continue
+            filtered_lines.append(ls)
+
+        filtered_md = "\n".join(filtered_lines)
+
+        # Parser les blocs (texte et tableaux Markdown)
+        blocks = parse_md_tables(filtered_md)
+
+        for kind, content in blocks:
+            # ── Vrai tableau Word ──────────────────────────────
+            if kind == "table":
+                add_md_table_to_doc(doc, content, font_size=10)
+                continue
+
+            line = content
+
             if line.startswith("#### "):
-                doc.add_heading(line[5:].strip(), level=3)
+                doc.add_heading(clean_math(line[5:].strip()), level=3)
             elif line.startswith("### "):
-                doc.add_heading(line[4:].strip(), level=2)
+                doc.add_heading(clean_math(line[4:].strip()), level=2)
             elif line.startswith("## "):
-                doc.add_heading(line[3:].strip(), level=2)
+                doc.add_heading(clean_math(line[3:].strip()), level=2)
             elif "APPELER L'EXAMINATEUR" in line.upper() or "🛎️" in line:
                 p = doc.add_paragraph()
                 logo_appel = os.path.join(APP_DIR, "logo_appel.png")
@@ -672,25 +852,13 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
                     border.set(qn("w:color"), "4A6CF7")
                     pBdr.append(border)
                 pPr.append(pBdr)
-            elif line.startswith("| "):
-                p = doc.add_paragraph(line)
-                for run in p.runs:
-                    run.font.name = "Courier New"
-                    run.font.size = Pt(9)
             elif line.startswith("---"):
                 continue
             elif line == "":
                 doc.add_paragraph("")
             else:
                 p = doc.add_paragraph()
-                parts = re.split(r"(\*\*.*?\*\*|\*.*?\*)", line)
-                for part in parts:
-                    if part.startswith("**") and part.endswith("**") and len(part) > 4:
-                        p.add_run(part[2:-2]).bold = True
-                    elif part.startswith("*") and part.endswith("*") and len(part) > 2:
-                        p.add_run(part[1:-1]).italic = True
-                    else:
-                        p.add_run(part)
+                render_inline(p, line)
 
         # ── FICHE D'ÉVALUATION OFFICIELLE (page 2) ───────────
         doc.add_page_break()
@@ -747,16 +915,25 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
         for j, h in enumerate(h_texts):
             fill_cell(grid.cell(0, j), h, bold=True, size=9)
 
-        # Remplissage compétences et indicateurs
+        # Parsing des numéros de questions depuis le contenu généré
+        questions_par_comp = parse_questions_competences(content_md)
+
         row_idx = 1
         for comp in COMPETENCES_CCF:
+            # Récupérer les références de questions pour cette compétence
+            refs = questions_par_comp.get(comp["nom"], [])
+            refs_str = "  ".join(refs) if refs else ""
+
             for k, indicateur in enumerate(comp["indicateurs"]):
                 fill_cell(grid.cell(row_idx, 0),
                           comp["nom"] if k == 0 else "",
                           bold=(k == 0), size=9)
                 fill_cell(grid.cell(row_idx, 1), "", size=9)
                 fill_cell(grid.cell(row_idx, 2), indicateur, size=9)
-                fill_cell(grid.cell(row_idx, 3), "", size=9)
+                # Numéros de questions sur la 1ère ligne de chaque compétence uniquement
+                fill_cell(grid.cell(row_idx, 3),
+                          refs_str if k == 0 else "",
+                          bold=(k == 0 and bool(refs_str)), size=9)
                 fill_cell(grid.cell(row_idx, 4), "0    1    2", size=9)
                 row_idx += 1
 
