@@ -10,6 +10,51 @@ from docx.oxml import OxmlElement
 import re
 import os
 import time
+import requests
+from datetime import datetime
+
+# ============================================================
+# 0. INTÉGRATION GRIST — Suivi des élèves
+# ============================================================
+
+def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
+    """
+    Envoie une ligne de suivi dans la table Grist suivi_eleves.
+    Lit les secrets Streamlit : GRIST_API_KEY, GRIST_DOC_ID, GRIST_URL.
+    Silencieux en cas d'erreur — ne bloque jamais l'app.
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return  # secrets non configurés — on passe silencieusement
+
+        now = datetime.now()
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "records": [{
+                "fields": {
+                    "code_eleve":       str(code_eleve),
+                    "date":             now.strftime("%Y-%m-%d"),
+                    "heure":            now.strftime("%H:%M"),
+                    "type_activite":    type_activite,
+                    "classe":           str(meta.get("niveau", "")),
+                    "filiere":          str(meta.get("filiere", "")),
+                    "matiere":          str(meta.get("matiere", "")),
+                    "chapitre":         str(meta.get("chapitre", "")),
+                    "niveau_difficulte": str(meta.get("difficulte", "")),
+                    "auto_evaluation":  str(auto_evaluation),
+                }
+            }]
+        }
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass  # Jamais bloquant
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1021,7 +1066,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── SESSION STATE ─────────────────────────────────────────────
-for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf"]:
+for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
+            "eval_gen_done", "eval_ccf_done"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1029,7 +1075,20 @@ for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf"]:
 with st.sidebar:
     st.header("⚙️ Configuration")
 
-    st.subheader("🔑 Clé API Gemini")
+    # ── Code élève ───────────────────────────────────────────
+    st.subheader("🎓 Identification")
+    code_eleve = st.text_input(
+        "Ton code élève",
+        placeholder="Ex : ASSP-03",
+        key="code_eleve",
+        help="Code distribué par ton professeur en début d'année."
+    ).strip().upper()
+    if code_eleve:
+        st.markdown(f'<div class="ok-box">✅ Connecté : <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="warn-box">⚠️ Entre ton code élève pour que ta progression soit enregistrée.</div>', unsafe_allow_html=True)
+
+    st.divider()
     cle_api = st.text_input("Ta clé Google Gemini", type="password", key="gemini_key")
     if cle_api:
         st.markdown('<div class="ok-box">✅ Clé renseignée — prêt à générer !</div>', unsafe_allow_html=True)
@@ -1113,6 +1172,7 @@ with tab_gen:
                 try:
                     res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
                     st.session_state.generated_md = res
+                    st.session_state.eval_gen_done = None  # reset éval
                     st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere, "difficulte": difficulte}
                     st.success("✅ Sujet généré !")
                 except Exception as e:
@@ -1135,6 +1195,33 @@ with tab_gen:
             badges += f'<span class="badge">{m["difficulte"]}</span>'
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_md)
+
+        # ── Auto-évaluation + envoi Grist ────────────────────
+        st.divider()
+        st.markdown("**🎯 Comment tu t'en es sorti ?**")
+        col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+        eval_labels = {"😕 Difficile": "😕", "😐 Moyen": "😐", "😊 Bien": "😊", "🌟 Très bien": "🌟"}
+        eval_choix = None
+        with col_e1:
+            if st.button("😕 Difficile", use_container_width=True, key="eval_gen_1"):
+                eval_choix = "😕 Difficile"
+        with col_e2:
+            if st.button("😐 Moyen", use_container_width=True, key="eval_gen_2"):
+                eval_choix = "😐 Moyen"
+        with col_e3:
+            if st.button("😊 Bien", use_container_width=True, key="eval_gen_3"):
+                eval_choix = "😊 Bien"
+        with col_e4:
+            if st.button("🌟 Très bien", use_container_width=True, key="eval_gen_4"):
+                eval_choix = "🌟 Très bien"
+
+        if eval_choix:
+            envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
+            st.session_state.eval_gen_done = eval_choix
+            st.rerun()
+
+        if st.session_state.eval_gen_done:
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong></div>', unsafe_allow_html=True)
 
         titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
@@ -1240,6 +1327,7 @@ with tab_ccf:
                     res = call_gemini(cle_api, prompt)
                     if res:
                         st.session_state.generated_ccf_md = res
+                        st.session_state.eval_ccf_done = None  # reset éval
                         chap_label = ccf_chap
                         if ccf_chap_b:
                             chap_label += f" + {ccf_chap_b}"
@@ -1277,6 +1365,32 @@ with tab_ccf:
             badges += f'<span class="badge">⏱ {m["duree"]}</span>'
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_ccf_md)
+
+        # ── Auto-évaluation + envoi Grist ────────────────────
+        st.divider()
+        st.markdown("**🎯 Comment tu t'en es sorti ?**")
+        col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+        eval_ccf_choix = None
+        with col_c1:
+            if st.button("😕 Difficile", use_container_width=True, key="eval_ccf_1"):
+                eval_ccf_choix = "😕 Difficile"
+        with col_c2:
+            if st.button("😐 Moyen", use_container_width=True, key="eval_ccf_2"):
+                eval_ccf_choix = "😐 Moyen"
+        with col_c3:
+            if st.button("😊 Bien", use_container_width=True, key="eval_ccf_3"):
+                eval_ccf_choix = "😊 Bien"
+        with col_c4:
+            if st.button("🌟 Très bien", use_container_width=True, key="eval_ccf_4"):
+                eval_ccf_choix = "🌟 Très bien"
+
+        if eval_ccf_choix:
+            envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
+            st.session_state.eval_ccf_done = eval_ccf_choix
+            st.rerun()
+
+        if st.session_state.eval_ccf_done:
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_ccf_done}</strong></div>', unsafe_allow_html=True)
 
         titre_doc = f"CCF_{m.get('mode','')}_{m.get('matiere','')}_{m.get('niveau','')}"
         st.subheader("📥 Télécharger")
