@@ -12,6 +12,7 @@ import os
 import time
 import requests
 from datetime import datetime
+import json
 
 st.markdown("""
     <style>
@@ -40,46 +41,82 @@ st.markdown("""
 # ============================================================
 
 def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
-    """
-    Version DEBUG — retourne un message de statut stocké dans session_state.
-    """
-    api_key  = st.secrets.get("GRIST_API_KEY", "")
-    doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-    base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-
-    if not api_key or not doc_id:
-        return "⚠️ Secrets GRIST_API_KEY ou GRIST_DOC_ID manquants dans Streamlit Cloud."
-
-    now = datetime.now()
-    url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "records": [{
-            "fields": {
-                "code_eleve":        str(code_eleve),
-                "date":              now.strftime("%Y-%m-%d"),
-                "heure":             now.strftime("%H:%M"),
-                "type_activite":     type_activite,
-                "classe":            str(meta.get("niveau", "")),
-                "filiere":           str(meta.get("filiere", "")),
-                "matiere":           str(meta.get("matiere", "")),
-                "chapitre":          str(meta.get("chapitre", "")),
-                "niveau_difficulte": str(meta.get("difficulte", "")),
-                "auto_evaluation":   str(auto_evaluation),
-            }
-        }]
-    }
+    """Envoie une ligne dans Grist. Silencieux en cas d'erreur."""
     try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=5)
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return
+        now = datetime.now()
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"records": [{"fields": {
+            "code_eleve":        str(code_eleve),
+            "date":              now.strftime("%Y-%m-%d"),
+            "heure":             now.strftime("%H:%M"),
+            "type_activite":     type_activite,
+            "classe":            str(meta.get("niveau", "")),
+            "filiere":           str(meta.get("filiere", "")),
+            "matiere":           str(meta.get("matiere", "")),
+            "chapitre":          str(meta.get("chapitre", "")),
+            "niveau_difficulte": str(meta.get("difficulte", "")),
+            "auto_evaluation":   str(auto_evaluation),
+            "source":            str(meta.get("source", "Gemini")),
+        }}]}
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass
+
+
+def lire_progression_grist(code_eleve: str) -> list:
+    """
+    Lit toutes les lignes Grist pour un élève donné.
+    Retourne une liste de dicts, ou [] en cas d'erreur.
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id or not code_eleve:
+            return []
+        import urllib.parse
+        filtre = urllib.parse.quote(json.dumps({"code_eleve": [code_eleve]}))
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records?filter={filtre}"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers, timeout=8)
         if resp.status_code == 200:
-            return f"✅ OK (HTTP 200) — ligne envoyée dans Grist"
-        else:
-            return f"❌ Erreur HTTP {resp.status_code} — {resp.text[:200]}"
-    except Exception as e:
-        return f"❌ Exception — {e}"
+            records = resp.json().get("records", [])
+            return [r["fields"] for r in records]
+    except Exception:
+        pass
+    return []
+
+
+# ── Banque d'exercices ────────────────────────────────────────
+
+BANQUE_DIR = os.path.join(APP_DIR, "banque")
+
+def _slug(text: str) -> str:
+    text = text.replace(" ", "_").replace("—", "").replace("/", "_")
+    text = re.sub(r"[^a-zA-Z0-9_\-àâéèêëîïôùûüç]", "", text)
+    return text[:60]
+
+
+def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
+    """Charge les sujets disponibles pour une combinaison donnée."""
+    diff_label = difficulte.split(" ", 1)[-1]
+    path = os.path.join(
+        BANQUE_DIR,
+        f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{_slug(diff_label)}.json"
+    )
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1092,7 +1129,7 @@ st.markdown("""
 
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
-            "eval_gen_done", "eval_ccf_done", "grist_debug"]:
+            "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1142,9 +1179,10 @@ st.title("📚 Entraînement Bac Pro — Mathématiques")
 st.caption("Génère des exercices et des sujets CCF pour t'entraîner à ton rythme.")
 
 # ── ONGLETS ──────────────────────────────────────────────────
-tab_gen, tab_ccf = st.tabs([
+tab_gen, tab_ccf, tab_progression = st.tabs([
     "📝 Exercices d'entraînement",
     "🎯 Sujets CCF",
+    "📊 Ma progression",
 ])
 
 
@@ -1189,7 +1227,40 @@ with tab_gen:
         unsafe_allow_html=True
     )
 
-    if st.button("✨ Générer le sujet", type="primary", use_container_width=True):
+    # ── Mode banque ou génération ─────────────────────────────
+    sujets_banque = charger_banque(niv, filiere, chap, difficulte)
+    nb_banque = len(sujets_banque)
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        btn_banque = st.button(
+            f"📚 Sujet depuis la banque ({nb_banque} disponible{'s' if nb_banque > 1 else ''})",
+            type="primary",
+            use_container_width=True,
+            disabled=(nb_banque == 0),
+            key="btn_banque"
+        )
+        if nb_banque == 0:
+            st.caption("Aucun sujet en banque pour cette combinaison.")
+    with col_btn2:
+        btn_gemini = st.button(
+            "✨ Générer un sujet inédit (Gemini)",
+            use_container_width=True,
+            key="btn_gemini"
+        )
+
+    if btn_banque and nb_banque > 0:
+        import random
+        sujet = random.choice(sujets_banque)
+        st.session_state.generated_md = sujet["contenu"]
+        st.session_state.eval_gen_done = None
+        st.session_state.meta_gen = {
+            "niveau": niv, "matiere": mat, "chapitre": chap,
+            "filiere": filiere, "difficulte": difficulte, "source": "Banque"
+        }
+        st.rerun()
+
+    if btn_gemini:
         if not cle_api:
             st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
         else:
@@ -1197,12 +1268,15 @@ with tab_gen:
                 try:
                     res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
                     st.session_state.generated_md = res
-                    st.session_state.eval_gen_done = None  # reset éval
-                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere, "difficulte": difficulte}
+                    st.session_state.eval_gen_done = None
+                    st.session_state.meta_gen = {
+                        "niveau": niv, "matiere": mat, "chapitre": chap,
+                        "filiere": filiere, "difficulte": difficulte, "source": "Gemini"
+                    }
                     st.success("✅ Sujet généré !")
                 except Exception as e:
                     if "429" in str(e):
-                        st.error("⏱️ Quota dépassé (429). Attendez 1 minute et réessayez.")
+                        st.error("⏱️ Quota dépassé (429). Attends 1 minute ou utilise un sujet de la banque.")
                     else:
                         st.error(f"Erreur API : {e}")
 
@@ -1241,15 +1315,12 @@ with tab_gen:
                 eval_choix = "🌟 Très bien"
 
         if eval_choix:
-            resultat = envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
+            envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             st.session_state.eval_gen_done = eval_choix
-            st.session_state.grist_debug = resultat
             st.rerun()
 
         if st.session_state.eval_gen_done:
-            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong></div>', unsafe_allow_html=True)
-            if st.session_state.get("grist_debug"):
-                st.info(f"🔍 DEBUG Grist : {st.session_state.grist_debug}")
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
 
         titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
@@ -1413,15 +1484,12 @@ with tab_ccf:
                 eval_ccf_choix = "🌟 Très bien"
 
         if eval_ccf_choix:
-            resultat = envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
+            envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
             st.session_state.eval_ccf_done = eval_ccf_choix
-            st.session_state.grist_debug = resultat
             st.rerun()
 
         if st.session_state.eval_ccf_done:
-            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_ccf_done}</strong></div>', unsafe_allow_html=True)
-            if st.session_state.get("grist_debug"):
-                st.info(f"🔍 DEBUG Grist : {st.session_state.grist_debug}")
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_ccf_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
 
         titre_doc = f"CCF_{m.get('mode','')}_{m.get('matiere','')}_{m.get('niveau','')}"
         st.subheader("📥 Télécharger")
@@ -1458,3 +1526,153 @@ with tab_ccf:
             with c3:
                 st.download_button("📄 .txt", st.session_state.generated_ccf_md,
                                    file_name=f"{titre_doc}.txt", mime="text/plain", key="dl2_txt")
+
+# ─────────────────────────────────────────────────────────────
+# ONGLET 3 — MA PROGRESSION
+# ─────────────────────────────────────────────────────────────
+with tab_progression:
+    st.subheader("📊 Ma progression")
+
+    if not code_eleve:
+        st.markdown('<div class="warn-box">⚠️ Entre ton code élève dans le panneau gauche pour voir ta progression.</div>', unsafe_allow_html=True)
+    else:
+        col_refresh, col_info = st.columns([1, 3])
+        with col_refresh:
+            if st.button("🔄 Actualiser", use_container_width=True):
+                st.session_state.progression_cache = None
+
+        with col_info:
+            st.markdown(f"Progression de : **{code_eleve}**")
+
+        # Chargement depuis Grist (avec cache session)
+        if not st.session_state.progression_cache:
+            with st.spinner("Chargement de ta progression…"):
+                records = lire_progression_grist(code_eleve)
+                st.session_state.progression_cache = records
+        else:
+            records = st.session_state.progression_cache
+
+        if not records:
+            st.markdown('<div class="info-box">📭 Aucune activité enregistrée pour ce code. Commence par faire des exercices !</div>', unsafe_allow_html=True)
+        else:
+            # ── Statistiques globales ─────────────────────────
+            nb_total = len(records)
+            bonnes    = [r for r in records if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien")]
+            nb_bonnes = len(bonnes)
+            taux      = int(nb_bonnes / nb_total * 100) if nb_total else 0
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Activités totales", nb_total)
+            c2.metric("😊 Bien ou mieux", nb_bonnes)
+            c3.metric("Taux de réussite", f"{taux}%")
+
+            st.divider()
+
+            # ── Progression par chapitre × niveau ────────────
+            st.markdown("### 📖 Progression par chapitre")
+
+            ORDRE_NIVEAUX = ["🟢 Débutant", "🟡 Moyen", "🟠 Confirmé", "🔴 Expert"]
+            BADGE_VALIDE  = {"🟢 Débutant": "📗", "🟡 Moyen": "📙", "🟠 Confirmé": "📕", "🔴 Expert": "🏆"}
+            BADGE_NON     = {"🟢 Débutant": "⬜", "🟡 Moyen": "⬜", "🟠 Confirmé": "⬜", "🔴 Expert": "⬜"}
+            SEUIL_VALID   = 2  # 2 bonnes évals pour valider un niveau
+
+            # Construire la grille chapitre → niveau → nb bonnes évals
+            from collections import defaultdict
+            grille = defaultdict(lambda: defaultdict(int))
+            for r in records:
+                chap_r = r.get("chapitre", "")
+                diff_r = r.get("niveau_difficulte", "")
+                eval_r = r.get("auto_evaluation", "")
+                if chap_r and diff_r and eval_r in ("😊 Bien", "🌟 Très bien"):
+                    grille[chap_r][diff_r] += 1
+
+            # Tous les chapitres vus (bonnes évals ou non)
+            tous_chap = sorted(set(r.get("chapitre", "") for r in records if r.get("chapitre")))
+
+            for chap in tous_chap:
+                niveaux_html = ""
+                for diff in ORDRE_NIVEAUX:
+                    nb_ok = grille[chap].get(diff, 0)
+                    valide = nb_ok >= SEUIL_VALID
+                    badge  = BADGE_VALIDE[diff] if valide else BADGE_NON[diff]
+                    titre  = f"{diff.split(' ',1)[-1]} ({nb_ok}/{SEUIL_VALID})"
+                    niveaux_html += f'<span title="{titre}" style="font-size:1.4rem;margin-right:6px">{badge}</span>'
+
+                # Nombre total d'activités sur ce chapitre
+                nb_act_chap = sum(1 for r in records if r.get("chapitre") == chap)
+                chap_court  = chap[:55] + "…" if len(chap) > 55 else chap
+
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #eee">'
+                    f'<div style="flex:1;font-size:.9rem"><strong>{chap_court}</strong></div>'
+                    f'<div>{niveaux_html}</div>'
+                    f'<div style="color:#888;font-size:.8rem">{nb_act_chap} activité(s)</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
+            st.markdown(
+                '<div style="margin-top:12px;font-size:.8rem;color:#888">'
+                '📗 Débutant &nbsp; 📙 Moyen &nbsp; 📕 Confirmé &nbsp; 🏆 Expert &nbsp;|&nbsp; '
+                f'⬜ = pas encore validé &nbsp; ✅ = {SEUIL_VALID} bonnes évals minimum</div>',
+                unsafe_allow_html=True
+            )
+
+            st.divider()
+
+            # ── Compétences BO ────────────────────────────────
+            st.markdown("### 🎯 Compétences BO travaillées")
+            st.caption("Basé sur les types d'exercices effectués et les chapitres travaillés.")
+
+            COMP_PAR_CHAP = {
+                "Probabilités": ["Analyser / Raisonner", "Réaliser", "Valider"],
+                "Statistiques": ["S'approprier", "Réaliser", "Communiquer"],
+                "Suites": ["Réaliser", "Valider", "Communiquer"],
+                "Fonctions": ["S'approprier", "Analyser / Raisonner", "Réaliser"],
+                "Vecteurs": ["S'approprier", "Réaliser"],
+                "Trigonométrie": ["Réaliser", "Valider"],
+                "Algorithmique": ["Analyser / Raisonner", "Réaliser"],
+                "Calculs commerciaux": ["S'approprier", "Réaliser", "Communiquer"],
+                "Géométrie": ["S'approprier", "Réaliser", "Valider"],
+            }
+            TOUTES_COMP = ["S'approprier", "Analyser / Raisonner", "Réaliser", "Valider", "Communiquer"]
+
+            # Compter les activités par compétence (estimation)
+            comp_count = defaultdict(int)
+            for r in records:
+                chap_r = r.get("chapitre", "")
+                for mot_cle, comps in COMP_PAR_CHAP.items():
+                    if mot_cle.lower() in chap_r.lower():
+                        for c in comps:
+                            comp_count[c] += 1
+
+            # Si aucune correspondance trouvée, toutes les comp reçoivent 1
+            if not any(comp_count.values()):
+                for c in TOUTES_COMP:
+                    comp_count[c] = nb_total // 5 or 1
+
+            max_count = max(comp_count.values()) if comp_count else 1
+            for comp in TOUTES_COMP:
+                val  = comp_count.get(comp, 0)
+                pct  = int(val / max_count * 100)
+                bar  = "█" * (pct // 10) + "░" * (10 - pct // 10)
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;gap:10px;margin:4px 0">'
+                    f'<div style="width:180px;font-size:.85rem">{comp}</div>'
+                    f'<div style="font-family:monospace;color:#4a6cf7">{bar}</div>'
+                    f'<div style="font-size:.8rem;color:#888">{val} activité(s)</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
+            st.divider()
+
+            # ── Historique récent ─────────────────────────────
+            with st.expander("📅 Voir l'historique complet"):
+                import pandas as pd
+                df = pd.DataFrame(records)
+                cols_affich = [c for c in ["date", "heure", "type_activite", "chapitre",
+                                            "niveau_difficulte", "auto_evaluation", "source"]
+                               if c in df.columns]
+                st.dataframe(df[cols_affich].sort_values("date", ascending=False),
+                             use_container_width=True, hide_index=True)
