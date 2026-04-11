@@ -292,15 +292,18 @@ def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, fili
     return SYSTEM_EXERCICES, user
 
 
-def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True):
+def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
     bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\nCorrection complète de chaque question.\n" if avec_corrige else ""
+    chap_a_label = f"Partie A : {chapitre}"
+    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème mathématique complémentaire au choix"
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO.
 
 Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 - Niveau : {niveau} ({categorie})
 - Matière : {matiere}
-- Chapitre du BO : {chapitre}
+- {chap_a_label}
+- {chap_b_label}
 {ctx}
 - Instructions : {consignes or 'Aucune'}
 
@@ -313,6 +316,7 @@ Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 5. Les questions servent à répondre progressivement à la problématique.
 6. La dernière question COMMUNIQUER demande de répondre à la problématique initiale.
 7. L'évaluation est sur 10 points (pas 20), répartis en niveaux 0/1/2 par compétence.
+8. Les deux parties s'appuient sur LA MÊME mise en situation professionnelle.
 
 ## STRUCTURE À RESPECTER :
 
@@ -322,7 +326,7 @@ Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 ### PROBLÉMATIQUE
 **[UNE SEULE question centrale se terminant par ?]**
 
-### PARTIE A — [Titre lié au premier thème mathématique]
+### PARTIE A — [Titre lié à : {chapitre}]
 
 1. **S'APPROPRIER**
 - [question]
@@ -348,23 +352,26 @@ ______
 - Répondre à la [première partie de la] problématique.
 ______
 
-### PARTIE B — [Titre lié au second thème mathématique]
+### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles, questions numérotées avec compétences]
 {bloc_corrige}
 Réponds entièrement en Markdown."""
 
 
-def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True):
+def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
     nom_filiere = CONTEXTES_FILIERES[filiere]["nom_complet"] if filiere in CONTEXTES_FILIERES else filiere
     bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*\n[Correction complète question par question avec justifications]\n" if avec_corrige else ""
+    chap_a_label = f"Partie A : {chapitre}"
+    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème mathématique complémentaire en cohérence avec la situation"
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO de l'Éducation Nationale.
 
 Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
 - Niveau : {niveau} ({categorie})
 - Filière : {nom_filiere}
 - Matière : {matiere}
-- Chapitre du BO : {chapitre}
+- {chap_a_label}
+- {chap_b_label}
 - Situation d'évaluation n° : {num_sit}
 - Durée : {duree}
 {ctx}
@@ -380,6 +387,7 @@ Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
 6. La dernière question **COMMUNIQUER** demande explicitement de répondre à la problématique initiale.
 7. Quand une question nécessite la calculatrice ou un outil, ajouter : 🛎️ APPELER L'EXAMINATEUR
 8. L'évaluation est notée sur /10 avec niveaux d'acquisition 0/1/2 par compétence (PAS de barème en points).
+9. Les deux parties s'appuient sur LA MÊME mise en situation professionnelle.
 
 ## STRUCTURE OBLIGATOIRE :
 
@@ -392,7 +400,7 @@ L'usage de la calculatrice avec mode examen actif est autorisé.
 ### PROBLÉMATIQUE
 **[Question centrale unique se terminant par ? — clairement encadrée]**
 
-### PARTIE A — [Titre mathématique]
+### PARTIE A — [Titre lié à : {chapitre}]
 
 1. **S'APPROPRIER**
 - [question d'appropriation de la situation]
@@ -418,7 +426,7 @@ ______
 - Répondre à la première partie de la problématique.
 ______
 
-### PARTIE B — [Second thème mathématique]
+### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles]
 {bloc_corrige}
 Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
@@ -1193,9 +1201,30 @@ with tab_ccf:
 
     with col2:
         ccf_mat = st.selectbox("Matière", MATIERES, key="ccf_mat")
-        ccf_chap = st.selectbox("Chapitre (BO)", get_chapitres(ccf_mat, ccf_niv, ccf_cat), key="ccf_chap")
         ccf_duree = st.selectbox("Durée de l'épreuve", ["30 min", "45 min", "1h00", "1h30", "2h00"], index=1, key="ccf_duree")
         num_sit = st.number_input("N° de situation CCF", min_value=1, max_value=3, value=1, step=1, key="ccf_num_sit")
+
+    # ── Chapitres ────────────────────────────────────────────
+    st.markdown("**📖 Chapitres évalués**")
+    chapitres_dispo = get_chapitres(ccf_mat, ccf_niv, ccf_cat)
+    col_a, col_b = st.columns(2)
+    with col_a:
+        ccf_chap = st.selectbox("Chapitre — Partie A", chapitres_dispo, key="ccf_chap")
+    with col_b:
+        double_chap = st.checkbox("Ajouter un 2ème chapitre (Partie B)", key="ccf_double_chap")
+        if double_chap:
+            chapitres_b = [c for c in chapitres_dispo if c != ccf_chap]
+            ccf_chap_b = st.selectbox("Chapitre — Partie B", chapitres_b, key="ccf_chap_b")
+        else:
+            ccf_chap_b = ""
+
+    if double_chap and ccf_chap_b:
+        st.markdown(
+            f'<div class="info-box">📐 <strong>Partie A :</strong> {ccf_chap} &nbsp;|&nbsp; '
+            f'<strong>Partie B :</strong> {ccf_chap_b}<br>'
+            f'Les deux parties s\'appuieront sur la même situation professionnelle.</div>',
+            unsafe_allow_html=True
+        )
 
     avec_corrige = st.checkbox(
         "📝 Inclure le corrigé détaillé *(document professeur)*",
@@ -1220,21 +1249,26 @@ with tab_ccf:
                         prompt = build_prompt_ccf_officiel(
                             ccf_niv, ccf_cat, ccf_mat, ccf_chap,
                             ccf_consignes, ccf_filiere, ccf_duree, str(num_sit),
-                            avec_corrige=avec_corrige
+                            avec_corrige=avec_corrige,
+                            chapitre_b=ccf_chap_b
                         )
                     else:
                         prompt = build_prompt_ccf_entrainement(
                             ccf_niv, ccf_cat, ccf_mat, ccf_chap,
                             ccf_consignes, ccf_filiere,
-                            avec_corrige=avec_corrige
+                            avec_corrige=avec_corrige,
+                            chapitre_b=ccf_chap_b
                         )
                     res = call_gemini(cle_api, prompt)
                     if res:
                         st.session_state.generated_ccf_md = res
+                        chap_label = ccf_chap
+                        if ccf_chap_b:
+                            chap_label += f" + {ccf_chap_b}"
                         st.session_state.meta_ccf = {
                             "niveau": ccf_niv,
                             "matiere": ccf_mat,
-                            "chapitre": ccf_chap,
+                            "chapitre": chap_label,
                             "filiere": ccf_filiere,
                             "mode": "Officiel" if is_officiel else "Entraînement",
                             "num_situation": str(num_sit),
