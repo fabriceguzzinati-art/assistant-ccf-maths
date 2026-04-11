@@ -13,6 +13,28 @@ import time
 import requests
 from datetime import datetime
 
+st.markdown("""
+    <style>
+    /* Arrondir les boutons et les boites */
+    .stButton>button {
+        border-radius: 20px;
+        border: 1px solid #4CAF50;
+        transition: all 0.3s;
+    }
+    .stButton>button:hover {
+        transform: scale(1.05);
+        background-color: #4CAF50;
+        color: white;
+    }
+    /* Style pour les cartes d'exercices */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 15px;
+        background-color: #f0f2f6; /* Ou sombre si tu préfères */
+        padding: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # ============================================================
 # 0. INTÉGRATION GRIST — Suivi des élèves
 # ============================================================
