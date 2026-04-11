@@ -19,42 +19,47 @@ from datetime import datetime
 
 def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
     """
-    Envoie une ligne de suivi dans la table Grist suivi_eleves.
-    Lit les secrets Streamlit : GRIST_API_KEY, GRIST_DOC_ID, GRIST_URL.
-    Silencieux en cas d'erreur — ne bloque jamais l'app.
+    Version DEBUG — affiche les erreurs pour diagnostic.
+    À remplacer par la version silencieuse une fois validé.
     """
-    try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        if not api_key or not doc_id:
-            return  # secrets non configurés — on passe silencieusement
+    api_key  = st.secrets.get("GRIST_API_KEY", "")
+    doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+    base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
 
-        now = datetime.now()
-        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "records": [{
-                "fields": {
-                    "code_eleve":       str(code_eleve),
-                    "date":             now.strftime("%Y-%m-%d"),
-                    "heure":            now.strftime("%H:%M"),
-                    "type_activite":    type_activite,
-                    "classe":           str(meta.get("niveau", "")),
-                    "filiere":          str(meta.get("filiere", "")),
-                    "matiere":          str(meta.get("matiere", "")),
-                    "chapitre":         str(meta.get("chapitre", "")),
-                    "niveau_difficulte": str(meta.get("difficulte", "")),
-                    "auto_evaluation":  str(auto_evaluation),
-                }
-            }]
-        }
-        requests.post(url, headers=headers, json=payload, timeout=5)
-    except Exception:
-        pass  # Jamais bloquant
+    if not api_key or not doc_id:
+        st.warning("⚠️ DEBUG : Secrets GRIST_API_KEY ou GRIST_DOC_ID manquants dans Streamlit Cloud.")
+        return
+
+    now = datetime.now()
+    url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "records": [{
+            "fields": {
+                "code_eleve":        str(code_eleve),
+                "date":              now.strftime("%Y-%m-%d"),
+                "heure":             now.strftime("%H:%M"),
+                "type_activite":     type_activite,
+                "classe":            str(meta.get("niveau", "")),
+                "filiere":           str(meta.get("filiere", "")),
+                "matiere":           str(meta.get("matiere", "")),
+                "chapitre":          str(meta.get("chapitre", "")),
+                "niveau_difficulte": str(meta.get("difficulte", "")),
+                "auto_evaluation":   str(auto_evaluation),
+            }
+        }]
+    }
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=5)
+        if resp.status_code == 200:
+            st.success(f"✅ DEBUG : Ligne envoyée dans Grist (code: {resp.status_code})")
+        else:
+            st.error(f"❌ DEBUG : Erreur Grist {resp.status_code} — {resp.text}")
+    except Exception as e:
+        st.error(f"❌ DEBUG : Exception — {e}")
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
