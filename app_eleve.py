@@ -19,16 +19,14 @@ from datetime import datetime
 
 def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
     """
-    Version DEBUG — affiche les erreurs pour diagnostic.
-    À remplacer par la version silencieuse une fois validé.
+    Version DEBUG — retourne un message de statut stocké dans session_state.
     """
     api_key  = st.secrets.get("GRIST_API_KEY", "")
     doc_id   = st.secrets.get("GRIST_DOC_ID", "")
     base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
 
     if not api_key or not doc_id:
-        st.warning("⚠️ DEBUG : Secrets GRIST_API_KEY ou GRIST_DOC_ID manquants dans Streamlit Cloud.")
-        return
+        return "⚠️ Secrets GRIST_API_KEY ou GRIST_DOC_ID manquants dans Streamlit Cloud."
 
     now = datetime.now()
     url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
@@ -55,11 +53,11 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
     try:
         resp = requests.post(url, headers=headers, json=payload, timeout=5)
         if resp.status_code == 200:
-            st.success(f"✅ DEBUG : Ligne envoyée dans Grist (code: {resp.status_code})")
+            return f"✅ OK (HTTP 200) — ligne envoyée dans Grist"
         else:
-            st.error(f"❌ DEBUG : Erreur Grist {resp.status_code} — {resp.text}")
+            return f"❌ Erreur HTTP {resp.status_code} — {resp.text[:200]}"
     except Exception as e:
-        st.error(f"❌ DEBUG : Exception — {e}")
+        return f"❌ Exception — {e}"
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1072,7 +1070,7 @@ st.markdown("""
 
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
-            "eval_gen_done", "eval_ccf_done"]:
+            "eval_gen_done", "eval_ccf_done", "grist_debug"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1221,12 +1219,15 @@ with tab_gen:
                 eval_choix = "🌟 Très bien"
 
         if eval_choix:
-            envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
+            resultat = envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             st.session_state.eval_gen_done = eval_choix
+            st.session_state.grist_debug = resultat
             st.rerun()
 
         if st.session_state.eval_gen_done:
             st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong></div>', unsafe_allow_html=True)
+            if st.session_state.get("grist_debug"):
+                st.info(f"🔍 DEBUG Grist : {st.session_state.grist_debug}")
 
         titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
@@ -1390,12 +1391,15 @@ with tab_ccf:
                 eval_ccf_choix = "🌟 Très bien"
 
         if eval_ccf_choix:
-            envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
+            resultat = envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
             st.session_state.eval_ccf_done = eval_ccf_choix
+            st.session_state.grist_debug = resultat
             st.rerun()
 
         if st.session_state.eval_ccf_done:
             st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_ccf_done}</strong></div>', unsafe_allow_html=True)
+            if st.session_state.get("grist_debug"):
+                st.info(f"🔍 DEBUG Grist : {st.session_state.grist_debug}")
 
         titre_doc = f"CCF_{m.get('mode','')}_{m.get('matiere','')}_{m.get('niveau','')}"
         st.subheader("📥 Télécharger")
