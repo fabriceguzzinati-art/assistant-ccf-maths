@@ -14,6 +14,8 @@ import requests
 from datetime import datetime
 import json
 
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
 st.markdown("""
     <style>
     /* Arrondir les boutons et les boites */
