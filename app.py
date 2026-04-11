@@ -9,7 +9,6 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 import re
 import os
-import time
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -241,9 +240,8 @@ STRUCTURE :
 Réponds en Markdown avec titres clairs. Inclus les corrections détaillées à la fin."""
 
 
-def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True):
+def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere=""):
     ctx = build_contexte_filiere(filiere)
-    bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\nCorrection complète de chaque question.\n" if avec_corrige else ""
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO.
 
 Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
@@ -299,14 +297,16 @@ ______
 
 ### PARTIE B — [Titre lié au second thème mathématique]
 [Mêmes règles, questions numérotées avec compétences]
-{bloc_corrige}
+
+### CORRIGÉ DÉTAILLÉ *(document professeur)*
+Correction complète de chaque question.
+
 Réponds entièrement en Markdown."""
 
 
-def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True):
+def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1"):
     ctx = build_contexte_filiere(filiere)
     nom_filiere = CONTEXTES_FILIERES[filiere]["nom_complet"] if filiere in CONTEXTES_FILIERES else filiere
-    bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*\n[Correction complète question par question avec justifications]\n" if avec_corrige else ""
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO de l'Éducation Nationale.
 
 Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
@@ -329,6 +329,7 @@ Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
 6. La dernière question **COMMUNIQUER** demande explicitement de répondre à la problématique initiale.
 7. Quand une question nécessite la calculatrice ou un outil, ajouter : 🛎️ APPELER L'EXAMINATEUR
 8. L'évaluation est notée sur /10 avec niveaux d'acquisition 0/1/2 par compétence (PAS de barème en points).
+9. La fiche d'évaluation (page séparée) liste : capacités et connaissances évaluées du BO, puis le tableau d'évaluation avec compétences / indicateurs / questions / appréciation 0-1-2 / note /10.
 
 ## STRUCTURE OBLIGATOIRE :
 
@@ -369,7 +370,26 @@ ______
 
 ### PARTIE B — [Second thème mathématique]
 [Mêmes règles]
-{bloc_corrige}
+
+---
+### FICHE D'ÉVALUATION *(document professeur — NE PAS DISTRIBUER)*
+
+**1. Capacités et connaissances évaluées**
+[Liste des capacités et connaissances du BO correspondant au chapitre]
+
+**2. Tableau d'évaluation**
+| Compétences | Indicateurs | Questions | Appréciation (0/1/2) |
+|---|---|---|---|
+| S'approprier | Rechercher, extraire et organiser l'information. | | 0  1  2 |
+| Analyser / Raisonner | Émettre des conjectures, proposer une méthode. | | 0  1  2 |
+| Réaliser | Mettre en œuvre une méthode, utiliser un modèle, calculer. | | 0  1  2 |
+| Valider | Interpréter des résultats, contrôler la vraisemblance. | | 0  1  2 |
+| Communiquer | Rendre compte d'un résultat, expliquer une démarche. | | 0  1  2 |
+**Note : /10**
+
+### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*
+[Correction complète question par question avec justifications]
+
 Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
 
 
@@ -397,26 +417,27 @@ Réponds en Markdown avec sections claires."""
 # 4. APPEL API GEMINI
 # ============================================================
 
-def call_gemini(api_key, prompt, image=None, max_retries=2):
+def call_gemini(api_key, prompt, image=None):
     genai.configure(api_key=api_key.strip())
-    model = genai.GenerativeModel(model_name="gemini-2.0-flash")
-    content = [prompt, PIL.Image.open(image)] if image else prompt
-    for attempt in range(max_retries + 1):
-        try:
-            response = model.generate_content(content)
-            if response and response.text:
+    model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+    try:
+        if image:
+            img = PIL.Image.open(image)
+            response = model.generate_content([prompt, img])
+        else:
+            response = model.generate_content(prompt)
+        if response and response.text:
+            return response.text
+        return "L'IA a répondu mais le texte est vide. Réessayez."
+    except Exception as e:
+        if "404" in str(e):
+            try:
+                model_alt = genai.GenerativeModel("models/gemini-2.5-flash")
+                response = model_alt.generate_content([prompt, PIL.Image.open(image)] if image else prompt)
                 return response.text
-            return "L'IA a répondu mais le texte est vide. Réessayez."
-        except Exception as e:
-            err = str(e)
-            if "429" in err:
-                if attempt < max_retries:
-                    wait = 60 * (attempt + 1)
-                    st.toast(f"⏳ Quota 429 — nouvelle tentative dans {wait} s…")
-                    time.sleep(wait)
-                    continue
-                raise
-            raise
+            except Exception as e2:
+                raise e2
+        raise e
 
 
 # ============================================================
@@ -425,16 +446,15 @@ def call_gemini(api_key, prompt, image=None, max_retries=2):
 
 def clean_math(text):
     """
-    Convertit la notation LaTeX/Markdown en texte lisible dans Word.
-    Gère : \\[...\\], $$...$$, $...$, \\frac, ^, _, commandes LaTeX, backticks.
+    Supprime la notation LaTeX/Markdown mathématique pour la rendre lisible dans Word.
+    - $$...$$  et  $...$  → contenu sans les $
+    - \\frac{a}{b} → a/b
+    - ^{n} ou ^2 → exposants simplifiés
+    - _{n} → indices simplifiés
+    - \\ → espace
     """
     import re as _re
-    # Supprimer balises ```markdown et ``` parasites
-    text = _re.sub(r'```[a-zA-Z]*', '', text)
-    # Blocs \[ ... \] et \( ... \)
-    text = _re.sub(r'\\\[(.+?)\\\]', lambda m: m.group(1).strip(), text, flags=_re.DOTALL)
-    text = _re.sub(r'\\\((.+?)\\\)', lambda m: m.group(1).strip(), text, flags=_re.DOTALL)
-    # Blocs $$ ... $$
+    # Blocs $$ ... $$ (multiline)
     text = _re.sub(r'\$\$(.+?)\$\$', lambda m: m.group(1).strip(), text, flags=_re.DOTALL)
     # Inline $ ... $
     text = _re.sub(r'\$([^$\n]+?)\$', lambda m: m.group(1).strip(), text)
@@ -444,7 +464,7 @@ def clean_math(text):
     text = _re.sub(r'\^\{([^}]+)\}', r'^\1', text)
     # Indices _{...} → _...
     text = _re.sub(r'_\{([^}]+)\}', r'_\1', text)
-    # Commandes LaTeX usuelles → Unicode
+    # Commandes LaTeX restantes : \times → ×, \leq → ≤, etc.
     replacements = {
         r'\times': '×', r'\cdot': '·', r'\leq': '≤', r'\geq': '≥',
         r'\neq': '≠', r'\approx': '≈', r'\infty': '∞', r'\pi': 'π',
@@ -1110,9 +1130,7 @@ with tab_ccf:
     col1, col2 = st.columns(2)
     with col1:
         ccf_cat = st.selectbox("Catégorie", ["Bac Pro", "CAP"], key="ccf_cat")
-        # Les CCF n'ont lieu qu'en 1ère et Terminale — 2nde Pro exclue
-        niveaux_ccf = [n for n in NIVEAUX_CATEGORIES[ccf_cat] if n != "2nde Pro"]
-        ccf_niv = st.selectbox("Classe", niveaux_ccf, key="ccf_niv")
+        ccf_niv = st.selectbox("Classe", NIVEAUX_CATEGORIES[ccf_cat], key="ccf_niv")
         ccf_fil = st.selectbox("Filière", LISTE_FILIERES, key="ccf_fil")
         ccf_filiere = ""
         if ccf_fil == "Autre (Préciser ci-dessous)":
@@ -1128,15 +1146,6 @@ with tab_ccf:
         ccf_duree = st.selectbox("Durée de l'épreuve", ["30 min", "45 min", "1h00", "1h30", "2h00"], index=1, key="ccf_duree")
         num_sit = st.number_input("N° de situation CCF", min_value=1, max_value=3, value=1, step=1, key="ccf_num_sit")
 
-    avec_corrige = st.checkbox(
-        "📝 Inclure le corrigé détaillé *(document professeur)*",
-        value=True,
-        key="ccf_avec_corrige",
-        help="Décochez pour générer uniquement le sujet élève — réponse plus courte, moins de tokens consommés."
-    )
-    if not avec_corrige:
-        st.markdown('<div class="info-box">💡 Sujet seul — génération plus rapide et moins gourmande en quota.</div>', unsafe_allow_html=True)
-
     ccf_consignes = st.text_area("Consignes spécifiques (optionnel)", height=80, key="ccf_consignes",
                                   placeholder="Ex : Situation en EHPAD, tableau de données, niveau accessible…")
 
@@ -1150,14 +1159,11 @@ with tab_ccf:
                     if is_officiel:
                         prompt = build_prompt_ccf_officiel(
                             ccf_niv, ccf_cat, ccf_mat, ccf_chap,
-                            ccf_consignes, ccf_filiere, ccf_duree, str(num_sit),
-                            avec_corrige=avec_corrige
+                            ccf_consignes, ccf_filiere, ccf_duree, str(num_sit)
                         )
                     else:
                         prompt = build_prompt_ccf_entrainement(
-                            ccf_niv, ccf_cat, ccf_mat, ccf_chap,
-                            ccf_consignes, ccf_filiere,
-                            avec_corrige=avec_corrige
+                            ccf_niv, ccf_cat, ccf_mat, ccf_chap, ccf_consignes, ccf_filiere
                         )
                     res = call_gemini(cle_api, prompt)
                     if res:
