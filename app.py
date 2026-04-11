@@ -221,24 +221,75 @@ def build_contexte_filiere(filiere):
     return f"\nFilière : {filiere}\n" if filiere else ""
 
 
-def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere=""):
+SYSTEM_EXERCICES = """\
+Tu es un professeur expert en pédagogie différenciée pour lycée professionnel (Bac Pro).
+Tes élèves ont un niveau en mathématiques fragile : tes énoncés sont toujours clairs, bienveillants et ancrés dans des contextes professionnels concrets.
+
+En fonction du niveau de difficulté demandé, adapte PRÉCISÉMENT la structure suivante :
+
+━━ DÉBUTANT ━━
+- Questions très guidées, découpées en micro-étapes (une opération par question).
+- Résultats intermédiaires fournis pour permettre de continuer même en cas d'erreur.
+- Vocabulaire ultra-simplifié, aucun terme technique sans définition immédiate.
+- Rappel de cours détaillé avec exemple résolu pas à pas.
+- Exercice d'application : calcul direct, données déjà extraites.
+- Mise en situation : contexte simple, une seule inconnue.
+- Pas de problème ouvert — remplacer par une question bilan guidée.
+
+━━ MOYEN ━━
+- Questions semi-guidées avec quelques repères (formule rappelée, première étape donnée).
+- Rappel de cours synthétique avec un exemple.
+- Exercice d'application : 3 questions progressives.
+- Mise en situation professionnelle simple avec tableau de données.
+- Problème ouvert court (1 question de synthèse guidée).
+
+━━ CONFIRMÉ ━━
+- Questions autonomes, aucune aide dans l'énoncé.
+- Rappel de cours en points clés uniquement (pas d'exemple résolu).
+- Exercice d'application : questions progressives avec barème.
+- Mise en situation professionnelle réaliste et complète.
+- Problème ouvert avec raisonnement attendu.
+
+━━ EXPERT ━━
+- Questions ouvertes sans guidage, transfert de compétences vers une situation nouvelle.
+- Rappel de cours : absent ou très succinct (2 lignes max).
+- Exercice d'application : données brutes à extraire soi-même.
+- Mise en situation complexe avec plusieurs informations à croiser.
+- Problème ouvert ambitieux — mais toujours réaliste pour un élève de Bac Pro.
+
+Dans tous les cas : JAMAIS de calcul hors programme Bac Pro, JAMAIS de piège inutile.
+La correction détaillée doit être adaptée au même niveau (plus ou moins de détails selon le niveau).
+
+Structure de sortie (Markdown) :
+1. **Rappel de cours** (adapté au niveau)
+2. **Exercice d'application** (adapté au niveau)
+3. **Exercice de mise en situation** (contexte professionnel de la filière)
+4. **Problème ouvert** (adapté au niveau)
+5. **Corrections détaillées** (avec le niveau de détail approprié)\
+"""
+
+# Descriptifs courts affichés dans l'UI
+NIVEAUX_DIFFICULTE = {
+    "🟢 Débutant":  "Questions très guidées, micro-étapes, résultats intermédiaires donnés.",
+    "🟡 Moyen":     "Semi-guidé, quelques repères fournis, mise en situation simple.",
+    "🟠 Confirmé":  "Autonome, mise en situation réaliste, raisonnement attendu.",
+    "🔴 Expert":    "Transfert de compétences, données brutes, problème ouvert ambitieux.",
+}
+
+
+def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere="", difficulte="🟡 Moyen"):
     ctx = build_contexte_filiere(filiere)
-    return f"""Tu es un professeur expert en pédagogie différenciée.
-
-Génère un contenu pédagogique complet pour :
-- Niveau : {niveau} ({categorie})
-- Matière : {matiere}
-- Chapitre : {chapitre}
-{ctx}
-- Instructions : {consignes or 'Aucune'}
-
-STRUCTURE :
-1. **Rappel de cours** — points clés (5 à 8 lignes)
-2. **Exercice d'application directe** — 3 questions progressives avec barème
-3. **Exercice de mise en situation** — contexte professionnel lié à la filière
-4. **Problème ouvert** — question de synthèse
-
-Réponds en Markdown avec titres clairs. Inclus les corrections détaillées à la fin."""
+    diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
+    user = (
+        f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
+        f"- Niveau scolaire : {niveau} ({categorie})\n"
+        f"- Matière : {matiere}\n"
+        f"- Chapitre : {chapitre}\n"
+        f"{ctx}"
+        f"- Instructions : {consignes or 'Aucune'}\n\n"
+        f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
+    )
+    return SYSTEM_EXERCICES, user
 
 
 def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True):
@@ -399,12 +450,22 @@ Réponds en Markdown avec sections claires."""
 
 def call_gemini(api_key, prompt, image=None):
     genai.configure(api_key=api_key.strip())
-    model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+    # Gestion du tuple (system_instruction, user_prompt) retourné par build_prompt_exercices
+    if isinstance(prompt, tuple):
+        system_instruction, user_prompt = prompt
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=system_instruction
+        )
+        content = user_prompt
+    else:
+        model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+        content = prompt
     if image:
         img = PIL.Image.open(image)
-        response = model.generate_content([prompt, img])
+        response = model.generate_content([content, img])
     else:
-        response = model.generate_content(prompt)
+        response = model.generate_content(content)
     if response and response.text:
         return response.text
     return "L'IA a répondu mais le texte est vide. Réessayez."
@@ -1035,15 +1096,29 @@ with tab_gen:
     consignes = st.text_area("Consignes particulières (optionnel)", height=80, key="gen_consignes",
                               placeholder="Ex : 3 exercices, niveau accessible, inclure un graphique…")
 
+    # ── Niveau de difficulté ──────────────────────────────────
+    st.markdown("**🎯 Niveau de difficulté (pédagogie différenciée)**")
+    difficulte = st.select_slider(
+        "Niveau",
+        options=list(NIVEAUX_DIFFICULTE.keys()),
+        value="🟡 Moyen",
+        key="gen_diff",
+        label_visibility="collapsed"
+    )
+    st.markdown(
+        f'<div class="info-box">{difficulte} — {NIVEAUX_DIFFICULTE[difficulte]}</div>',
+        unsafe_allow_html=True
+    )
+
     if st.button("✨ Générer le sujet", type="primary", use_container_width=True):
         if not cle_api:
             st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
         else:
             with st.spinner("⏳ Génération en cours…"):
                 try:
-                    res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere))
+                    res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
                     st.session_state.generated_md = res
-                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere}
+                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere, "difficulte": difficulte}
                     st.success("✅ Sujet généré !")
                 except Exception as e:
                     if "429" in str(e):
@@ -1061,9 +1136,12 @@ with tab_gen:
         )
         if m.get("filiere"):
             badges += f'<span class="badge">🏢 {m["filiere"]}</span>'
+        if m.get("difficulte"):
+            badges += f'<span class="badge">{m["difficulte"]}</span>'
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_md)
 
+        titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
         with c1:
             st.download_button("📥 .md", st.session_state.generated_md,
@@ -1073,7 +1151,7 @@ with tab_gen:
                                file_name="sujet.txt", mime="text/plain", key="dl1_txt")
         with c3:
             st.download_button("📝 .docx",
-                markdown_to_docx(st.session_state.generated_md, f"Sujet — {m.get('matiere','')} {m.get('niveau','')}"),
+                markdown_to_docx(st.session_state.generated_md, titre_doc),
                 file_name="sujet.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 key="dl1_docx")
