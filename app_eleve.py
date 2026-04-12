@@ -117,6 +117,108 @@ def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
     except Exception:
         return []
 
+
+# ============================================================
+# GAMIFICATION — Système de boss et de niveaux
+# ============================================================
+
+SEUIL_VALIDATION  = 2   # bonnes évals minimum pour valider un niveau
+ORDRE_NIVEAUX_DIFF = ["🟢 Débutant", "🟡 Moyen", "🟠 Confirmé", "🔴 Expert"]
+
+# Mascotte de chaque niveau — affiché dans l'onglet progression
+MASCOTTES = {
+    "🟢 Débutant":  {"animal": "🐣", "nom": "Poussin",  "couleur": "#22c55e"},
+    "🟡 Moyen":     {"animal": "🦊", "nom": "Renard",   "couleur": "#f59e0b"},
+    "🟠 Confirmé":  {"animal": "🦁", "nom": "Lion",     "couleur": "#f97316"},
+    "🔴 Expert":    {"animal": "🐉", "nom": "Dragon",   "couleur": "#ef4444"},
+}
+
+# Message d'encouragement affiché quand un boss est vaincu
+MESSAGES_VICTOIRE = {
+    "🟢 Débutant":  "🐣 Poussin vaincu ! Tu maîtrises les bases — le Renard t'attend !",
+    "🟡 Moyen":     "🦊 Renard vaincu ! Tu commences à être redoutable — au Lion !",
+    "🟠 Confirmé":  "🦁 Lion vaincu ! Tu es vraiment solide — ose affronter le Dragon !",
+    "🔴 Expert":    "🐉 Dragon vaincu ! Tu es un expert — bravo, c'est le sommet !",
+}
+
+
+def calculer_progression(records: list, chapitre: str) -> dict:
+    """
+    Pour un chapitre donné, retourne pour chaque niveau :
+    - nb_bonnes    : nombre de bonnes évaluations (😊 ou 🌟)
+    - valide       : True si nb_bonnes >= SEUIL_VALIDATION
+    - boss_vaincu  : True si une éval de type "Boss" a été réussie sur ce niveau
+    """
+    from collections import defaultdict
+    bonnes   = defaultdict(int)
+    boss_ok  = set()
+
+    for r in records:
+        if r.get("chapitre", "") != chapitre:
+            continue
+        diff   = r.get("niveau_difficulte", "")
+        eval_v = r.get("auto_evaluation", "")
+        type_a = r.get("type_activite", "")
+
+        if eval_v in ("😊 Bien", "🌟 Très bien"):
+            if "Boss" in type_a:
+                boss_ok.add(diff)
+            else:
+                bonnes[diff] += 1
+
+    result = {}
+    for diff in ORDRE_NIVEAUX_DIFF:
+        nb    = bonnes.get(diff, 0)
+        valid = nb >= SEUIL_VALIDATION
+        result[diff] = {
+            "nb_bonnes":   nb,
+            "valide":      valid,
+            "boss_vaincu": diff in boss_ok,
+        }
+    return result
+
+
+def niveau_suivant(diff: str) -> str | None:
+    """Retourne le niveau suivant, ou None si on est au maximum."""
+    idx = ORDRE_NIVEAUX_DIFF.index(diff)
+    if idx < len(ORDRE_NIVEAUX_DIFF) - 1:
+        return ORDRE_NIVEAUX_DIFF[idx + 1]
+    return None
+
+
+def build_prompt_boss(niveau, filiere, chapitre, niveau_valide):
+    """
+    Génère un CCF-Boss : sujet complet, situation complexe,
+    SANS corrigé (l'élève doit se corriger seul ou avec le prof).
+    """
+    ctx = build_contexte_filiere(filiere)
+    diff_label = niveau_valide.split(" ", 1)[-1].upper()
+    mascotte   = MASCOTTES[niveau_valide]["animal"]
+    return f"""Tu es un professeur expert en Bac Pro qui crée un DÉFI BOSS pour un élève.
+
+L'élève vient de valider le niveau {diff_label} sur le chapitre "{chapitre}".
+Il doit maintenant affronter le Boss {mascotte} pour passer au niveau suivant.
+
+Crée un sujet d'exercices BOSS pour :
+- Niveau scolaire : {niveau} (Bac Pro)
+- Matière : Mathématiques
+- Chapitre : {chapitre}
+- Difficulté : niveau {diff_label} AVANCÉ — plus ambitieux que d'habitude
+{ctx}
+
+RÈGLES DU BOSS :
+- Mise en situation professionnelle réaliste et complète, sans données guidées.
+- 4 à 5 questions progressives sans aide, sans formules rappelées.
+- La dernière question demande un raisonnement complet et une conclusion rédigée.
+- PAS DE CORRIGÉ — l'élève doit s'auto-corriger ou demander au professeur.
+- Ton encourageant mais exigeant : c'est un défi, pas un exercice ordinaire.
+
+Commence le sujet par :
+### ⚔️ DÉFI BOSS — {mascotte} {MASCOTTES[niveau_valide]["nom"]}
+*Prouve que tu maîtrises vraiment ce chapitre !*
+
+Réponds entièrement en Markdown."""
+
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BANQUE_DIR = os.path.join(APP_DIR, "banque")
@@ -1129,7 +1231,8 @@ st.markdown("""
 
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
-            "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache"]:
+            "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
+            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1317,10 +1420,128 @@ with tab_gen:
         if eval_choix:
             envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             st.session_state.eval_gen_done = eval_choix
+            # Vérifier si un boss se débloque
+            if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
+                records_check = lire_progression_grist(code_eleve)
+                # Simuler l'ajout de cette éval pour le calcul
+                records_check.append({
+                    "chapitre": m.get("chapitre", ""),
+                    "niveau_difficulte": m.get("difficulte", ""),
+                    "auto_evaluation": eval_choix,
+                    "type_activite": "Exercice",
+                })
+                prog = calculer_progression(records_check, m.get("chapitre", ""))
+                diff_actuel = m.get("difficulte", "")
+                if (prog.get(diff_actuel, {}).get("valide") and
+                        not prog.get(diff_actuel, {}).get("boss_vaincu") and
+                        diff_actuel in ORDRE_NIVEAUX_DIFF):
+                    st.session_state.boss_actif   = True
+                    st.session_state.boss_niveau  = diff_actuel
+                    st.session_state.boss_chapitre = m.get("chapitre", "")
             st.rerun()
 
         if st.session_state.eval_gen_done:
             st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
+
+        # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
+        if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
+            diff_boss = st.session_state.boss_niveau
+            mascotte  = MASCOTTES.get(diff_boss, {})
+            st.markdown("---")
+            st.markdown(
+                f'<div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);'
+                f'color:white;padding:20px;border-radius:12px;text-align:center;margin:12px 0">'
+                f'<div style="font-size:3rem">{mascotte.get("animal","⚔️")}</div>'
+                f'<div style="font-size:1.3rem;font-weight:bold;margin:8px 0">'
+                f'BOSS DÉBLOQUÉ — {mascotte.get("nom","Boss").upper()} !</div>'
+                f'<div style="font-size:.95rem;opacity:.9">'
+                f'Tu as validé le niveau <strong>{diff_boss.split(" ",1)[-1]}</strong> '
+                f'sur <strong>{m.get("chapitre","")[:40]}</strong>.<br>'
+                f'Prouve que tu maîtrises vraiment ce chapitre !</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            col_boss1, col_boss2 = st.columns(2)
+            with col_boss1:
+                if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
+                             type="primary", use_container_width=True, key="btn_boss"):
+                    if not cle_api:
+                        st.error("🔑 Clé API manquante !")
+                    else:
+                        with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
+                            try:
+                                prompt_boss = build_prompt_boss(
+                                    niv, filiere,
+                                    st.session_state.boss_chapitre,
+                                    st.session_state.boss_niveau
+                                )
+                                res_boss = call_gemini(cle_api, prompt_boss)
+                                st.session_state.boss_md       = res_boss
+                                st.session_state.eval_boss_done = None
+                                st.session_state.boss_actif    = False
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erreur : {e}")
+            with col_boss2:
+                if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
+                    st.session_state.boss_actif = False
+                    st.rerun()
+
+        # ── SUJET BOSS AFFICHÉ ────────────────────────────────
+        if st.session_state.boss_md:
+            diff_boss = st.session_state.boss_niveau or "🟢 Débutant"
+            mascotte  = MASCOTTES.get(diff_boss, {})
+            st.markdown(
+                f'<div style="background:#1e1b4b;color:white;padding:12px 16px;'
+                f'border-radius:8px;margin:8px 0;font-size:1.1rem;font-weight:bold">'
+                f'{mascotte.get("animal","⚔️")} DÉFI BOSS — {mascotte.get("nom","Boss").upper()}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            st.markdown(st.session_state.boss_md)
+
+            st.divider()
+            st.markdown("**⚔️ As-tu vaincu le Boss ?**")
+            col_b1, col_b2 = st.columns(2)
+            with col_b1:
+                if st.button("😤 Pas encore…", use_container_width=True, key="boss_fail"):
+                    envoyer_grist(
+                        code_eleve or "anonyme", f"Boss-{diff_boss}",
+                        {"chapitre": st.session_state.boss_chapitre or "",
+                         "niveau": niv, "filiere": filiere, "matiere": mat},
+                        "😕 Difficile"
+                    )
+                    st.session_state.eval_boss_done = "fail"
+                    st.session_state.boss_md = None
+                    st.rerun()
+            with col_b2:
+                if st.button("🏆 Boss vaincu !", use_container_width=True, key="boss_win"):
+                    envoyer_grist(
+                        code_eleve or "anonyme", f"Boss-{diff_boss}",
+                        {"chapitre": st.session_state.boss_chapitre or "",
+                         "niveau": niv, "filiere": filiere, "matiere": mat},
+                        "🌟 Très bien"
+                    )
+                    st.session_state.eval_boss_done = "win"
+                    st.session_state.boss_md = None
+                    st.session_state.progression_cache = None  # forcer refresh
+                    st.rerun()
+
+        if st.session_state.eval_boss_done == "win":
+            diff_boss = st.session_state.boss_niveau or ""
+            msg = MESSAGES_VICTOIRE.get(diff_boss, "🏆 Félicitations !")
+            st.markdown(
+                f'<div style="background:linear-gradient(135deg,#065f46,#047857);'
+                f'color:white;padding:16px;border-radius:10px;text-align:center;'
+                f'font-size:1.1rem;font-weight:bold;margin:8px 0">'
+                f'🏆 {msg}</div>',
+                unsafe_allow_html=True
+            )
+        elif st.session_state.eval_boss_done == "fail":
+            st.markdown(
+                '<div class="info-box">💪 Pas grave ! Continue à t\'entraîner et reviens affronter le Boss.</div>',
+                unsafe_allow_html=True
+            )
 
         titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
@@ -1571,50 +1792,57 @@ with tab_progression:
             # ── Progression par chapitre × niveau ────────────
             st.markdown("### 📖 Progression par chapitre")
 
-            ORDRE_NIVEAUX = ["🟢 Débutant", "🟡 Moyen", "🟠 Confirmé", "🔴 Expert"]
-            BADGE_VALIDE  = {"🟢 Débutant": "📗", "🟡 Moyen": "📙", "🟠 Confirmé": "📕", "🔴 Expert": "🏆"}
-            BADGE_NON     = {"🟢 Débutant": "⬜", "🟡 Moyen": "⬜", "🟠 Confirmé": "⬜", "🔴 Expert": "⬜"}
-            SEUIL_VALID   = 2  # 2 bonnes évals pour valider un niveau
-
-            # Construire la grille chapitre → niveau → nb bonnes évals
             from collections import defaultdict
-            grille = defaultdict(lambda: defaultdict(int))
-            for r in records:
-                chap_r = r.get("chapitre", "")
-                diff_r = r.get("niveau_difficulte", "")
-                eval_r = r.get("auto_evaluation", "")
-                if chap_r and diff_r and eval_r in ("😊 Bien", "🌟 Très bien"):
-                    grille[chap_r][diff_r] += 1
-
-            # Tous les chapitres vus (bonnes évals ou non)
             tous_chap = sorted(set(r.get("chapitre", "") for r in records if r.get("chapitre")))
 
             for chap in tous_chap:
+                prog_chap = calculer_progression(records, chap)
                 niveaux_html = ""
-                for diff in ORDRE_NIVEAUX:
-                    nb_ok = grille[chap].get(diff, 0)
-                    valide = nb_ok >= SEUIL_VALID
-                    badge  = BADGE_VALIDE[diff] if valide else BADGE_NON[diff]
-                    titre  = f"{diff.split(' ',1)[-1]} ({nb_ok}/{SEUIL_VALID})"
-                    niveaux_html += f'<span title="{titre}" style="font-size:1.4rem;margin-right:6px">{badge}</span>'
+                for diff in ORDRE_NIVEAUX_DIFF:
+                    p         = prog_chap[diff]
+                    mascotte  = MASCOTTES[diff]
+                    animal    = mascotte["animal"]
+                    nom       = mascotte["nom"]
+                    couleur   = mascotte["couleur"]
 
-                # Nombre total d'activités sur ce chapitre
+                    if p["boss_vaincu"]:
+                        cell = (f'<span title="{nom} vaincu !" style="font-size:1.5rem;'
+                                f'filter:drop-shadow(0 0 4px {couleur})">{animal}👑</span>')
+                    elif p["valide"]:
+                        nb_ok = p["nb_bonnes"]
+                        cell = (f'<span title="{nom} — Boss disponible ! ({nb_ok}/{SEUIL_VALIDATION})" '
+                                f'style="font-size:1.5rem;opacity:.9">{animal}⚔️</span>')
+                    elif p["nb_bonnes"] > 0:
+                        nb_ok = p["nb_bonnes"]
+                        cell = (f'<span title="{nom} — en cours ({nb_ok}/{SEUIL_VALIDATION})" '
+                                f'style="font-size:1.5rem;filter:grayscale(60%)">{animal}</span>')
+                    else:
+                        cell = (f'<span title="{nom} — pas encore commencé" '
+                                f'style="font-size:1.5rem;filter:grayscale(100%);opacity:.3">{animal}</span>')
+
+                    niveaux_html += f'<span style="margin-right:8px">{cell}</span>'
+
                 nb_act_chap = sum(1 for r in records if r.get("chapitre") == chap)
-                chap_court  = chap[:55] + "…" if len(chap) > 55 else chap
-
+                chap_court  = chap[:50] + "…" if len(chap) > 50 else chap
                 st.markdown(
-                    f'<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #eee">'
+                    f'<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'
+                    f'border-bottom:1px solid #eee">'
                     f'<div style="flex:1;font-size:.9rem"><strong>{chap_court}</strong></div>'
-                    f'<div>{niveaux_html}</div>'
-                    f'<div style="color:#888;font-size:.8rem">{nb_act_chap} activité(s)</div>'
+                    f'<div style="display:flex;align-items:center">{niveaux_html}</div>'
+                    f'<div style="color:#888;font-size:.8rem;white-space:nowrap">'
+                    f'{nb_act_chap} activité(s)</div>'
                     f'</div>',
                     unsafe_allow_html=True
                 )
 
             st.markdown(
-                '<div style="margin-top:12px;font-size:.8rem;color:#888">'
-                '📗 Débutant &nbsp; 📙 Moyen &nbsp; 📕 Confirmé &nbsp; 🏆 Expert &nbsp;|&nbsp; '
-                f'⬜ = pas encore validé &nbsp; ✅ = {SEUIL_VALID} bonnes évals minimum</div>',
+                '<div style="margin-top:14px;font-size:.82rem;color:#888;line-height:1.8">'
+                '🐣 Poussin = Débutant &nbsp;|&nbsp; 🦊 Renard = Moyen &nbsp;|&nbsp; '
+                '🦁 Lion = Confirmé &nbsp;|&nbsp; 🐉 Dragon = Expert<br>'
+                f'⚔️ = Boss disponible &nbsp;|&nbsp; 👑 = Boss vaincu &nbsp;|&nbsp; '
+                f'🔘 grisé = en cours &nbsp;|&nbsp; ⬜ = pas encore commencé<br>'
+                f'Seuil de validation : {SEUIL_VALIDATION} bonnes évals minimum par niveau'
+                f'</div>',
                 unsafe_allow_html=True
             )
 
