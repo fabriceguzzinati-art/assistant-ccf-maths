@@ -14,8 +14,6 @@ import requests
 from datetime import datetime
 import json
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
-
 st.markdown("""
     <style>
     /* Arrondir les boutons et les boites */
@@ -97,7 +95,6 @@ def lire_progression_grist(code_eleve: str) -> list:
 
 # ── Banque d'exercices ────────────────────────────────────────
 
-BANQUE_DIR = os.path.join(APP_DIR, "banque")
 
 def _slug(text: str) -> str:
     text = text.replace(" ", "_").replace("—", "").replace("/", "_")
@@ -122,6 +119,7 @@ def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+BANQUE_DIR = os.path.join(APP_DIR, "banque")
 
 # ============================================================
 # 1. DONNÉES OFFICIELLES — BO MATHS BAC PRO
