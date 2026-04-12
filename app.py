@@ -221,35 +221,89 @@ def build_contexte_filiere(filiere):
     return f"\nFilière : {filiere}\n" if filiere else ""
 
 
-def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere=""):
+SYSTEM_EXERCICES = """\
+Tu es un professeur expert en pédagogie différenciée pour lycée professionnel (Bac Pro).
+Tes élèves ont un niveau en mathématiques fragile : tes énoncés sont toujours clairs, bienveillants et ancrés dans des contextes professionnels concrets.
+
+En fonction du niveau de difficulté demandé, adapte PRÉCISÉMENT la structure suivante :
+
+━━ DÉBUTANT ━━
+- Questions très guidées, découpées en micro-étapes (une opération par question).
+- Résultats intermédiaires fournis pour permettre de continuer même en cas d'erreur.
+- Vocabulaire ultra-simplifié, aucun terme technique sans définition immédiate.
+- Rappel de cours détaillé avec exemple résolu pas à pas.
+- Exercice d'application : calcul direct, données déjà extraites.
+- Mise en situation : contexte simple, une seule inconnue.
+- Pas de problème ouvert — remplacer par une question bilan guidée.
+
+━━ MOYEN ━━
+- Questions semi-guidées avec quelques repères (formule rappelée, première étape donnée).
+- Rappel de cours synthétique avec un exemple.
+- Exercice d'application : 3 questions progressives.
+- Mise en situation professionnelle simple avec tableau de données.
+- Problème ouvert court (1 question de synthèse guidée).
+
+━━ CONFIRMÉ ━━
+- Questions autonomes, aucune aide dans l'énoncé.
+- Rappel de cours en points clés uniquement (pas d'exemple résolu).
+- Exercice d'application : questions progressives avec barème.
+- Mise en situation professionnelle réaliste et complète.
+- Problème ouvert avec raisonnement attendu.
+
+━━ EXPERT ━━
+- Questions ouvertes sans guidage, transfert de compétences vers une situation nouvelle.
+- Rappel de cours : absent ou très succinct (2 lignes max).
+- Exercice d'application : données brutes à extraire soi-même.
+- Mise en situation complexe avec plusieurs informations à croiser.
+- Problème ouvert ambitieux — mais toujours réaliste pour un élève de Bac Pro.
+
+Dans tous les cas : JAMAIS de calcul hors programme Bac Pro, JAMAIS de piège inutile.
+La correction détaillée doit être adaptée au même niveau (plus ou moins de détails selon le niveau).
+
+Structure de sortie (Markdown) :
+1. **Rappel de cours** (adapté au niveau)
+2. **Exercice d'application** (adapté au niveau)
+3. **Exercice de mise en situation** (contexte professionnel de la filière)
+4. **Problème ouvert** (adapté au niveau)
+5. **Corrections détaillées** (avec le niveau de détail approprié)\
+"""
+
+# Descriptifs courts affichés dans l'UI
+NIVEAUX_DIFFICULTE = {
+    "🟢 Débutant":  "Questions très guidées, micro-étapes, résultats intermédiaires donnés.",
+    "🟡 Moyen":     "Semi-guidé, quelques repères fournis, mise en situation simple.",
+    "🟠 Confirmé":  "Autonome, mise en situation réaliste, raisonnement attendu.",
+    "🔴 Expert":    "Transfert de compétences, données brutes, problème ouvert ambitieux.",
+}
+
+
+def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere="", difficulte="🟡 Moyen"):
     ctx = build_contexte_filiere(filiere)
-    return f"""Tu es un professeur expert en pédagogie différenciée.
-
-Génère un contenu pédagogique complet pour :
-- Niveau : {niveau} ({categorie})
-- Matière : {matiere}
-- Chapitre : {chapitre}
-{ctx}
-- Instructions : {consignes or 'Aucune'}
-
-STRUCTURE :
-1. **Rappel de cours** — points clés (5 à 8 lignes)
-2. **Exercice d'application directe** — 3 questions progressives avec barème
-3. **Exercice de mise en situation** — contexte professionnel lié à la filière
-4. **Problème ouvert** — question de synthèse
-
-Réponds en Markdown avec titres clairs. Inclus les corrections détaillées à la fin."""
+    diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
+    user = (
+        f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
+        f"- Niveau scolaire : {niveau} ({categorie})\n"
+        f"- Matière : {matiere}\n"
+        f"- Chapitre : {chapitre}\n"
+        f"{ctx}"
+        f"- Instructions : {consignes or 'Aucune'}\n\n"
+        f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
+    )
+    return SYSTEM_EXERCICES, user
 
 
-def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True):
+def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
     bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\nCorrection complète de chaque question.\n" if avec_corrige else ""
+    chap_a_label = f"Partie A : {chapitre}"
+    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème mathématique complémentaire au choix"
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO.
 
 Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 - Niveau : {niveau} ({categorie})
 - Matière : {matiere}
-- Chapitre du BO : {chapitre}
+- {chap_a_label}
+- {chap_b_label}
 {ctx}
 - Instructions : {consignes or 'Aucune'}
 
@@ -262,6 +316,7 @@ Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 5. Les questions servent à répondre progressivement à la problématique.
 6. La dernière question COMMUNIQUER demande de répondre à la problématique initiale.
 7. L'évaluation est sur 10 points (pas 20), répartis en niveaux 0/1/2 par compétence.
+8. Les deux parties s'appuient sur LA MÊME mise en situation professionnelle.
 
 ## STRUCTURE À RESPECTER :
 
@@ -271,7 +326,7 @@ Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
 ### PROBLÉMATIQUE
 **[UNE SEULE question centrale se terminant par ?]**
 
-### PARTIE A — [Titre lié au premier thème mathématique]
+### PARTIE A — [Titre lié à : {chapitre}]
 
 1. **S'APPROPRIER**
 - [question]
@@ -297,23 +352,26 @@ ______
 - Répondre à la [première partie de la] problématique.
 ______
 
-### PARTIE B — [Titre lié au second thème mathématique]
+### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles, questions numérotées avec compétences]
 {bloc_corrige}
 Réponds entièrement en Markdown."""
 
 
-def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True):
+def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
     nom_filiere = CONTEXTES_FILIERES[filiere]["nom_complet"] if filiere in CONTEXTES_FILIERES else filiere
     bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*\n[Correction complète question par question avec justifications]\n" if avec_corrige else ""
+    chap_a_label = f"Partie A : {chapitre}"
+    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème mathématique complémentaire en cohérence avec la situation"
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO de l'Éducation Nationale.
 
 Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
 - Niveau : {niveau} ({categorie})
 - Filière : {nom_filiere}
 - Matière : {matiere}
-- Chapitre du BO : {chapitre}
+- {chap_a_label}
+- {chap_b_label}
 - Situation d'évaluation n° : {num_sit}
 - Durée : {duree}
 {ctx}
@@ -329,6 +387,7 @@ Génère un SUJET DE CCF OFFICIEL complet et prêt à imprimer pour :
 6. La dernière question **COMMUNIQUER** demande explicitement de répondre à la problématique initiale.
 7. Quand une question nécessite la calculatrice ou un outil, ajouter : 🛎️ APPELER L'EXAMINATEUR
 8. L'évaluation est notée sur /10 avec niveaux d'acquisition 0/1/2 par compétence (PAS de barème en points).
+9. Les deux parties s'appuient sur LA MÊME mise en situation professionnelle.
 
 ## STRUCTURE OBLIGATOIRE :
 
@@ -341,7 +400,7 @@ L'usage de la calculatrice avec mode examen actif est autorisé.
 ### PROBLÉMATIQUE
 **[Question centrale unique se terminant par ? — clairement encadrée]**
 
-### PARTIE A — [Titre mathématique]
+### PARTIE A — [Titre lié à : {chapitre}]
 
 1. **S'APPROPRIER**
 - [question d'appropriation de la situation]
@@ -367,7 +426,7 @@ ______
 - Répondre à la première partie de la problématique.
 ______
 
-### PARTIE B — [Second thème mathématique]
+### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles]
 {bloc_corrige}
 Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
@@ -397,26 +456,27 @@ Réponds en Markdown avec sections claires."""
 # 4. APPEL API GEMINI
 # ============================================================
 
-def call_gemini(api_key, prompt, image=None, max_retries=2):
+def call_gemini(api_key, prompt, image=None):
     genai.configure(api_key=api_key.strip())
-    model = genai.GenerativeModel(model_name="gemini-2.0-flash")
-    content = [prompt, PIL.Image.open(image)] if image else prompt
-    for attempt in range(max_retries + 1):
-        try:
-            response = model.generate_content(content)
-            if response and response.text:
-                return response.text
-            return "L'IA a répondu mais le texte est vide. Réessayez."
-        except Exception as e:
-            err = str(e)
-            if "429" in err:
-                if attempt < max_retries:
-                    wait = 60 * (attempt + 1)
-                    st.toast(f"⏳ Quota 429 — nouvelle tentative dans {wait} s…")
-                    time.sleep(wait)
-                    continue
-                raise
-            raise
+    # Gestion du tuple (system_instruction, user_prompt) retourné par build_prompt_exercices
+    if isinstance(prompt, tuple):
+        system_instruction, user_prompt = prompt
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=system_instruction
+        )
+        content = user_prompt
+    else:
+        model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+        content = prompt
+    if image:
+        img = PIL.Image.open(image)
+        response = model.generate_content([content, img])
+    else:
+        response = model.generate_content(content)
+    if response and response.text:
+        return response.text
+    return "L'IA a répondu mais le texte est vide. Réessayez."
 
 
 # ============================================================
@@ -1044,15 +1104,29 @@ with tab_gen:
     consignes = st.text_area("Consignes particulières (optionnel)", height=80, key="gen_consignes",
                               placeholder="Ex : 3 exercices, niveau accessible, inclure un graphique…")
 
+    # ── Niveau de difficulté ──────────────────────────────────
+    st.markdown("**🎯 Niveau de difficulté (pédagogie différenciée)**")
+    difficulte = st.select_slider(
+        "Niveau",
+        options=list(NIVEAUX_DIFFICULTE.keys()),
+        value="🟡 Moyen",
+        key="gen_diff",
+        label_visibility="collapsed"
+    )
+    st.markdown(
+        f'<div class="info-box">{difficulte} — {NIVEAUX_DIFFICULTE[difficulte]}</div>',
+        unsafe_allow_html=True
+    )
+
     if st.button("✨ Générer le sujet", type="primary", use_container_width=True):
         if not cle_api:
             st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
         else:
             with st.spinner("⏳ Génération en cours…"):
                 try:
-                    res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere))
+                    res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
                     st.session_state.generated_md = res
-                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere}
+                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere, "difficulte": difficulte}
                     st.success("✅ Sujet généré !")
                 except Exception as e:
                     if "429" in str(e):
@@ -1070,9 +1144,12 @@ with tab_gen:
         )
         if m.get("filiere"):
             badges += f'<span class="badge">🏢 {m["filiere"]}</span>'
+        if m.get("difficulte"):
+            badges += f'<span class="badge">{m["difficulte"]}</span>'
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_md)
 
+        titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
         with c1:
             st.download_button("📥 .md", st.session_state.generated_md,
@@ -1082,7 +1159,7 @@ with tab_gen:
                                file_name="sujet.txt", mime="text/plain", key="dl1_txt")
         with c3:
             st.download_button("📝 .docx",
-                markdown_to_docx(st.session_state.generated_md, f"Sujet — {m.get('matiere','')} {m.get('niveau','')}"),
+                markdown_to_docx(st.session_state.generated_md, titre_doc),
                 file_name="sujet.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 key="dl1_docx")
@@ -1124,9 +1201,30 @@ with tab_ccf:
 
     with col2:
         ccf_mat = st.selectbox("Matière", MATIERES, key="ccf_mat")
-        ccf_chap = st.selectbox("Chapitre (BO)", get_chapitres(ccf_mat, ccf_niv, ccf_cat), key="ccf_chap")
         ccf_duree = st.selectbox("Durée de l'épreuve", ["30 min", "45 min", "1h00", "1h30", "2h00"], index=1, key="ccf_duree")
         num_sit = st.number_input("N° de situation CCF", min_value=1, max_value=3, value=1, step=1, key="ccf_num_sit")
+
+    # ── Chapitres ────────────────────────────────────────────
+    st.markdown("**📖 Chapitres évalués**")
+    chapitres_dispo = get_chapitres(ccf_mat, ccf_niv, ccf_cat)
+    col_a, col_b = st.columns(2)
+    with col_a:
+        ccf_chap = st.selectbox("Chapitre — Partie A", chapitres_dispo, key="ccf_chap")
+    with col_b:
+        double_chap = st.checkbox("Ajouter un 2ème chapitre (Partie B)", key="ccf_double_chap")
+        if double_chap:
+            chapitres_b = [c for c in chapitres_dispo if c != ccf_chap]
+            ccf_chap_b = st.selectbox("Chapitre — Partie B", chapitres_b, key="ccf_chap_b")
+        else:
+            ccf_chap_b = ""
+
+    if double_chap and ccf_chap_b:
+        st.markdown(
+            f'<div class="info-box">📐 <strong>Partie A :</strong> {ccf_chap} &nbsp;|&nbsp; '
+            f'<strong>Partie B :</strong> {ccf_chap_b}<br>'
+            f'Les deux parties s\'appuieront sur la même situation professionnelle.</div>',
+            unsafe_allow_html=True
+        )
 
     avec_corrige = st.checkbox(
         "📝 Inclure le corrigé détaillé *(document professeur)*",
@@ -1151,21 +1249,26 @@ with tab_ccf:
                         prompt = build_prompt_ccf_officiel(
                             ccf_niv, ccf_cat, ccf_mat, ccf_chap,
                             ccf_consignes, ccf_filiere, ccf_duree, str(num_sit),
-                            avec_corrige=avec_corrige
+                            avec_corrige=avec_corrige,
+                            chapitre_b=ccf_chap_b
                         )
                     else:
                         prompt = build_prompt_ccf_entrainement(
                             ccf_niv, ccf_cat, ccf_mat, ccf_chap,
                             ccf_consignes, ccf_filiere,
-                            avec_corrige=avec_corrige
+                            avec_corrige=avec_corrige,
+                            chapitre_b=ccf_chap_b
                         )
                     res = call_gemini(cle_api, prompt)
                     if res:
                         st.session_state.generated_ccf_md = res
+                        chap_label = ccf_chap
+                        if ccf_chap_b:
+                            chap_label += f" + {ccf_chap_b}"
                         st.session_state.meta_ccf = {
                             "niveau": ccf_niv,
                             "matiere": ccf_mat,
-                            "chapitre": ccf_chap,
+                            "chapitre": chap_label,
                             "filiere": ccf_filiere,
                             "mode": "Officiel" if is_officiel else "Entraînement",
                             "num_situation": str(num_sit),
