@@ -292,6 +292,240 @@ def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, fili
     return SYSTEM_EXERCICES, user
 
 
+# ============================================================
+# CO-INTERVENTION — Référentiels pro par filière
+# ============================================================
+
+THEMES_COINTERVENTION = {
+    "MCVB": {
+        "nom_complet": "Métiers du Commerce et de la Vente — option B",
+        "themes": {
+            "Prix d'achat, prix de vente et marge commerciale": {
+                "formules": "Marge = PV HT − PA HT  ·  Taux de marge = Marge / PA HT  ·  Taux de marque = Marge / PV HT",
+                "contexte": "Un commercial calcule sa marge sur un produit, compare deux fournisseurs.",
+                "documents": "bon de commande, catalogue fournisseur, tableau comparatif"
+            },
+            "Taux de remise et prix remisé": {
+                "formules": "Prix remisé = Prix initial × (1 − taux)  ·  Montant remise = Prix initial × taux",
+                "contexte": "Négociation client, grille de remises selon quantité commandée.",
+                "documents": "grille tarifaire, bon de commande, facture proforma"
+            },
+            "TVA — calcul HT / TTC": {
+                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA = TTC − HT",
+                "contexte": "Établissement de devis, vérification de factures clients et fournisseurs.",
+                "documents": "facture, devis, ticket de caisse"
+            },
+            "Taux d'évolution du chiffre d'affaires": {
+                "formules": "Taux d'évolution = (VF − VI) / VI  ·  VF = VI × (1 + t)",
+                "contexte": "Évolution du CA, suivi des ventes mensuelles, comparaison N/N-1.",
+                "documents": "tableau de bord commercial, graphique de ventes"
+            },
+            "Coefficient multiplicateur": {
+                "formules": "CM = PV TTC / PA HT  ·  PV TTC = PA HT × CM",
+                "contexte": "Calcul rapide du prix de vente à partir du prix d'achat.",
+                "documents": "catalogue, liste de prix, étiquettes"
+            },
+            "Commissionnement et salaire variable": {
+                "formules": "Commission = CA réalisé × taux  ·  Salaire total = Fixe + Commission",
+                "contexte": "Calcul de la rémunération d'un commercial selon ses performances.",
+                "documents": "bulletin de salaire simplifié, tableau de suivi CA"
+            },
+            "Budget prévisionnel et écarts": {
+                "formules": "Écart = Réalisé − Prévu  ·  Taux d'écart = Écart / Prévu",
+                "contexte": "Analyse des résultats commerciaux vs objectifs fixés.",
+                "documents": "tableau de bord, fiche de suivi objectifs"
+            },
+        }
+    },
+    "MCVA": {
+        "nom_complet": "Métiers du Commerce et de la Vente — option A",
+        "themes": {
+            "TVA — calcul HT / TTC": {
+                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA = TTC − HT",
+                "contexte": "Gestion des prix en rayon, vérification des étiquettes, encaissement.",
+                "documents": "étiquettes de rayon, facture fournisseur, ticket de caisse"
+            },
+            "Coefficient multiplicateur": {
+                "formules": "CM = PV TTC / PA HT  ·  PV TTC = PA HT × CM",
+                "contexte": "Calcul du prix de vente d'un produit à partir du tarif fournisseur.",
+                "documents": "catalogue fournisseur, liste de prix magasin"
+            },
+            "Taux de marque et marge": {
+                "formules": "Taux de marque = Marge / PV HT  ·  Marge = PV HT − PA HT",
+                "contexte": "Analyse de la rentabilité d'un rayon ou d'une famille de produits.",
+                "documents": "tableau de gestion rayon, inventaire"
+            },
+            "Gestion des stocks — taux de rotation": {
+                "formules": "Taux de rotation = CA / Stock moyen  ·  Stock moyen = (SI + SF) / 2",
+                "contexte": "Suivi des entrées/sorties de marchandises, optimisation du réapprovisionnement.",
+                "documents": "bon de livraison, fiche de stock, inventaire"
+            },
+            "Taux de transformation et panier moyen": {
+                "formules": "Taux de transformation = Nb acheteurs / Nb visiteurs  ·  Panier moyen = CA / Nb acheteurs",
+                "contexte": "Analyse de la performance d'un point de vente.",
+                "documents": "comptage client, tableau de bord magasin"
+            },
+            "Surfaces et linéaires": {
+                "formules": "Surface de vente = longueur × largeur  ·  Linéaire développé = nb niveaux × longueur",
+                "contexte": "Implantation d'un rayon, calcul de la surface allouée à une famille de produits.",
+                "documents": "plan de masse, schéma d'implantation"
+            },
+            "Taux d'évolution du chiffre d'affaires": {
+                "formules": "Taux d'évolution = (CA N − CA N-1) / CA N-1",
+                "contexte": "Comparaison des performances du magasin d'une période à l'autre.",
+                "documents": "tableau de bord, rapport d'activité"
+            },
+        }
+    },
+    "AGORA": {
+        "nom_complet": "Assistance à la Gestion des Organisations",
+        "themes": {
+            "Calcul de salaire brut et net": {
+                "formules": "Salaire brut = Taux horaire × Nb heures  ·  Salaire net = Brut − Cotisations salariales",
+                "contexte": "Aide à la paie, vérification de bulletins de salaire simplifiés.",
+                "documents": "bulletin de salaire, contrat de travail, fiche de pointage"
+            },
+            "TVA — calcul HT / TTC": {
+                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA collectée − TVA déductible",
+                "contexte": "Établissement et vérification de factures, déclaration de TVA simplifiée.",
+                "documents": "facture, bon de commande, déclaration TVA"
+            },
+            "Intérêts simples et emprunts": {
+                "formules": "Intérêts = Capital × taux × durée  ·  Montant remboursé = Capital + Intérêts",
+                "contexte": "Calcul du coût d'un emprunt bancaire pour financer du matériel.",
+                "documents": "tableau d'amortissement simplifié, offre de prêt"
+            },
+            "Budget et suivi des dépenses": {
+                "formules": "Solde = Recettes − Dépenses  ·  Taux de consommation = Dépenses / Budget prévu",
+                "contexte": "Gestion du budget d'une organisation, suivi des dépenses réelles vs prévisions.",
+                "documents": "tableau de bord budgétaire, relevé bancaire"
+            },
+            "Cotisations sociales": {
+                "formules": "Cotisation = Base × taux  ·  Part salariale et part patronale",
+                "contexte": "Compréhension de la fiche de paie, calcul des charges sociales.",
+                "documents": "bulletin de salaire, tableau des taux de cotisation"
+            },
+            "Taux d'évolution et indices": {
+                "formules": "Taux d'évolution = (VF − VI) / VI  ·  Indice = (Valeur / Valeur de base) × 100",
+                "contexte": "Suivi de l'évolution des indicateurs RH (absentéisme, masse salariale).",
+                "documents": "tableau de bord RH, rapport annuel"
+            },
+            "Facturation et remises": {
+                "formules": "Montant net = Montant brut × (1 − remise)  ·  Escompte = Montant × taux",
+                "contexte": "Établissement de devis et factures, calcul de remises et d'escomptes.",
+                "documents": "devis, facture, bon de commande"
+            },
+        }
+    },
+    "ASSP": {
+        "nom_complet": "Accompagnement, Soins et Services à la Personne",
+        "themes": {
+            "Calcul de doses médicamenteuses": {
+                "formules": "Dose à administrer = Dose prescrite / Concentration  ·  Règle de trois",
+                "contexte": "Préparation de médicaments, dosages pour les résidents.",
+                "documents": "fiche de prescription, protocole de soins"
+            },
+            "Calcul de dilutions": {
+                "formules": "C1 × V1 = C2 × V2  ·  Volume à prélever = (C2 × V2) / C1",
+                "contexte": "Préparation de solutions désinfectantes, produits d'hygiène dilués.",
+                "documents": "protocole d'hygiène, fiche technique produit"
+            },
+            "Gestion du temps et plannings": {
+                "formules": "Durée = Heure de fin − Heure de début  ·  Répartition horaire en pourcentage",
+                "contexte": "Organisation des tournées d'aide à domicile, plannings.",
+                "documents": "planning hebdomadaire, feuille de route"
+            },
+            "Calcul de coûts de prise en charge": {
+                "formules": "Coût total = Tarif horaire × Nb heures  ·  Reste à charge = Coût − Aides",
+                "contexte": "Estimation du coût d'une prise en charge, calcul des aides financières.",
+                "documents": "devis de prise en charge, dossier APA"
+            },
+            "IMC et indicateurs de santé": {
+                "formules": "IMC = Poids (kg) / Taille² (m)  ·  Interprétation des valeurs normales",
+                "contexte": "Suivi nutritionnel des résidents, surveillance du poids.",
+                "documents": "fiche de suivi patient, courbe de poids"
+            },
+            "Statistiques sur données de santé": {
+                "formules": "Moyenne, médiane, étendue  ·  Lecture et construction de graphiques",
+                "contexte": "Analyse des données de suivi (tension, glycémie, fréquence cardiaque).",
+                "documents": "fiche de surveillance, graphique de suivi"
+            },
+        }
+    },
+}
+
+SYSTEM_COINTERVENTION = """\
+Tu es un professeur qui anime une séance de CO-INTERVENTION entre mathématiques et matière professionnelle en Bac Pro.
+La co-intervention relie explicitement les notions mathématiques aux situations professionnelles réelles du référentiel.
+
+Tes exercices doivent TOUJOURS :
+- Partir d'un document professionnel réaliste (facture, bon de commande, bulletin de salaire, planning, étiquette...)
+- Utiliser le vocabulaire professionnel exact de la filière
+- Montrer explicitement POURQUOI les maths sont utiles dans le métier
+- Être ancrés dans des situations que l'élève vivra réellement en stage ou en emploi
+- Rappeler la formule mathématique dans son contexte pro (jamais de façon abstraite)
+
+Structure de sortie (Markdown) :
+
+### 📄 Document professionnel
+[Reproduire un document réaliste avec données chiffrées : facture, tableau, bulletin, bon de commande...]
+
+### 🎯 Mise en situation
+[2-3 lignes de contexte professionnel concret — qui fait quoi, dans quelle entreprise]
+
+### 📐 Rappel de la formule
+[Formule + signification de chaque terme dans le vocabulaire professionnel]
+
+### ✏️ Exercices
+[3 à 5 questions progressives, du plus guidé au plus autonome]
+
+### ✅ Corrigé détaillé
+[Correction complète avec justifications dans le vocabulaire professionnel]\
+"""
+
+
+def build_prompt_cointervention(niveau, filiere, theme, consignes, difficulte="🟡 Moyen"):
+    """Construit le prompt pour un exercice de co-intervention."""
+    data_filiere = THEMES_COINTERVENTION.get(filiere, {})
+    nom_filiere  = data_filiere.get("nom_complet", filiere)
+    data_theme   = data_filiere.get("themes", {}).get(theme, {})
+    formules     = data_theme.get("formules", "")
+    contexte     = data_theme.get("contexte", "")
+    documents    = data_theme.get("documents", "")
+    diff_label   = difficulte.split(" ", 1)[-1].upper()
+    conseils_diff = {
+        "DÉBUTANT":  "formules rappelées, calculs en une étape, données déjà extraites du document.",
+        "MOYEN":     "quelques étapes guidées, document partiellement exploité.",
+        "CONFIRMÉ":  "questions autonomes, document complet à analyser.",
+        "EXPERT":    "situation nouvelle, données brutes, raisonnement et conclusion attendus.",
+    }.get(diff_label, "")
+
+    user = (
+        f"Génère un exercice de CO-INTERVENTION de niveau **{diff_label}** pour :\n"
+        f"- Filière : {nom_filiere}\n"
+        f"- Niveau scolaire : {niveau} (Bac Pro)\n"
+        f"- Thème : {theme}\n"
+        f"- Formules clés : {formules}\n"
+        f"- Contexte professionnel : {contexte}\n"
+        f"- Documents supports : {documents}\n"
+        f"- Instructions complémentaires : {consignes or 'Aucune'}\n\n"
+        f"Niveau {diff_label} : {conseils_diff}"
+    )
+    return SYSTEM_COINTERVENTION, user
+    ctx = build_contexte_filiere(filiere)
+    diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
+    user = (
+        f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
+        f"- Niveau scolaire : {niveau} ({categorie})\n"
+        f"- Matière : {matiere}\n"
+        f"- Chapitre : {chapitre}\n"
+        f"{ctx}"
+        f"- Instructions : {consignes or 'Aucune'}\n\n"
+        f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
+    )
+    return SYSTEM_EXERCICES, user
+
+
 def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
     bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\nCorrection complète de chaque question.\n" if avec_corrige else ""
@@ -1021,7 +1255,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── SESSION STATE ─────────────────────────────────────────────
-for key in ["generated_md", "generated_ccf_md", "correction_md", "meta_gen", "meta_ccf"]:
+for key in ["generated_md", "generated_ccf_md", "correction_md", "meta_gen", "meta_ccf", "generated_coint_md"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1069,9 +1303,10 @@ st.title("🎓 Assistant Professeur IA")
 st.caption("Génération de sujets · CCF Bac Pro · Correction de copies · Export Word")
 
 # ── ONGLETS ──────────────────────────────────────────────────
-tab_gen, tab_ccf, tab_correction, tab_export = st.tabs([
+tab_gen, tab_ccf, tab_coint, tab_correction, tab_export = st.tabs([
     "📝 Générateur de Sujets",
     "🎯 Sujets CCF",
+    "🔗 Co-intervention",
     "📸 Correction de Copies",
     "📊 Export Pronote"
 ])
@@ -1338,7 +1573,111 @@ with tab_ccf:
 
 
 # ─────────────────────────────────────────────────────────────
-# ONGLET 3 — CORRECTION
+# ONGLET 3 — CO-INTERVENTION
+# ─────────────────────────────────────────────────────────────
+with tab_coint:
+    st.subheader("🔗 Co-intervention — Maths & Matières Professionnelles")
+    st.markdown(
+        '<div class="info-box">🤝 <strong>Co-intervention</strong> — Exercices qui relient '
+        'les mathématiques aux situations professionnelles réelles du référentiel. '
+        'Chaque exercice part d\'un document pro concret (facture, bulletin, bon de commande…).</div>',
+        unsafe_allow_html=True
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        coint_fil = st.selectbox(
+            "Filière",
+            list(THEMES_COINTERVENTION.keys()),
+            key="coint_fil",
+            format_func=lambda k: f"{k} — {THEMES_COINTERVENTION[k]['nom_complet']}"
+        )
+        coint_niv = st.selectbox(
+            "Classe",
+            ["2nde Pro", "1ère Pro", "Term Pro"],
+            key="coint_niv"
+        )
+    with col2:
+        themes_dispo = list(THEMES_COINTERVENTION[coint_fil]["themes"].keys())
+        coint_theme = st.selectbox("Thème de co-intervention", themes_dispo, key="coint_theme")
+
+        # Afficher les infos du thème sélectionné
+        data_th = THEMES_COINTERVENTION[coint_fil]["themes"][coint_theme]
+        st.markdown(
+            f'<div class="info-box" style="font-size:.82rem">'
+            f'📐 <strong>Formules :</strong> {data_th["formules"]}<br>'
+            f'📄 <strong>Documents :</strong> {data_th["documents"]}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("**🎯 Niveau de difficulté**")
+    coint_diff = st.select_slider(
+        "Niveau co-intervention",
+        options=list(NIVEAUX_DIFFICULTE.keys()),
+        value="🟡 Moyen",
+        key="coint_diff",
+        label_visibility="collapsed"
+    )
+    st.markdown(
+        f'<div class="info-box">{coint_diff} — {NIVEAUX_DIFFICULTE[coint_diff]}</div>',
+        unsafe_allow_html=True
+    )
+
+    coint_consignes = st.text_area(
+        "Consignes particulières (optionnel)", height=80, key="coint_consignes",
+        placeholder="Ex : Utiliser une facture de fournitures de bureau, insister sur le calcul de TVA à 20%…"
+    )
+
+    if st.button("🔗 Générer l'exercice de co-intervention", type="primary", use_container_width=True):
+        if not cle_api:
+            st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
+        else:
+            with st.spinner("⏳ Génération de l'exercice co-intervention…"):
+                try:
+                    sys_instr, user_prompt = build_prompt_cointervention(
+                        coint_niv, coint_fil, coint_theme, coint_consignes, coint_diff
+                    )
+                    res = call_gemini(cle_api, (sys_instr, user_prompt))
+                    st.session_state.generated_coint_md = res
+                    st.success("✅ Exercice co-intervention généré !")
+                except Exception as e:
+                    if "429" in str(e):
+                        st.error("⏱️ Quota dépassé (429). Attendez 1 minute et réessayez.")
+                    else:
+                        st.error(f"Erreur API : {e}")
+
+    if st.session_state.generated_coint_md:
+        nom_filiere = THEMES_COINTERVENTION[coint_fil]["nom_complet"]
+        st.divider()
+        badges = (
+            f'<span class="badge">🔗 Co-intervention</span>'
+            f'<span class="badge">🏢 {coint_fil}</span>'
+            f'<span class="badge">🎓 {coint_niv}</span>'
+            f'<span class="badge">📐 {coint_theme[:40]}</span>'
+            f'<span class="badge">{coint_diff}</span>'
+        )
+        st.markdown(badges, unsafe_allow_html=True)
+        st.markdown(st.session_state.generated_coint_md)
+
+        titre_doc = f"CoIntervention_{coint_fil}_{coint_niv}_{coint_theme[:30]}"
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.download_button("📥 .md", st.session_state.generated_coint_md,
+                               file_name=f"{titre_doc}.md", mime="text/markdown", key="dl_coint_md")
+        with c2:
+            st.download_button("📄 .txt", st.session_state.generated_coint_md,
+                               file_name=f"{titre_doc}.txt", mime="text/plain", key="dl_coint_txt")
+        with c3:
+            st.download_button("📝 .docx",
+                markdown_to_docx(st.session_state.generated_coint_md,
+                                 f"Co-intervention — {coint_fil} · {coint_theme}"),
+                file_name=f"{titre_doc}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key="dl_coint_docx")
+
+
+# ─────────────────────────────────────────────────────────────
+# ONGLET 4 — CORRECTION
 # ─────────────────────────────────────────────────────────────
 with tab_correction:
     st.subheader("📸 Correction IA de Copies par Photo")
