@@ -10,9 +10,218 @@ from docx.oxml import OxmlElement
 import re
 import os
 import time
+import requests
+from datetime import datetime
+import json
+
+st.markdown("""
+    <style>
+    /* Arrondir les boutons et les boites */
+    .stButton>button {
+        border-radius: 20px;
+        border: 1px solid #4CAF50;
+        transition: all 0.3s;
+    }
+    .stButton>button:hover {
+        transform: scale(1.05);
+        background-color: #4CAF50;
+        color: white;
+    }
+    /* Style pour les cartes d'exercices */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 15px;
+        background-color: #f0f2f6; /* Ou sombre si tu préfères */
+        padding: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ============================================================
+# 0. INTÉGRATION GRIST — Suivi des élèves
+# ============================================================
+
+def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
+    """Envoie une ligne dans Grist. Silencieux en cas d'erreur."""
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return
+        now = datetime.now()
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"records": [{"fields": {
+            "code_eleve":        str(code_eleve),
+            "date":              now.strftime("%Y-%m-%d"),
+            "heure":             now.strftime("%H:%M"),
+            "type_activite":     type_activite,
+            "classe":            str(meta.get("niveau", "")),
+            "filiere":           str(meta.get("filiere", "")),
+            "matiere":           str(meta.get("matiere", "")),
+            "chapitre":          str(meta.get("chapitre", "")),
+            "niveau_difficulte": str(meta.get("difficulte", "")),
+            "auto_evaluation":   str(auto_evaluation),
+            "source":            str(meta.get("source", "Gemini")),
+        }}]}
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass
+
+
+def lire_progression_grist(code_eleve: str) -> list:
+    """
+    Lit toutes les lignes Grist pour un élève donné.
+    Retourne une liste de dicts, ou [] en cas d'erreur.
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id or not code_eleve:
+            return []
+        import urllib.parse
+        filtre = urllib.parse.quote(json.dumps({"code_eleve": [code_eleve]}))
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records?filter={filtre}"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers, timeout=8)
+        if resp.status_code == 200:
+            records = resp.json().get("records", [])
+            return [r["fields"] for r in records]
+    except Exception:
+        pass
+    return []
+
+
+# ── Banque d'exercices ────────────────────────────────────────
+
+
+def _slug(text: str) -> str:
+    text = text.replace(" ", "_").replace("—", "").replace("/", "_")
+    text = re.sub(r"[^a-zA-Z0-9_\-àâéèêëîïôùûüç]", "", text)
+    return text[:60]
+
+
+def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
+    """Charge les sujets disponibles pour une combinaison donnée."""
+    diff_label = difficulte.split(" ", 1)[-1]
+    path = os.path.join(
+        BANQUE_DIR,
+        f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{_slug(diff_label)}.json"
+    )
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+# ============================================================
+# GAMIFICATION — Système de boss et de niveaux
+# ============================================================
+
+SEUIL_VALIDATION  = 2   # bonnes évals minimum pour valider un niveau
+ORDRE_NIVEAUX_DIFF = ["🟢 Débutant", "🟡 Moyen", "🟠 Confirmé", "🔴 Expert"]
+
+# Mascotte de chaque niveau — affiché dans l'onglet progression
+MASCOTTES = {
+    "🟢 Débutant":  {"animal": "🐣", "nom": "Poussin",  "couleur": "#22c55e"},
+    "🟡 Moyen":     {"animal": "🦊", "nom": "Renard",   "couleur": "#f59e0b"},
+    "🟠 Confirmé":  {"animal": "🦁", "nom": "Lion",     "couleur": "#f97316"},
+    "🔴 Expert":    {"animal": "🐉", "nom": "Dragon",   "couleur": "#ef4444"},
+}
+
+# Message d'encouragement affiché quand un boss est vaincu
+MESSAGES_VICTOIRE = {
+    "🟢 Débutant":  "🐣 Poussin vaincu ! Tu maîtrises les bases — le Renard t'attend !",
+    "🟡 Moyen":     "🦊 Renard vaincu ! Tu commences à être redoutable — au Lion !",
+    "🟠 Confirmé":  "🦁 Lion vaincu ! Tu es vraiment solide — ose affronter le Dragon !",
+    "🔴 Expert":    "🐉 Dragon vaincu ! Tu es un expert — bravo, c'est le sommet !",
+}
+
+
+def calculer_progression(records: list, chapitre: str) -> dict:
+    """
+    Pour un chapitre donné, retourne pour chaque niveau :
+    - nb_bonnes    : nombre de bonnes évaluations (😊 ou 🌟)
+    - valide       : True si nb_bonnes >= SEUIL_VALIDATION
+    - boss_vaincu  : True si une éval de type "Boss" a été réussie sur ce niveau
+    """
+    from collections import defaultdict
+    bonnes   = defaultdict(int)
+    boss_ok  = set()
+
+    for r in records:
+        if r.get("chapitre", "") != chapitre:
+            continue
+        diff   = r.get("niveau_difficulte", "")
+        eval_v = r.get("auto_evaluation", "")
+        type_a = r.get("type_activite", "")
+
+        if eval_v in ("😊 Bien", "🌟 Très bien"):
+            if "Boss" in type_a:
+                boss_ok.add(diff)
+            else:
+                bonnes[diff] += 1
+
+    result = {}
+    for diff in ORDRE_NIVEAUX_DIFF:
+        nb    = bonnes.get(diff, 0)
+        valid = nb >= SEUIL_VALIDATION
+        result[diff] = {
+            "nb_bonnes":   nb,
+            "valide":      valid,
+            "boss_vaincu": diff in boss_ok,
+        }
+    return result
+
+
+def niveau_suivant(diff: str) -> str | None:
+    """Retourne le niveau suivant, ou None si on est au maximum."""
+    idx = ORDRE_NIVEAUX_DIFF.index(diff)
+    if idx < len(ORDRE_NIVEAUX_DIFF) - 1:
+        return ORDRE_NIVEAUX_DIFF[idx + 1]
+    return None
+
+
+def build_prompt_boss(niveau, filiere, chapitre, niveau_valide):
+    """
+    Génère un CCF-Boss : sujet complet, situation complexe,
+    SANS corrigé (l'élève doit se corriger seul ou avec le prof).
+    """
+    ctx = build_contexte_filiere(filiere)
+    diff_label = niveau_valide.split(" ", 1)[-1].upper()
+    mascotte   = MASCOTTES[niveau_valide]["animal"]
+    return f"""Tu es un professeur expert en Bac Pro qui crée un DÉFI BOSS pour un élève.
+
+L'élève vient de valider le niveau {diff_label} sur le chapitre "{chapitre}".
+Il doit maintenant affronter le Boss {mascotte} pour passer au niveau suivant.
+
+Crée un sujet d'exercices BOSS pour :
+- Niveau scolaire : {niveau} (Bac Pro)
+- Matière : Mathématiques
+- Chapitre : {chapitre}
+- Difficulté : niveau {diff_label} AVANCÉ — plus ambitieux que d'habitude
+{ctx}
+
+RÈGLES DU BOSS :
+- Mise en situation professionnelle réaliste et complète, sans données guidées.
+- 4 à 5 questions progressives sans aide, sans formules rappelées.
+- La dernière question demande un raisonnement complet et une conclusion rédigée.
+- PAS DE CORRIGÉ — l'élève doit s'auto-corriger ou demander au professeur.
+- Ton encourageant mais exigeant : c'est un défi, pas un exercice ordinaire.
+
+Commence le sujet par :
+### ⚔️ DÉFI BOSS — {mascotte} {MASCOTTES[niveau_valide]["nom"]}
+*Prouve que tu maîtrises vraiment ce chapitre !*
+
+Réponds entièrement en Markdown."""
 
 # Chemin absolu du dossier contenant app.py — utilisé pour trouver les images
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+BANQUE_DIR = os.path.join(APP_DIR, "banque")
 
 # ============================================================
 # 1. DONNÉES OFFICIELLES — BO MATHS BAC PRO
@@ -278,240 +487,6 @@ NIVEAUX_DIFFICULTE = {
 
 
 def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere="", difficulte="🟡 Moyen"):
-    ctx = build_contexte_filiere(filiere)
-    diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
-    user = (
-        f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
-        f"- Niveau scolaire : {niveau} ({categorie})\n"
-        f"- Matière : {matiere}\n"
-        f"- Chapitre : {chapitre}\n"
-        f"{ctx}"
-        f"- Instructions : {consignes or 'Aucune'}\n\n"
-        f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
-    )
-    return SYSTEM_EXERCICES, user
-
-
-# ============================================================
-# CO-INTERVENTION — Référentiels pro par filière
-# ============================================================
-
-THEMES_COINTERVENTION = {
-    "MCVB": {
-        "nom_complet": "Métiers du Commerce et de la Vente — option B",
-        "themes": {
-            "Prix d'achat, prix de vente et marge commerciale": {
-                "formules": "Marge = PV HT − PA HT  ·  Taux de marge = Marge / PA HT  ·  Taux de marque = Marge / PV HT",
-                "contexte": "Un commercial calcule sa marge sur un produit, compare deux fournisseurs.",
-                "documents": "bon de commande, catalogue fournisseur, tableau comparatif"
-            },
-            "Taux de remise et prix remisé": {
-                "formules": "Prix remisé = Prix initial × (1 − taux)  ·  Montant remise = Prix initial × taux",
-                "contexte": "Négociation client, grille de remises selon quantité commandée.",
-                "documents": "grille tarifaire, bon de commande, facture proforma"
-            },
-            "TVA — calcul HT / TTC": {
-                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA = TTC − HT",
-                "contexte": "Établissement de devis, vérification de factures clients et fournisseurs.",
-                "documents": "facture, devis, ticket de caisse"
-            },
-            "Taux d'évolution du chiffre d'affaires": {
-                "formules": "Taux d'évolution = (VF − VI) / VI  ·  VF = VI × (1 + t)",
-                "contexte": "Évolution du CA, suivi des ventes mensuelles, comparaison N/N-1.",
-                "documents": "tableau de bord commercial, graphique de ventes"
-            },
-            "Coefficient multiplicateur": {
-                "formules": "CM = PV TTC / PA HT  ·  PV TTC = PA HT × CM",
-                "contexte": "Calcul rapide du prix de vente à partir du prix d'achat.",
-                "documents": "catalogue, liste de prix, étiquettes"
-            },
-            "Commissionnement et salaire variable": {
-                "formules": "Commission = CA réalisé × taux  ·  Salaire total = Fixe + Commission",
-                "contexte": "Calcul de la rémunération d'un commercial selon ses performances.",
-                "documents": "bulletin de salaire simplifié, tableau de suivi CA"
-            },
-            "Budget prévisionnel et écarts": {
-                "formules": "Écart = Réalisé − Prévu  ·  Taux d'écart = Écart / Prévu",
-                "contexte": "Analyse des résultats commerciaux vs objectifs fixés.",
-                "documents": "tableau de bord, fiche de suivi objectifs"
-            },
-        }
-    },
-    "MCVA": {
-        "nom_complet": "Métiers du Commerce et de la Vente — option A",
-        "themes": {
-            "TVA — calcul HT / TTC": {
-                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA = TTC − HT",
-                "contexte": "Gestion des prix en rayon, vérification des étiquettes, encaissement.",
-                "documents": "étiquettes de rayon, facture fournisseur, ticket de caisse"
-            },
-            "Coefficient multiplicateur": {
-                "formules": "CM = PV TTC / PA HT  ·  PV TTC = PA HT × CM",
-                "contexte": "Calcul du prix de vente d'un produit à partir du tarif fournisseur.",
-                "documents": "catalogue fournisseur, liste de prix magasin"
-            },
-            "Taux de marque et marge": {
-                "formules": "Taux de marque = Marge / PV HT  ·  Marge = PV HT − PA HT",
-                "contexte": "Analyse de la rentabilité d'un rayon ou d'une famille de produits.",
-                "documents": "tableau de gestion rayon, inventaire"
-            },
-            "Gestion des stocks — taux de rotation": {
-                "formules": "Taux de rotation = CA / Stock moyen  ·  Stock moyen = (SI + SF) / 2",
-                "contexte": "Suivi des entrées/sorties de marchandises, optimisation du réapprovisionnement.",
-                "documents": "bon de livraison, fiche de stock, inventaire"
-            },
-            "Taux de transformation et panier moyen": {
-                "formules": "Taux de transformation = Nb acheteurs / Nb visiteurs  ·  Panier moyen = CA / Nb acheteurs",
-                "contexte": "Analyse de la performance d'un point de vente.",
-                "documents": "comptage client, tableau de bord magasin"
-            },
-            "Surfaces et linéaires": {
-                "formules": "Surface de vente = longueur × largeur  ·  Linéaire développé = nb niveaux × longueur",
-                "contexte": "Implantation d'un rayon, calcul de la surface allouée à une famille de produits.",
-                "documents": "plan de masse, schéma d'implantation"
-            },
-            "Taux d'évolution du chiffre d'affaires": {
-                "formules": "Taux d'évolution = (CA N − CA N-1) / CA N-1",
-                "contexte": "Comparaison des performances du magasin d'une période à l'autre.",
-                "documents": "tableau de bord, rapport d'activité"
-            },
-        }
-    },
-    "AGORA": {
-        "nom_complet": "Assistance à la Gestion des Organisations",
-        "themes": {
-            "Calcul de salaire brut et net": {
-                "formules": "Salaire brut = Taux horaire × Nb heures  ·  Salaire net = Brut − Cotisations salariales",
-                "contexte": "Aide à la paie, vérification de bulletins de salaire simplifiés.",
-                "documents": "bulletin de salaire, contrat de travail, fiche de pointage"
-            },
-            "TVA — calcul HT / TTC": {
-                "formules": "TTC = HT × (1 + taux TVA)  ·  HT = TTC / (1 + taux TVA)  ·  TVA collectée − TVA déductible",
-                "contexte": "Établissement et vérification de factures, déclaration de TVA simplifiée.",
-                "documents": "facture, bon de commande, déclaration TVA"
-            },
-            "Intérêts simples et emprunts": {
-                "formules": "Intérêts = Capital × taux × durée  ·  Montant remboursé = Capital + Intérêts",
-                "contexte": "Calcul du coût d'un emprunt bancaire pour financer du matériel.",
-                "documents": "tableau d'amortissement simplifié, offre de prêt"
-            },
-            "Budget et suivi des dépenses": {
-                "formules": "Solde = Recettes − Dépenses  ·  Taux de consommation = Dépenses / Budget prévu",
-                "contexte": "Gestion du budget d'une organisation, suivi des dépenses réelles vs prévisions.",
-                "documents": "tableau de bord budgétaire, relevé bancaire"
-            },
-            "Cotisations sociales": {
-                "formules": "Cotisation = Base × taux  ·  Part salariale et part patronale",
-                "contexte": "Compréhension de la fiche de paie, calcul des charges sociales.",
-                "documents": "bulletin de salaire, tableau des taux de cotisation"
-            },
-            "Taux d'évolution et indices": {
-                "formules": "Taux d'évolution = (VF − VI) / VI  ·  Indice = (Valeur / Valeur de base) × 100",
-                "contexte": "Suivi de l'évolution des indicateurs RH (absentéisme, masse salariale).",
-                "documents": "tableau de bord RH, rapport annuel"
-            },
-            "Facturation et remises": {
-                "formules": "Montant net = Montant brut × (1 − remise)  ·  Escompte = Montant × taux",
-                "contexte": "Établissement de devis et factures, calcul de remises et d'escomptes.",
-                "documents": "devis, facture, bon de commande"
-            },
-        }
-    },
-    "ASSP": {
-        "nom_complet": "Accompagnement, Soins et Services à la Personne",
-        "themes": {
-            "Calcul de doses médicamenteuses": {
-                "formules": "Dose à administrer = Dose prescrite / Concentration  ·  Règle de trois",
-                "contexte": "Préparation de médicaments, dosages pour les résidents.",
-                "documents": "fiche de prescription, protocole de soins"
-            },
-            "Calcul de dilutions": {
-                "formules": "C1 × V1 = C2 × V2  ·  Volume à prélever = (C2 × V2) / C1",
-                "contexte": "Préparation de solutions désinfectantes, produits d'hygiène dilués.",
-                "documents": "protocole d'hygiène, fiche technique produit"
-            },
-            "Gestion du temps et plannings": {
-                "formules": "Durée = Heure de fin − Heure de début  ·  Répartition horaire en pourcentage",
-                "contexte": "Organisation des tournées d'aide à domicile, plannings.",
-                "documents": "planning hebdomadaire, feuille de route"
-            },
-            "Calcul de coûts de prise en charge": {
-                "formules": "Coût total = Tarif horaire × Nb heures  ·  Reste à charge = Coût − Aides",
-                "contexte": "Estimation du coût d'une prise en charge, calcul des aides financières.",
-                "documents": "devis de prise en charge, dossier APA"
-            },
-            "IMC et indicateurs de santé": {
-                "formules": "IMC = Poids (kg) / Taille² (m)  ·  Interprétation des valeurs normales",
-                "contexte": "Suivi nutritionnel des résidents, surveillance du poids.",
-                "documents": "fiche de suivi patient, courbe de poids"
-            },
-            "Statistiques sur données de santé": {
-                "formules": "Moyenne, médiane, étendue  ·  Lecture et construction de graphiques",
-                "contexte": "Analyse des données de suivi (tension, glycémie, fréquence cardiaque).",
-                "documents": "fiche de surveillance, graphique de suivi"
-            },
-        }
-    },
-}
-
-SYSTEM_COINTERVENTION = """\
-Tu es un professeur qui anime une séance de CO-INTERVENTION entre mathématiques et matière professionnelle en Bac Pro.
-La co-intervention relie explicitement les notions mathématiques aux situations professionnelles réelles du référentiel.
-
-Tes exercices doivent TOUJOURS :
-- Partir d'un document professionnel réaliste (facture, bon de commande, bulletin de salaire, planning, étiquette...)
-- Utiliser le vocabulaire professionnel exact de la filière
-- Montrer explicitement POURQUOI les maths sont utiles dans le métier
-- Être ancrés dans des situations que l'élève vivra réellement en stage ou en emploi
-- Rappeler la formule mathématique dans son contexte pro (jamais de façon abstraite)
-
-Structure de sortie (Markdown) :
-
-### 📄 Document professionnel
-[Reproduire un document réaliste avec données chiffrées : facture, tableau, bulletin, bon de commande...]
-
-### 🎯 Mise en situation
-[2-3 lignes de contexte professionnel concret — qui fait quoi, dans quelle entreprise]
-
-### 📐 Rappel de la formule
-[Formule + signification de chaque terme dans le vocabulaire professionnel]
-
-### ✏️ Exercices
-[3 à 5 questions progressives, du plus guidé au plus autonome]
-
-### ✅ Corrigé détaillé
-[Correction complète avec justifications dans le vocabulaire professionnel]\
-"""
-
-
-def build_prompt_cointervention(niveau, filiere, theme, consignes, difficulte="🟡 Moyen"):
-    """Construit le prompt pour un exercice de co-intervention."""
-    data_filiere = THEMES_COINTERVENTION.get(filiere, {})
-    nom_filiere  = data_filiere.get("nom_complet", filiere)
-    data_theme   = data_filiere.get("themes", {}).get(theme, {})
-    formules     = data_theme.get("formules", "")
-    contexte     = data_theme.get("contexte", "")
-    documents    = data_theme.get("documents", "")
-    diff_label   = difficulte.split(" ", 1)[-1].upper()
-    conseils_diff = {
-        "DÉBUTANT":  "formules rappelées, calculs en une étape, données déjà extraites du document.",
-        "MOYEN":     "quelques étapes guidées, document partiellement exploité.",
-        "CONFIRMÉ":  "questions autonomes, document complet à analyser.",
-        "EXPERT":    "situation nouvelle, données brutes, raisonnement et conclusion attendus.",
-    }.get(diff_label, "")
-
-    user = (
-        f"Génère un exercice de CO-INTERVENTION de niveau **{diff_label}** pour :\n"
-        f"- Filière : {nom_filiere}\n"
-        f"- Niveau scolaire : {niveau} (Bac Pro)\n"
-        f"- Thème : {theme}\n"
-        f"- Formules clés : {formules}\n"
-        f"- Contexte professionnel : {contexte}\n"
-        f"- Documents supports : {documents}\n"
-        f"- Instructions complémentaires : {consignes or 'Aucune'}\n\n"
-        f"Niveau {diff_label} : {conseils_diff}"
-    )
-    return SYSTEM_COINTERVENTION, user
     ctx = build_contexte_filiere(filiere)
     diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
     user = (
@@ -1237,8 +1212,8 @@ def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Éta
 # ============================================================
 
 st.set_page_config(
-    page_title="Assistant Professeur IA",
-    page_icon="🎓",
+    page_title="Entraînement Bac Pro — Maths",
+    page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -1255,7 +1230,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── SESSION STATE ─────────────────────────────────────────────
-for key in ["generated_md", "generated_ccf_md", "correction_md", "meta_gen", "meta_ccf", "generated_coint_md"]:
+for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
+            "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
+            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1263,52 +1240,52 @@ for key in ["generated_md", "generated_ccf_md", "correction_md", "meta_gen", "me
 with st.sidebar:
     st.header("⚙️ Configuration")
 
-    st.subheader("🔑 Clé API Gemini")
-    cle_api = st.text_input("Clé Google Gemini", type="password", key="gemini_key")
-    if cle_api:
-        st.markdown('<div class="ok-box">✅ Clé API renseignée</div>', unsafe_allow_html=True)
+    # ── Code élève ───────────────────────────────────────────
+    st.subheader("🎓 Identification")
+    code_eleve = st.text_input(
+        "Ton code élève",
+        placeholder="Ex : ASSP-03",
+        key="code_eleve",
+        help="Code distribué par ton professeur en début d'année."
+    ).strip().upper()
+    if code_eleve:
+        st.markdown(f'<div class="ok-box">✅ Connecté : <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="warn-box">⚠️ Clé API manquante</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warn-box">⚠️ Entre ton code élève pour que ta progression soit enregistrée.</div>', unsafe_allow_html=True)
 
-    with st.expander("📋 Obtenir une clé gratuite"):
+    st.divider()
+    cle_api = st.text_input("Ta clé Google Gemini", type="password", key="gemini_key")
+    if cle_api:
+        st.markdown('<div class="ok-box">✅ Clé renseignée — prêt à générer !</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="warn-box">⚠️ Entre ta clé API pour commencer.</div>', unsafe_allow_html=True)
+
+    with st.expander("📋 Obtenir une clé gratuite (2 min)"):
         st.markdown("""
-**3 étapes :**
-
 **1.** → [aistudio.google.com](https://aistudio.google.com/app/apikey)
 
-**2.** Connectez-vous → **"Create API Key"**
+**2.** Connecte-toi avec ton compte Google
 
-**3.** Copiez et collez ici
+**3.** Clique **"Create API Key"**
+
+**4.** Copie et colle la clé ici
 
 ---
-💡 **Quota gratuit :** 1 500 req/jour, 15/min.
-
-🔧 **Erreur 429 ?** Attendez 1 min ou activez la facturation sur votre projet Google Cloud (gratuit).
+💡 **C'est gratuit** — pas de carte bancaire requise.
         """)
 
     st.divider()
-    st.subheader("🏫 Établissement")
-    nom_etablissement = st.text_input(
-        "Nom de l'établissement",
-        value="Lino Ventura (Ozoir-la-Ferrière)",
-        help="Apparaît dans l'en-tête des CCF officiels"
-    )
-    annee_scolaire = st.text_input("Année scolaire", value="2025/2026")
-
-    st.divider()
-    st.caption("Version 6.0 · Gemini 2.5 Flash")
+    st.caption("Entraînement Bac Pro · Gemini 2.5 Flash")
 
 # ── TITRE ────────────────────────────────────────────────────
-st.title("🎓 Assistant Professeur IA")
-st.caption("Génération de sujets · CCF Bac Pro · Correction de copies · Export Word")
+st.title("📚 Entraînement Bac Pro — Mathématiques")
+st.caption("Génère des exercices et des sujets CCF pour t'entraîner à ton rythme.")
 
 # ── ONGLETS ──────────────────────────────────────────────────
-tab_gen, tab_ccf, tab_coint, tab_correction, tab_export = st.tabs([
-    "📝 Générateur de Sujets",
+tab_gen, tab_ccf, tab_progression = st.tabs([
+    "📝 Exercices d'entraînement",
     "🎯 Sujets CCF",
-    "🔗 Co-intervention",
-    "📸 Correction de Copies",
-    "📊 Export Pronote"
+    "📊 Ma progression",
 ])
 
 
@@ -1353,7 +1330,40 @@ with tab_gen:
         unsafe_allow_html=True
     )
 
-    if st.button("✨ Générer le sujet", type="primary", use_container_width=True):
+    # ── Mode banque ou génération ─────────────────────────────
+    sujets_banque = charger_banque(niv, filiere, chap, difficulte)
+    nb_banque = len(sujets_banque)
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        btn_banque = st.button(
+            f"📚 Sujet depuis la banque ({nb_banque} disponible{'s' if nb_banque > 1 else ''})",
+            type="primary",
+            use_container_width=True,
+            disabled=(nb_banque == 0),
+            key="btn_banque"
+        )
+        if nb_banque == 0:
+            st.caption("Aucun sujet en banque pour cette combinaison.")
+    with col_btn2:
+        btn_gemini = st.button(
+            "✨ Générer un sujet inédit (Gemini)",
+            use_container_width=True,
+            key="btn_gemini"
+        )
+
+    if btn_banque and nb_banque > 0:
+        import random
+        sujet = random.choice(sujets_banque)
+        st.session_state.generated_md = sujet["contenu"]
+        st.session_state.eval_gen_done = None
+        st.session_state.meta_gen = {
+            "niveau": niv, "matiere": mat, "chapitre": chap,
+            "filiere": filiere, "difficulte": difficulte, "source": "Banque"
+        }
+        st.rerun()
+
+    if btn_gemini:
         if not cle_api:
             st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
         else:
@@ -1361,11 +1371,15 @@ with tab_gen:
                 try:
                     res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
                     st.session_state.generated_md = res
-                    st.session_state.meta_gen = {"niveau": niv, "matiere": mat, "chapitre": chap, "filiere": filiere, "difficulte": difficulte}
+                    st.session_state.eval_gen_done = None
+                    st.session_state.meta_gen = {
+                        "niveau": niv, "matiere": mat, "chapitre": chap,
+                        "filiere": filiere, "difficulte": difficulte, "source": "Gemini"
+                    }
                     st.success("✅ Sujet généré !")
                 except Exception as e:
                     if "429" in str(e):
-                        st.error("⏱️ Quota dépassé (429). Attendez 1 minute et réessayez.")
+                        st.error("⏱️ Quota dépassé (429). Attends 1 minute ou utilise un sujet de la banque.")
                     else:
                         st.error(f"Erreur API : {e}")
 
@@ -1384,6 +1398,151 @@ with tab_gen:
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_md)
 
+        # ── Auto-évaluation + envoi Grist ────────────────────
+        st.divider()
+        st.markdown("**🎯 Comment tu t'en es sorti ?**")
+        col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+        eval_labels = {"😕 Difficile": "😕", "😐 Moyen": "😐", "😊 Bien": "😊", "🌟 Très bien": "🌟"}
+        eval_choix = None
+        with col_e1:
+            if st.button("😕 Difficile", use_container_width=True, key="eval_gen_1"):
+                eval_choix = "😕 Difficile"
+        with col_e2:
+            if st.button("😐 Moyen", use_container_width=True, key="eval_gen_2"):
+                eval_choix = "😐 Moyen"
+        with col_e3:
+            if st.button("😊 Bien", use_container_width=True, key="eval_gen_3"):
+                eval_choix = "😊 Bien"
+        with col_e4:
+            if st.button("🌟 Très bien", use_container_width=True, key="eval_gen_4"):
+                eval_choix = "🌟 Très bien"
+
+        if eval_choix:
+            envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
+            st.session_state.eval_gen_done = eval_choix
+            # Vérifier si un boss se débloque
+            if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
+                records_check = lire_progression_grist(code_eleve)
+                # Simuler l'ajout de cette éval pour le calcul
+                records_check.append({
+                    "chapitre": m.get("chapitre", ""),
+                    "niveau_difficulte": m.get("difficulte", ""),
+                    "auto_evaluation": eval_choix,
+                    "type_activite": "Exercice",
+                })
+                prog = calculer_progression(records_check, m.get("chapitre", ""))
+                diff_actuel = m.get("difficulte", "")
+                if (prog.get(diff_actuel, {}).get("valide") and
+                        not prog.get(diff_actuel, {}).get("boss_vaincu") and
+                        diff_actuel in ORDRE_NIVEAUX_DIFF):
+                    st.session_state.boss_actif   = True
+                    st.session_state.boss_niveau  = diff_actuel
+                    st.session_state.boss_chapitre = m.get("chapitre", "")
+            st.rerun()
+
+        if st.session_state.eval_gen_done:
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
+
+        # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
+        if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
+            diff_boss = st.session_state.boss_niveau
+            mascotte  = MASCOTTES.get(diff_boss, {})
+            st.markdown("---")
+            st.markdown(
+                f'<div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);'
+                f'color:white;padding:20px;border-radius:12px;text-align:center;margin:12px 0">'
+                f'<div style="font-size:3rem">{mascotte.get("animal","⚔️")}</div>'
+                f'<div style="font-size:1.3rem;font-weight:bold;margin:8px 0">'
+                f'BOSS DÉBLOQUÉ — {mascotte.get("nom","Boss").upper()} !</div>'
+                f'<div style="font-size:.95rem;opacity:.9">'
+                f'Tu as validé le niveau <strong>{diff_boss.split(" ",1)[-1]}</strong> '
+                f'sur <strong>{m.get("chapitre","")[:40]}</strong>.<br>'
+                f'Prouve que tu maîtrises vraiment ce chapitre !</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            col_boss1, col_boss2 = st.columns(2)
+            with col_boss1:
+                if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
+                             type="primary", use_container_width=True, key="btn_boss"):
+                    if not cle_api:
+                        st.error("🔑 Clé API manquante !")
+                    else:
+                        with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
+                            try:
+                                prompt_boss = build_prompt_boss(
+                                    niv, filiere,
+                                    st.session_state.boss_chapitre,
+                                    st.session_state.boss_niveau
+                                )
+                                res_boss = call_gemini(cle_api, prompt_boss)
+                                st.session_state.boss_md       = res_boss
+                                st.session_state.eval_boss_done = None
+                                st.session_state.boss_actif    = False
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erreur : {e}")
+            with col_boss2:
+                if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
+                    st.session_state.boss_actif = False
+                    st.rerun()
+
+        # ── SUJET BOSS AFFICHÉ ────────────────────────────────
+        if st.session_state.boss_md:
+            diff_boss = st.session_state.boss_niveau or "🟢 Débutant"
+            mascotte  = MASCOTTES.get(diff_boss, {})
+            st.markdown(
+                f'<div style="background:#1e1b4b;color:white;padding:12px 16px;'
+                f'border-radius:8px;margin:8px 0;font-size:1.1rem;font-weight:bold">'
+                f'{mascotte.get("animal","⚔️")} DÉFI BOSS — {mascotte.get("nom","Boss").upper()}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            st.markdown(st.session_state.boss_md)
+
+            st.divider()
+            st.markdown("**⚔️ As-tu vaincu le Boss ?**")
+            col_b1, col_b2 = st.columns(2)
+            with col_b1:
+                if st.button("😤 Pas encore…", use_container_width=True, key="boss_fail"):
+                    envoyer_grist(
+                        code_eleve or "anonyme", f"Boss-{diff_boss}",
+                        {"chapitre": st.session_state.boss_chapitre or "",
+                         "niveau": niv, "filiere": filiere, "matiere": mat},
+                        "😕 Difficile"
+                    )
+                    st.session_state.eval_boss_done = "fail"
+                    st.session_state.boss_md = None
+                    st.rerun()
+            with col_b2:
+                if st.button("🏆 Boss vaincu !", use_container_width=True, key="boss_win"):
+                    envoyer_grist(
+                        code_eleve or "anonyme", f"Boss-{diff_boss}",
+                        {"chapitre": st.session_state.boss_chapitre or "",
+                         "niveau": niv, "filiere": filiere, "matiere": mat},
+                        "🌟 Très bien"
+                    )
+                    st.session_state.eval_boss_done = "win"
+                    st.session_state.boss_md = None
+                    st.session_state.progression_cache = None  # forcer refresh
+                    st.rerun()
+
+        if st.session_state.eval_boss_done == "win":
+            diff_boss = st.session_state.boss_niveau or ""
+            msg = MESSAGES_VICTOIRE.get(diff_boss, "🏆 Félicitations !")
+            st.markdown(
+                f'<div style="background:linear-gradient(135deg,#065f46,#047857);'
+                f'color:white;padding:16px;border-radius:10px;text-align:center;'
+                f'font-size:1.1rem;font-weight:bold;margin:8px 0">'
+                f'🏆 {msg}</div>',
+                unsafe_allow_html=True
+            )
+        elif st.session_state.eval_boss_done == "fail":
+            st.markdown(
+                '<div class="info-box">💪 Pas grave ! Continue à t\'entraîner et reviens affronter le Boss.</div>',
+                unsafe_allow_html=True
+            )
+
         titre_doc = f"Sujet — {m.get('matiere','')} {m.get('niveau','')} {m.get('difficulte','')}"
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -1401,23 +1560,14 @@ with tab_gen:
 
 
 # ─────────────────────────────────────────────────────────────
-# ONGLET 2 — CCF
+# ONGLET 2 — CCF ENTRAÎNEMENT UNIQUEMENT
 # ─────────────────────────────────────────────────────────────
 with tab_ccf:
-    st.subheader("🎯 Générateur de Sujets CCF — Bac Pro")
+    st.subheader("🎯 Sujets CCF — Entraînement")
+    st.markdown('<div class="info-box">📋 <strong>Mode Entraînement</strong> — Structure CCF officielle pour t\'entraîner avant l\'examen. Sans en-tête officiel.</div>', unsafe_allow_html=True)
 
-    mode = st.radio(
-        "Mode de génération",
-        ["📋 Entraînement (sans en-tête officiel)",
-         "📄 Examen officiel (avec en-tête et barème imprimable)"],
-        key="ccf_mode"
-    )
-    is_officiel = "officiel" in mode
-
-    if is_officiel:
-        st.markdown('<div class="info-box">📄 <strong>Mode Examen officiel</strong> — En-tête académique complet, cadre candidat, grille de compétences et fiche d\'évaluation. Prêt à imprimer.</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="info-box">📋 <strong>Mode Entraînement</strong> — Structure CCF sans en-tête officiel. Idéal pour entraîner les élèves avant l\'examen.</div>', unsafe_allow_html=True)
+    # Forcer le mode entraînement — pas d'officiel pour les élèves
+    is_officiel = False
 
     col1, col2 = st.columns(2)
     with col1:
@@ -1497,6 +1647,7 @@ with tab_ccf:
                     res = call_gemini(cle_api, prompt)
                     if res:
                         st.session_state.generated_ccf_md = res
+                        st.session_state.eval_ccf_done = None  # reset éval
                         chap_label = ccf_chap
                         if ccf_chap_b:
                             chap_label += f" + {ccf_chap_b}"
@@ -1505,10 +1656,10 @@ with tab_ccf:
                             "matiere": ccf_mat,
                             "chapitre": chap_label,
                             "filiere": ccf_filiere,
-                            "mode": "Officiel" if is_officiel else "Entraînement",
+                            "mode": "Entraînement",
                             "num_situation": str(num_sit),
                             "duree": ccf_duree,
-                            "annee_scolaire": annee_scolaire,
+                            "annee_scolaire": "2025/2026",
                         }
                         st.success("✅ Sujet CCF généré !")
                     else:
@@ -1535,6 +1686,32 @@ with tab_ccf:
         st.markdown(badges, unsafe_allow_html=True)
         st.markdown(st.session_state.generated_ccf_md)
 
+        # ── Auto-évaluation + envoi Grist ────────────────────
+        st.divider()
+        st.markdown("**🎯 Comment tu t'en es sorti ?**")
+        col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+        eval_ccf_choix = None
+        with col_c1:
+            if st.button("😕 Difficile", use_container_width=True, key="eval_ccf_1"):
+                eval_ccf_choix = "😕 Difficile"
+        with col_c2:
+            if st.button("😐 Moyen", use_container_width=True, key="eval_ccf_2"):
+                eval_ccf_choix = "😐 Moyen"
+        with col_c3:
+            if st.button("😊 Bien", use_container_width=True, key="eval_ccf_3"):
+                eval_ccf_choix = "😊 Bien"
+        with col_c4:
+            if st.button("🌟 Très bien", use_container_width=True, key="eval_ccf_4"):
+                eval_ccf_choix = "🌟 Très bien"
+
+        if eval_ccf_choix:
+            envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
+            st.session_state.eval_ccf_done = eval_ccf_choix
+            st.rerun()
+
+        if st.session_state.eval_ccf_done:
+            st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_ccf_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
+
         titre_doc = f"CCF_{m.get('mode','')}_{m.get('matiere','')}_{m.get('niveau','')}"
         st.subheader("📥 Télécharger")
 
@@ -1542,7 +1719,7 @@ with tab_ccf:
             c1, c2 = st.columns(2)
             with c1:
                 docx_off = generate_ccf_officiel_docx(
-                    st.session_state.generated_ccf_md, m, nom_etablissement
+                    st.session_state.generated_ccf_md, m, "Lino Ventura (Ozoir-la-Ferrière)"
                 )
                 if docx_off:
                     st.download_button(
@@ -1571,184 +1748,159 @@ with tab_ccf:
                 st.download_button("📄 .txt", st.session_state.generated_ccf_md,
                                    file_name=f"{titre_doc}.txt", mime="text/plain", key="dl2_txt")
 
-
 # ─────────────────────────────────────────────────────────────
-# ONGLET 3 — CO-INTERVENTION
+# ONGLET 3 — MA PROGRESSION
 # ─────────────────────────────────────────────────────────────
-with tab_coint:
-    st.subheader("🔗 Co-intervention — Maths & Matières Professionnelles")
-    st.markdown(
-        '<div class="info-box">🤝 <strong>Co-intervention</strong> — Exercices qui relient '
-        'les mathématiques aux situations professionnelles réelles du référentiel. '
-        'Chaque exercice part d\'un document pro concret (facture, bulletin, bon de commande…).</div>',
-        unsafe_allow_html=True
-    )
+with tab_progression:
+    st.subheader("📊 Ma progression")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        coint_fil = st.selectbox(
-            "Filière",
-            list(THEMES_COINTERVENTION.keys()),
-            key="coint_fil",
-            format_func=lambda k: f"{k} — {THEMES_COINTERVENTION[k]['nom_complet']}"
-        )
-        coint_niv = st.selectbox(
-            "Classe",
-            ["2nde Pro", "1ère Pro", "Term Pro"],
-            key="coint_niv"
-        )
-    with col2:
-        themes_dispo = list(THEMES_COINTERVENTION[coint_fil]["themes"].keys())
-        coint_theme = st.selectbox("Thème de co-intervention", themes_dispo, key="coint_theme")
+    if not code_eleve:
+        st.markdown('<div class="warn-box">⚠️ Entre ton code élève dans le panneau gauche pour voir ta progression.</div>', unsafe_allow_html=True)
+    else:
+        col_refresh, col_info = st.columns([1, 3])
+        with col_refresh:
+            if st.button("🔄 Actualiser", use_container_width=True):
+                st.session_state.progression_cache = None
 
-        # Afficher les infos du thème sélectionné
-        data_th = THEMES_COINTERVENTION[coint_fil]["themes"][coint_theme]
-        st.markdown(
-            f'<div class="info-box" style="font-size:.82rem">'
-            f'📐 <strong>Formules :</strong> {data_th["formules"]}<br>'
-            f'📄 <strong>Documents :</strong> {data_th["documents"]}</div>',
-            unsafe_allow_html=True
-        )
+        with col_info:
+            st.markdown(f"Progression de : **{code_eleve}**")
 
-    st.markdown("**🎯 Niveau de difficulté**")
-    coint_diff = st.select_slider(
-        "Niveau co-intervention",
-        options=list(NIVEAUX_DIFFICULTE.keys()),
-        value="🟡 Moyen",
-        key="coint_diff",
-        label_visibility="collapsed"
-    )
-    st.markdown(
-        f'<div class="info-box">{coint_diff} — {NIVEAUX_DIFFICULTE[coint_diff]}</div>',
-        unsafe_allow_html=True
-    )
-
-    coint_consignes = st.text_area(
-        "Consignes particulières (optionnel)", height=80, key="coint_consignes",
-        placeholder="Ex : Utiliser une facture de fournitures de bureau, insister sur le calcul de TVA à 20%…"
-    )
-
-    if st.button("🔗 Générer l'exercice de co-intervention", type="primary", use_container_width=True):
-        if not cle_api:
-            st.error("🔑 Renseigne ta clé API dans le panneau gauche !")
+        # Chargement depuis Grist (avec cache session)
+        if not st.session_state.progression_cache:
+            with st.spinner("Chargement de ta progression…"):
+                records = lire_progression_grist(code_eleve)
+                st.session_state.progression_cache = records
         else:
-            with st.spinner("⏳ Génération de l'exercice co-intervention…"):
-                try:
-                    sys_instr, user_prompt = build_prompt_cointervention(
-                        coint_niv, coint_fil, coint_theme, coint_consignes, coint_diff
-                    )
-                    res = call_gemini(cle_api, (sys_instr, user_prompt))
-                    st.session_state.generated_coint_md = res
-                    st.success("✅ Exercice co-intervention généré !")
-                except Exception as e:
-                    if "429" in str(e):
-                        st.error("⏱️ Quota dépassé (429). Attendez 1 minute et réessayez.")
+            records = st.session_state.progression_cache
+
+        if not records:
+            st.markdown('<div class="info-box">📭 Aucune activité enregistrée pour ce code. Commence par faire des exercices !</div>', unsafe_allow_html=True)
+        else:
+            # ── Statistiques globales ─────────────────────────
+            nb_total = len(records)
+            bonnes    = [r for r in records if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien")]
+            nb_bonnes = len(bonnes)
+            taux      = int(nb_bonnes / nb_total * 100) if nb_total else 0
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Activités totales", nb_total)
+            c2.metric("😊 Bien ou mieux", nb_bonnes)
+            c3.metric("Taux de réussite", f"{taux}%")
+
+            st.divider()
+
+            # ── Progression par chapitre × niveau ────────────
+            st.markdown("### 📖 Progression par chapitre")
+
+            from collections import defaultdict
+            tous_chap = sorted(set(r.get("chapitre", "") for r in records if r.get("chapitre")))
+
+            for chap in tous_chap:
+                prog_chap = calculer_progression(records, chap)
+                niveaux_html = ""
+                for diff in ORDRE_NIVEAUX_DIFF:
+                    p         = prog_chap[diff]
+                    mascotte  = MASCOTTES[diff]
+                    animal    = mascotte["animal"]
+                    nom       = mascotte["nom"]
+                    couleur   = mascotte["couleur"]
+
+                    if p["boss_vaincu"]:
+                        cell = (f'<span title="{nom} vaincu !" style="font-size:1.5rem;'
+                                f'filter:drop-shadow(0 0 4px {couleur})">{animal}👑</span>')
+                    elif p["valide"]:
+                        nb_ok = p["nb_bonnes"]
+                        cell = (f'<span title="{nom} — Boss disponible ! ({nb_ok}/{SEUIL_VALIDATION})" '
+                                f'style="font-size:1.5rem;opacity:.9">{animal}⚔️</span>')
+                    elif p["nb_bonnes"] > 0:
+                        nb_ok = p["nb_bonnes"]
+                        cell = (f'<span title="{nom} — en cours ({nb_ok}/{SEUIL_VALIDATION})" '
+                                f'style="font-size:1.5rem;filter:grayscale(60%)">{animal}</span>')
                     else:
-                        st.error(f"Erreur API : {e}")
+                        cell = (f'<span title="{nom} — pas encore commencé" '
+                                f'style="font-size:1.5rem;filter:grayscale(100%);opacity:.3">{animal}</span>')
 
-    if st.session_state.generated_coint_md:
-        nom_filiere = THEMES_COINTERVENTION[coint_fil]["nom_complet"]
-        st.divider()
-        badges = (
-            f'<span class="badge">🔗 Co-intervention</span>'
-            f'<span class="badge">🏢 {coint_fil}</span>'
-            f'<span class="badge">🎓 {coint_niv}</span>'
-            f'<span class="badge">📐 {coint_theme[:40]}</span>'
-            f'<span class="badge">{coint_diff}</span>'
-        )
-        st.markdown(badges, unsafe_allow_html=True)
-        st.markdown(st.session_state.generated_coint_md)
+                    niveaux_html += f'<span style="margin-right:8px">{cell}</span>'
 
-        titre_doc = f"CoIntervention_{coint_fil}_{coint_niv}_{coint_theme[:30]}"
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.download_button("📥 .md", st.session_state.generated_coint_md,
-                               file_name=f"{titre_doc}.md", mime="text/markdown", key="dl_coint_md")
-        with c2:
-            st.download_button("📄 .txt", st.session_state.generated_coint_md,
-                               file_name=f"{titre_doc}.txt", mime="text/plain", key="dl_coint_txt")
-        with c3:
-            st.download_button("📝 .docx",
-                markdown_to_docx(st.session_state.generated_coint_md,
-                                 f"Co-intervention — {coint_fil} · {coint_theme}"),
-                file_name=f"{titre_doc}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                key="dl_coint_docx")
+                nb_act_chap = sum(1 for r in records if r.get("chapitre") == chap)
+                chap_court  = chap[:50] + "…" if len(chap) > 50 else chap
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'
+                    f'border-bottom:1px solid #eee">'
+                    f'<div style="flex:1;font-size:.9rem"><strong>{chap_court}</strong></div>'
+                    f'<div style="display:flex;align-items:center">{niveaux_html}</div>'
+                    f'<div style="color:#888;font-size:.8rem;white-space:nowrap">'
+                    f'{nb_act_chap} activité(s)</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
+            st.markdown(
+                '<div style="margin-top:14px;font-size:.82rem;color:#888;line-height:1.8">'
+                '🐣 Poussin = Débutant &nbsp;|&nbsp; 🦊 Renard = Moyen &nbsp;|&nbsp; '
+                '🦁 Lion = Confirmé &nbsp;|&nbsp; 🐉 Dragon = Expert<br>'
+                f'⚔️ = Boss disponible &nbsp;|&nbsp; 👑 = Boss vaincu &nbsp;|&nbsp; '
+                f'🔘 grisé = en cours &nbsp;|&nbsp; ⬜ = pas encore commencé<br>'
+                f'Seuil de validation : {SEUIL_VALIDATION} bonnes évals minimum par niveau'
+                f'</div>',
+                unsafe_allow_html=True
+            )
 
-# ─────────────────────────────────────────────────────────────
-# ONGLET 4 — CORRECTION
-# ─────────────────────────────────────────────────────────────
-with tab_correction:
-    st.subheader("📸 Correction IA de Copies par Photo")
+            st.divider()
 
-    col1, col2 = st.columns(2)
-    with col1:
-        corr_cat = st.selectbox("Catégorie", list(NIVEAUX_CATEGORIES.keys()), key="corr_cat")
-        corr_niv = st.selectbox("Classe", NIVEAUX_CATEGORIES[corr_cat], key="corr_niv")
-    with col2:
-        corr_mat = st.selectbox("Matière", MATIERES, key="corr_mat")
-        note_sur = st.number_input("Note sur :", min_value=10, max_value=100, value=20, step=5)
+            # ── Compétences BO ────────────────────────────────
+            st.markdown("### 🎯 Compétences BO travaillées")
+            st.caption("Basé sur les types d'exercices effectués et les chapitres travaillés.")
 
-    img_file = st.file_uploader("📤 Téléverser la photo de la copie", type=["jpg", "jpeg", "png"])
+            COMP_PAR_CHAP = {
+                "Probabilités": ["Analyser / Raisonner", "Réaliser", "Valider"],
+                "Statistiques": ["S'approprier", "Réaliser", "Communiquer"],
+                "Suites": ["Réaliser", "Valider", "Communiquer"],
+                "Fonctions": ["S'approprier", "Analyser / Raisonner", "Réaliser"],
+                "Vecteurs": ["S'approprier", "Réaliser"],
+                "Trigonométrie": ["Réaliser", "Valider"],
+                "Algorithmique": ["Analyser / Raisonner", "Réaliser"],
+                "Calculs commerciaux": ["S'approprier", "Réaliser", "Communiquer"],
+                "Géométrie": ["S'approprier", "Réaliser", "Valider"],
+            }
+            TOUTES_COMP = ["S'approprier", "Analyser / Raisonner", "Réaliser", "Valider", "Communiquer"]
 
-    col1, col2 = st.columns(2)
-    with col1:
-        bareme = st.text_area("Barème (optionnel)", height=100,
-                               placeholder="Ex : Q1 : 3 pts, Q2 : 5 pts, Q3 : 7 pts, Q4 : 5 pts")
-    with col2:
-        ton = st.select_slider("Ton", options=["Très bienveillant", "Bienveillant", "Encourageant", "Factuel", "Exigeant"])
+            # Compter les activités par compétence (estimation)
+            comp_count = defaultdict(int)
+            for r in records:
+                chap_r = r.get("chapitre", "")
+                for mot_cle, comps in COMP_PAR_CHAP.items():
+                    if mot_cle.lower() in chap_r.lower():
+                        for c in comps:
+                            comp_count[c] += 1
 
-    if img_file:
-        col_img, col_btn = st.columns([1, 2])
-        with col_img:
-            st.image(img_file, caption="Copie à corriger", width=250)
-        with col_btn:
-            if st.button("🔍 Lancer la correction IA", type="primary", use_container_width=True):
-                if not cle_api:
-                    st.error("🔑 Clé API manquante !")
-                else:
-                    with st.spinner("🔬 Analyse de la copie…"):
-                        try:
-                            prompt = build_prompt_correction(bareme, ton, corr_niv, corr_mat, note_sur)
-                            res = call_gemini(cle_api, prompt, image=img_file)
-                            st.session_state.correction_md = res
-                            st.success("✅ Correction terminée !")
-                        except Exception as e:
-                            if "429" in str(e):
-                                st.error("⏱️ Quota dépassé (429). Attendez 1 minute.")
-                            else:
-                                st.error(f"Erreur : {e}")
+            # Si aucune correspondance trouvée, toutes les comp reçoivent 1
+            if not any(comp_count.values()):
+                for c in TOUTES_COMP:
+                    comp_count[c] = nb_total // 5 or 1
 
-    if st.session_state.correction_md:
-        st.divider()
-        st.subheader("📝 Rapport de Correction")
-        st.markdown(st.session_state.correction_md)
-        c1, c2 = st.columns(2)
-        with c1:
-            st.download_button("📥 .md", st.session_state.correction_md,
-                               file_name="correction.md", mime="text/markdown", key="dl3_md")
-        with c2:
-            st.download_button("📝 .docx",
-                markdown_to_docx(st.session_state.correction_md, "Rapport de correction"),
-                file_name="correction.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                key="dl3_docx")
+            max_count = max(comp_count.values()) if comp_count else 1
+            for comp in TOUTES_COMP:
+                val  = comp_count.get(comp, 0)
+                pct  = int(val / max_count * 100)
+                bar  = "█" * (pct // 10) + "░" * (10 - pct // 10)
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;gap:10px;margin:4px 0">'
+                    f'<div style="width:180px;font-size:.85rem">{comp}</div>'
+                    f'<div style="font-family:monospace;color:#4a6cf7">{bar}</div>'
+                    f'<div style="font-size:.8rem;color:#888">{val} activité(s)</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
+            st.divider()
 
-# ─────────────────────────────────────────────────────────────
-# ONGLET 4 — EXPORT PRONOTE
-# ─────────────────────────────────────────────────────────────
-with tab_export:
-    st.subheader("📊 Export Pronote — Module en développement")
-    st.markdown('<div class="info-box">🚧 <strong>Ce module est en cours de construction.</strong> La prochaine version permettra d\'exporter les notes vers Pronote via CSV compatible.</div>', unsafe_allow_html=True)
-    st.markdown("""
-### 📋 Fonctionnalités prévues
-- Saisie manuelle des notes après correction IA
-- Export CSV au format compatible Pronote (import direct)
-- Calcul automatique des moyennes de classe
-- Appréciation groupée générée par IA pour chaque élève
-
-### 💡 En attendant
-Copiez les notes depuis l'onglet **Correction de Copies** et saisissez-les manuellement dans Pronote.
-    """)
+            # ── Historique récent ─────────────────────────────
+            with st.expander("📅 Voir l'historique complet"):
+                import pandas as pd
+                df = pd.DataFrame(records)
+                cols_affich = [c for c in ["date", "heure", "type_activite", "chapitre",
+                                            "niveau_difficulte", "auto_evaluation", "source"]
+                               if c in df.columns]
+                st.dataframe(df[cols_affich].sort_values("date", ascending=False),
+                             use_container_width=True, hide_index=True)
