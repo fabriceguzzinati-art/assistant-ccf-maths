@@ -1904,3 +1904,18 @@ with tab_progression:
                                if c in df.columns]
                 st.dataframe(df[cols_affich].sort_values("date", ascending=False),
                              use_container_width=True, hide_index=True)
+
+# ============================================================
+# PIED DE PAGE (CRÉDITS & LICENCE)
+# ============================================================
+st.divider() # Petite ligne de séparation discrète
+
+st.markdown(f"""
+    <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
+        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b><br>
+        Version 1.2 — 2024 • Ozoir-la-Ferrière<br>
+        <br>
+        <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i><br>
+        (Attribution - Pas d'Utilisation Commerciale - Partage dans les Mêmes Conditions)
+    </div>
+    """, unsafe_allow_html=True)
