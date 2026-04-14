@@ -1752,3 +1752,19 @@ with tab_export:
 ### 💡 En attendant
 Copiez les notes depuis l'onglet **Correction de Copies** et saisissez-les manuellement dans Pronote.
     """)
+
+
+# ============================================================
+# PIED DE PAGE (CRÉDITS & LICENCE)
+# ============================================================
+st.divider() # Petite ligne de séparation discrète
+
+st.markdown(f"""
+    <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
+        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b><br>
+        Version 1.2 — 2024 • Ozoir-la-Ferrière<br>
+        <br>
+        <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i><br>
+        (Attribution - Pas d'Utilisation Commerciale - Partage dans les Mêmes Conditions)
+    </div>
+    """, unsafe_allow_html=True)
