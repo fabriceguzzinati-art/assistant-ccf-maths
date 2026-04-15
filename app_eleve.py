@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import PIL.Image
 import streamlit as st
 from io import BytesIO
@@ -666,25 +666,37 @@ Réponds en Markdown avec sections claires."""
 # ============================================================
 
 def call_gemini(api_key, prompt, image=None):
-    genai.configure(api_key=api_key.strip())
-    # Gestion du tuple (system_instruction, user_prompt) retourné par build_prompt_exercices
+    # On crée le client avec la nouvelle bibliothèque
+    client = genai.Client(api_key=api_key.strip())
+    
+    # Configuration du modèle
+    model_id = "gemini-1.5-flash" # Version stable et rapide
+    
+    # Gestion du système d'instructions (le tuple envoyé par build_prompt_exercices)
     if isinstance(prompt, tuple):
         system_instruction, user_prompt = prompt
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=system_instruction
-        )
+        config = {"system_instruction": system_instruction}
         content = user_prompt
     else:
-        model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+        config = {}
         content = prompt
-    if image:
-        img = PIL.Image.open(image)
-        response = model.generate_content([content, img])
-    else:
-        response = model.generate_content(content)
-    if response and response.text:
-        return response.text
+
+    try:
+        if image:
+            img = PIL.Image.open(image)
+            response = client.models.generate_content(
+                model=model_id, contents=[content, img], config=config
+            )
+        else:
+            response = client.models.generate_content(
+                model=model_id, contents=content, config=config
+            )
+        
+        if response and response.text:
+            return response.text
+    except Exception as e:
+        return f"Erreur lors de l'appel à l'IA : {str(e)}"
+    
     return "L'IA a répondu mais le texte est vide. Réessayez."
 
 
@@ -1908,14 +1920,14 @@ with tab_progression:
 # ============================================================
 # PIED DE PAGE (CRÉDITS & LICENCE)
 # ============================================================
-st.divider() # Petite ligne de séparation discrète
+st.divider() # Une ligne de séparation élégante
 
 st.markdown(f"""
     <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
-        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b><br>
-        Version 1.2 — 2024 • Ozoir-la-Ferrière<br>
+        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b> (Architecte IA)<br>
+        Version 1.3 — 2024 • Ozoir-la-Ferrière<br>
         <br>
         <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i><br>
-        (Attribution - Pas d'Utilisation Commerciale - Partage dans les Mêmes Conditions)
+        (Attribution - Pas d'Utilisation Commerciale - Partage à l'Identique)
     </div>
     """, unsafe_allow_html=True)
