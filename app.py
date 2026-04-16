@@ -589,7 +589,7 @@ ______
 ### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles, questions numérotées avec compétences]
 {bloc_corrige}
-Réponds entièrement en Markdown."""
+Réponds entièrement en Markdown pur. N'utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.)."""
 
 
 def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes, filiere="", duree="45 min", num_sit="1", avec_corrige=True, chapitre_b=""):
@@ -663,7 +663,7 @@ ______
 ### PARTIE B — [Titre lié à : {chapitre_b if chapitre_b else "second thème mathématique"}]
 [Mêmes règles]
 {bloc_corrige}
-Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
+Réponds entièrement en Markdown pur avec mise en page soignée et professionnelle. N'utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.)."""
 
 
 def build_prompt_correction(bareme, ton, niveau, matiere, note_sur):
@@ -822,6 +822,15 @@ def render_inline(paragraph, text):
 
 
 def markdown_to_docx(md_text, titre="Document"):
+    # Supprimer les balises HTML que Gemini insère parfois
+    import re as _re
+    # Supprimer les blocs <div ...>...</div> complets (multilignes)
+    md_text = _re.sub(r'<div[^>]*>.*?</div>', '', md_text, flags=_re.DOTALL)
+    # Supprimer toute balise HTML résiduelle (<h3>, <p>, <span>...)
+    md_text = _re.sub(r'<[^>]+>', '', md_text)
+    # Nettoyer les lignes vides multiples
+    md_text = _re.sub(r'\n{3,}', '\n\n', md_text)
+
     doc = DocxDocument()
     doc.styles["Normal"].font.name = "Arial"
     doc.styles["Normal"].font.size = Pt(11)
@@ -965,6 +974,12 @@ def parse_questions_competences(content_md):
 
 def generate_ccf_officiel_docx(content_md, metadata, nom_etablissement="Mon Établissement"):
     try:
+        import re as _re
+        # Supprimer les balises HTML que Gemini insère parfois
+        content_md = _re.sub(r'<div[^>]*>.*?</div>', '', content_md, flags=_re.DOTALL)
+        content_md = _re.sub(r'<[^>]+>', '', content_md)
+        content_md = _re.sub(r'\n{3,}', '\n\n', content_md)
+
         doc = DocxDocument()
 
         # Marges réduites pour plus d'espace
@@ -1752,19 +1767,3 @@ with tab_export:
 ### 💡 En attendant
 Copiez les notes depuis l'onglet **Correction de Copies** et saisissez-les manuellement dans Pronote.
     """)
-
-
-# ============================================================
-# PIED DE PAGE (CRÉDITS & LICENCE)
-# ============================================================
-st.divider() # Petite ligne de séparation discrète
-
-st.markdown(f"""
-    <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
-        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b><br>
-        Version 1.2 — 2024 • Ozoir-la-Ferrière<br>
-        <br>
-        <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i><br>
-        (Attribution - Pas d'Utilisation Commerciale - Partage dans les Mêmes Conditions)
-    </div>
-    """, unsafe_allow_html=True)
