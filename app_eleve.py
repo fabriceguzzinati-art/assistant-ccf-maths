@@ -1,4 +1,4 @@
-from google import genai
+import google.generativeai as genai
 import PIL.Image
 import streamlit as st
 from io import BytesIO
@@ -16,25 +16,220 @@ import json
 
 st.markdown("""
     <style>
-    /* Arrondir les boutons et les boites */
-    .stButton>button {
-        border-radius: 20px;
-        border: 1px solid #4CAF50;
-        transition: all 0.3s;
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    /* ── Base sombre ── */
+    .stApp {
+        background: #0d0f1a;
+        color: #e2e8f0;
+        font-family: 'Outfit', sans-serif;
     }
-    .stButton>button:hover {
-        transform: scale(1.05);
-        background-color: #4CAF50;
+    .stApp > header { background: transparent !important; }
+
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background: #13162a !important;
+        border-right: 1px solid #2d3561;
+    }
+    [data-testid="stSidebar"] * { color: #cbd5e1 !important; }
+
+    /* ── Onglets ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #13162a;
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+        border: 1px solid #2d3561;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        color: #94a3b8;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+        font-size: .85rem;
+        padding: 8px 16px;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        color: white !important;
+        box-shadow: 0 0 16px rgba(99,102,241,.5);
+    }
+
+    /* ── Boutons primaires ── */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 12px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: .95rem;
+        padding: 10px 20px;
         color: white;
+        box-shadow: 0 0 20px rgba(99,102,241,.4);
+        transition: all .25s;
     }
-    /* Style pour les cartes d'exercices */
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border-radius: 15px;
-        background-color: #f0f2f6; /* Ou sombre si tu préfères */
-        padding: 20px;
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(99,102,241,.7);
+    }
+
+    /* ── Boutons secondaires ── */
+    .stButton > button:not([kind="primary"]) {
+        background: #1e2235;
+        border: 1px solid #3d4480;
+        border-radius: 12px;
+        color: #94a3b8;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        transition: all .2s;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        border-color: #6366f1;
+        color: #a5b4fc;
+        background: #252a45;
+    }
+
+    /* ── Selectbox / Inputs ── */
+    .stSelectbox > div > div,
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        background: #1a1f35 !important;
+        border: 1px solid #2d3561 !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    .stSelectbox > div > div:focus-within,
+    .stTextInput > div > div:focus-within {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99,102,241,.2) !important;
+    }
+
+    /* ── Slider ── */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+    }
+
+    /* ── Divider ── */
+    hr { border-color: #2d3561 !important; }
+
+    /* ── Metric cards ── */
+    [data-testid="stMetric"] {
+        background: #13162a;
+        border: 1px solid #2d3561;
+        border-radius: 12px;
+        padding: 16px;
+    }
+    [data-testid="stMetricValue"] {
+        color: #a5b4fc !important;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+    }
+
+    /* ── Boîtes custom ── */
+    .info-box {
+        background: #1a2040;
+        border-left: 4px solid #6366f1;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #a5b4fc;
+    }
+    .warn-box {
+        background: #1f1a00;
+        border-left: 4px solid #f59e0b;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #fcd34d;
+    }
+    .ok-box {
+        background: #0d2018;
+        border-left: 4px solid #22c55e;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #86efac;
+    }
+    .badge {
+        display: inline-block;
+        background: #252a45;
+        color: #a5b4fc;
+        border: 1px solid #3d4480;
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: .78rem;
+        font-family: 'Outfit', sans-serif;
+        margin-right: 6px;
+        margin-bottom: 4px;
+    }
+
+    /* ── XP Banner ── */
+    .xp-banner {
+        background: linear-gradient(135deg, #1a1f35, #252a45);
+        border: 1px solid #3d4480;
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .xp-value {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #fbbf24;
+    }
+    .xp-label { font-size: .8rem; color: #64748b; }
+
+    /* ── Niveau card ── */
+    .niveau-card {
+        background: linear-gradient(135deg, #1a1f35, #1e2745);
+        border: 1px solid #3d4480;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 8px 0;
+        transition: border-color .2s;
+    }
+    .niveau-card:hover { border-color: #6366f1; }
+
+    /* ── Boss banner ── */
+    .boss-banner {
+        background: linear-gradient(135deg, #1a0a2e, #2d1060);
+        border: 2px solid #7c3aed;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        margin: 16px 0;
+        box-shadow: 0 0 40px rgba(124,58,237,.3);
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0d0f1a; }
+    ::-webkit-scrollbar-thumb { background: #2d3561; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+    /* ── Markdown content ── */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        font-family: 'Outfit', sans-serif;
+        color: #e2e8f0;
+    }
+    .stMarkdown p, .stMarkdown li { color: #cbd5e1; line-height: 1.7; }
+    .stMarkdown code {
+        background: #1e2235;
+        color: #a5b4fc;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-family: 'JetBrains Mono', monospace;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ============================================================
 # 0. INTÉGRATION GRIST — Suivi des élèves
@@ -666,37 +861,25 @@ Réponds en Markdown avec sections claires."""
 # ============================================================
 
 def call_gemini(api_key, prompt, image=None):
-    # On crée le client avec la nouvelle bibliothèque
-    client = genai.Client(api_key=api_key.strip())
-    
-    # Configuration du modèle
-    model_id = "gemini-1.5-flash" # Version stable et rapide
-    
-    # Gestion du système d'instructions (le tuple envoyé par build_prompt_exercices)
+    genai.configure(api_key=api_key.strip())
+    # Gestion du tuple (system_instruction, user_prompt) retourné par build_prompt_exercices
     if isinstance(prompt, tuple):
         system_instruction, user_prompt = prompt
-        config = {"system_instruction": system_instruction}
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=system_instruction
+        )
         content = user_prompt
     else:
-        config = {}
+        model = genai.GenerativeModel(model_name="gemini-2.5-flash")
         content = prompt
-
-    try:
-        if image:
-            img = PIL.Image.open(image)
-            response = client.models.generate_content(
-                model=model_id, contents=[content, img], config=config
-            )
-        else:
-            response = client.models.generate_content(
-                model=model_id, contents=content, config=config
-            )
-        
-        if response and response.text:
-            return response.text
-    except Exception as e:
-        return f"Erreur lors de l'appel à l'IA : {str(e)}"
-    
+    if image:
+        img = PIL.Image.open(image)
+        response = model.generate_content([content, img])
+    else:
+        response = model.generate_content(content)
+    if response and response.text:
+        return response.text
     return "L'IA a répondu mais le texte est vide. Réessayez."
 
 
@@ -1232,14 +1415,38 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-  .stButton>button { border-radius: 8px; font-weight: 600; }
-  .info-box  { background:#f0f4ff; border-left:4px solid #4a6cf7; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .warn-box  { background:#fff8e1; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .ok-box    { background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .badge     { display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px;
-               padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }
+  /* Override minimal — le thème principal est dans le premier bloc */
+  .stCheckbox > label { color: #94a3b8 !important; }
+  .stRadio > label { color: #94a3b8 !important; }
+  .stExpander { background: #13162a !important; border: 1px solid #2d3561 !important; border-radius: 10px !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# ── Système XP ───────────────────────────────────────────────
+XP_PAR_ACTION = {
+    "Exercice-🟢 Débutant":  10,
+    "Exercice-🟡 Moyen":     20,
+    "Exercice-🟠 Confirmé":  35,
+    "Exercice-🔴 Expert":    50,
+    "CCF":                   40,
+    "Boss":                  80,
+}
+
+def calculer_xp(records: list) -> int:
+    """Calcule le total XP d'un élève depuis ses records Grist."""
+    total = 0
+    for r in records:
+        if r.get("auto_evaluation", "") not in ("😊 Bien", "🌟 Très bien"):
+            continue
+        type_a = r.get("type_activite", "")
+        diff   = r.get("niveau_difficulte", "")
+        if "Boss" in type_a:
+            total += XP_PAR_ACTION["Boss"]
+        elif "CCF" in type_a:
+            total += XP_PAR_ACTION["CCF"]
+        else:
+            total += XP_PAR_ACTION.get(f"Exercice-{diff}", 10)
+    return total
 
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
@@ -1250,27 +1457,39 @@ for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
 
 # ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.markdown("""
+    <div style="text-align:center;padding:16px 0 8px">
+        <div style="font-size:2.5rem">🎓</div>
+        <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem;
+                    color:#a5b4fc;letter-spacing:.5px">MATHS BAC PRO</div>
+        <div style="font-size:.75rem;color:#475569;margin-top:2px">Entraînement IA</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
 
     # ── Code élève ───────────────────────────────────────────
-    st.subheader("🎓 Identification")
+    st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🎮 TON IDENTIFIANT</div>', unsafe_allow_html=True)
     code_eleve = st.text_input(
-        "Ton code élève",
+        "Code élève",
         placeholder="Ex : ASSP-03",
         key="code_eleve",
+        label_visibility="collapsed",
         help="Code distribué par ton professeur en début d'année."
     ).strip().upper()
     if code_eleve:
-        st.markdown(f'<div class="ok-box">✅ Connecté : <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ok-box">✅ Connecté en tant que <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="warn-box">⚠️ Entre ton code élève pour que ta progression soit enregistrée.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warn-box">⚠️ Entre ton code pour sauvegarder ta progression.</div>', unsafe_allow_html=True)
 
     st.divider()
-    cle_api = st.text_input("Ta clé Google Gemini", type="password", key="gemini_key")
+
+    st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🔑 CLÉ GEMINI</div>', unsafe_allow_html=True)
+    cle_api = st.text_input("Clé API", type="password", key="gemini_key", label_visibility="collapsed")
     if cle_api:
-        st.markdown('<div class="ok-box">✅ Clé renseignée — prêt à générer !</div>', unsafe_allow_html=True)
+        st.markdown('<div class="ok-box">✅ Prêt à générer !</div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="warn-box">⚠️ Entre ta clé API pour commencer.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warn-box">⚠️ Clé API manquante.</div>', unsafe_allow_html=True)
 
     with st.expander("📋 Obtenir une clé gratuite (2 min)"):
         st.markdown("""
@@ -1290,8 +1509,19 @@ with st.sidebar:
     st.caption("Entraînement Bac Pro · Gemini 2.5 Flash")
 
 # ── TITRE ────────────────────────────────────────────────────
-st.title("📚 Entraînement Bac Pro — Mathématiques")
-st.caption("Génère des exercices et des sujets CCF pour t'entraîner à ton rythme.")
+st.markdown("""
+<div style="padding:24px 0 8px">
+    <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:2rem;
+                background:linear-gradient(90deg,#a5b4fc,#c084fc,#67e8f9);
+                -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                background-clip:text;line-height:1.2">
+        📚 Entraînement Bac Pro
+    </div>
+    <div style="color:#475569;font-size:.9rem;margin-top:4px">
+        Exercices · CCF · Progression — propulsé par l'IA
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ── ONGLETS ──────────────────────────────────────────────────
 tab_gen, tab_ccf, tab_progression = st.tabs([
@@ -1461,15 +1691,17 @@ with tab_gen:
             mascotte  = MASCOTTES.get(diff_boss, {})
             st.markdown("---")
             st.markdown(
-                f'<div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);'
-                f'color:white;padding:20px;border-radius:12px;text-align:center;margin:12px 0">'
-                f'<div style="font-size:3rem">{mascotte.get("animal","⚔️")}</div>'
-                f'<div style="font-size:1.3rem;font-weight:bold;margin:8px 0">'
-                f'BOSS DÉBLOQUÉ — {mascotte.get("nom","Boss").upper()} !</div>'
-                f'<div style="font-size:.95rem;opacity:.9">'
-                f'Tu as validé le niveau <strong>{diff_boss.split(" ",1)[-1]}</strong> '
-                f'sur <strong>{m.get("chapitre","")[:40]}</strong>.<br>'
-                f'Prouve que tu maîtrises vraiment ce chapitre !</div>'
+                f'<div class="boss-banner">'
+                f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
+                f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
+                f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
+                f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
+                f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
+                f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
+                f'Tu as validé le niveau <strong style="color:#a5b4fc">'
+                f'{diff_boss.split(" ",1)[-1]}</strong> sur '
+                f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
+                f'Bats ce boss pour débloquer le niveau suivant !</div>'
                 f'</div>',
                 unsafe_allow_html=True
             )
@@ -1540,13 +1772,17 @@ with tab_gen:
                     st.rerun()
 
         if st.session_state.eval_boss_done == "win":
+            st.balloons()
             diff_boss = st.session_state.boss_niveau or ""
             msg = MESSAGES_VICTOIRE.get(diff_boss, "🏆 Félicitations !")
             st.markdown(
-                f'<div style="background:linear-gradient(135deg,#065f46,#047857);'
-                f'color:white;padding:16px;border-radius:10px;text-align:center;'
-                f'font-size:1.1rem;font-weight:bold;margin:8px 0">'
-                f'🏆 {msg}</div>',
+                f'<div style="background:linear-gradient(135deg,#052e16,#14532d);'
+                f'border:2px solid #22c55e;color:white;padding:20px;border-radius:14px;'
+                f'text-align:center;font-family:Outfit,sans-serif;'
+                f'box-shadow:0 0 30px rgba(34,197,94,.3);margin:8px 0">'
+                f'<div style="font-size:2.5rem;margin-bottom:8px">🏆</div>'
+                f'<div style="font-size:1.2rem;font-weight:800;color:#86efac">{msg}</div>'
+                f'</div>',
                 unsafe_allow_html=True
             )
         elif st.session_state.eval_boss_done == "fail":
@@ -1764,7 +2000,10 @@ with tab_ccf:
 # ONGLET 3 — MA PROGRESSION
 # ─────────────────────────────────────────────────────────────
 with tab_progression:
-    st.subheader("📊 Ma progression")
+    st.markdown("""
+    <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem;
+                color:#e2e8f0;padding:8px 0 4px">📊 Ma progression</div>
+    """, unsafe_allow_html=True)
 
     if not code_eleve:
         st.markdown('<div class="warn-box">⚠️ Entre ton code élève dans le panneau gauche pour voir ta progression.</div>', unsafe_allow_html=True)
@@ -1775,29 +2014,50 @@ with tab_progression:
                 st.session_state.progression_cache = None
 
         with col_info:
-            st.markdown(f"Progression de : **{code_eleve}**")
+            st.markdown(f'<span style="color:#475569;font-size:.85rem">Joueur : <strong style="color:#a5b4fc">{code_eleve}</strong></span>', unsafe_allow_html=True)
 
         # Chargement depuis Grist (avec cache session)
         if not st.session_state.progression_cache:
-            with st.spinner("Chargement de ta progression…"):
+            with st.spinner("⚡ Chargement de ta progression…"):
                 records = lire_progression_grist(code_eleve)
                 st.session_state.progression_cache = records
         else:
             records = st.session_state.progression_cache
 
         if not records:
-            st.markdown('<div class="info-box">📭 Aucune activité enregistrée pour ce code. Commence par faire des exercices !</div>', unsafe_allow_html=True)
+            st.markdown('<div class="info-box">📭 Aucune activité enregistrée. Commence par faire des exercices !</div>', unsafe_allow_html=True)
         else:
-            # ── Statistiques globales ─────────────────────────
-            nb_total = len(records)
-            bonnes    = [r for r in records if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien")]
-            nb_bonnes = len(bonnes)
+            # ── XP Banner ────────────────────────────────────
+            total_xp  = calculer_xp(records)
+            nb_total  = len(records)
+            nb_bonnes = sum(1 for r in records if r.get("auto_evaluation","") in ("😊 Bien","🌟 Très bien"))
             taux      = int(nb_bonnes / nb_total * 100) if nb_total else 0
 
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Activités totales", nb_total)
-            c2.metric("😊 Bien ou mieux", nb_bonnes)
-            c3.metric("Taux de réussite", f"{taux}%")
+            # Niveau XP
+            if total_xp < 100:    rang, rang_label = "🥉", "Apprenti"
+            elif total_xp < 300:  rang, rang_label = "🥈", "Initié"
+            elif total_xp < 600:  rang, rang_label = "🥇", "Confirmé"
+            elif total_xp < 1000: rang, rang_label = "💎", "Expert"
+            else:                 rang, rang_label = "👑", "Maître"
+
+            st.markdown(
+                f'<div class="xp-banner">'
+                f'<div style="font-size:2.5rem">{rang}</div>'
+                f'<div style="flex:1">'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:700;color:#e2e8f0">{rang_label}</div>'
+                f'<div class="xp-label">Rang actuel</div>'
+                f'</div>'
+                f'<div style="text-align:center">'
+                f'<div class="xp-value">⚡ {total_xp} XP</div>'
+                f'<div class="xp-label">points d\'expérience</div>'
+                f'</div>'
+                f'<div style="text-align:center;border-left:1px solid #2d3561;padding-left:16px">'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:800;font-size:1.3rem;color:#86efac">{taux}%</div>'
+                f'<div class="xp-label">taux de réussite</div>'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
 
             st.divider()
 
@@ -1916,18 +2176,3 @@ with tab_progression:
                                if c in df.columns]
                 st.dataframe(df[cols_affich].sort_values("date", ascending=False),
                              use_container_width=True, hide_index=True)
-
-# ============================================================
-# PIED DE PAGE (CRÉDITS & LICENCE)
-# ============================================================
-st.divider() # Une ligne de séparation élégante
-
-st.markdown(f"""
-    <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
-        Conçu et développé avec passion par <b>Fabrice</b> & <b>Gemini</b> (Architecte IA)<br>
-        Version 1.3 — 2024 • Ozoir-la-Ferrière<br>
-        <br>
-        <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i><br>
-        (Attribution - Pas d'Utilisation Commerciale - Partage à l'Identique)
-    </div>
-    """, unsafe_allow_html=True)
