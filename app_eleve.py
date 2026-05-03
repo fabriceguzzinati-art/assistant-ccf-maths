@@ -288,6 +288,69 @@ def lire_progression_grist(code_eleve: str) -> list:
     return []
 
 
+def calculer_streak(records: list) -> dict:
+    """
+    Calcule le streak quotidien d'un élève.
+    Retourne :
+      - streak       : nb de jours consécutifs jusqu'à aujourd'hui (ou hier)
+      - record       : meilleur streak historique
+      - nouveau_record : True si le streak actuel bat le record
+      - derniere_date  : date ISO de la dernière activité
+    """
+    from datetime import date, timedelta
+
+    # Extraire les dates uniques avec au moins une bonne éval
+    dates_ok = set()
+    for r in records:
+        if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien"):
+            d = r.get("date", "")
+            if d:
+                try:
+                    dates_ok.add(date.fromisoformat(str(d)[:10]))
+                except ValueError:
+                    pass
+
+    if not dates_ok:
+        return {"streak": 0, "record": 0, "nouveau_record": False, "derniere_date": None}
+
+    today     = date.today()
+    yesterday = today - timedelta(days=1)
+    dates_ok_sorted = sorted(dates_ok, reverse=True)
+    derniere  = dates_ok_sorted[0]
+
+    # Le streak ne compte que si l'élève a travaillé aujourd'hui ou hier
+    if derniere < yesterday:
+        streak_actuel = 0
+    else:
+        streak_actuel = 1
+        curseur = derniere
+        for d in dates_ok_sorted[1:]:
+            if curseur - d == timedelta(days=1):
+                streak_actuel += 1
+                curseur = d
+            else:
+                break
+
+    # Calcul du record historique (toutes les séquences)
+    record = 0
+    if dates_ok_sorted:
+        seq_cur = 1
+        for i in range(1, len(dates_ok_sorted)):
+            if dates_ok_sorted[i-1] - dates_ok_sorted[i] == timedelta(days=1):
+                seq_cur += 1
+            else:
+                record = max(record, seq_cur)
+                seq_cur = 1
+        record = max(record, seq_cur)
+
+    return {
+        "streak":         streak_actuel,
+        "record":         record,
+        "nouveau_record": streak_actuel > 0 and streak_actuel >= record,
+        "derniere_date":  derniere,
+    }
+
+
 # ── Banque d'exercices ────────────────────────────────────────
 
 
@@ -1451,7 +1514,8 @@ def calculer_xp(records: list) -> int:
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
-            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done"]:
+            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done",
+            "streak_cache"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1479,6 +1543,46 @@ with st.sidebar:
     ).strip().upper()
     if code_eleve:
         st.markdown(f'<div class="ok-box">✅ Connecté en tant que <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
+
+        # ── Streak ───────────────────────────────────────────
+        if not st.session_state.streak_cache:
+            records_streak = lire_progression_grist(code_eleve)
+            st.session_state.streak_cache = calculer_streak(records_streak)
+
+        s = st.session_state.streak_cache or {}
+        streak = s.get("streak", 0)
+        record = s.get("record", 0)
+
+        if streak >= 7:
+            feu = "🔥🔥🔥"
+        elif streak >= 3:
+            feu = "🔥🔥"
+        elif streak >= 1:
+            feu = "🔥"
+        else:
+            feu = "💤"
+
+        if streak > 0:
+            msg_streak = f"{feu} <strong>{streak} jour{'s' if streak > 1 else ''} d'affilée !</strong>"
+            couleur_bg  = "#1a0a00" if streak < 3 else "#1f0d00" if streak < 7 else "#2d0e00"
+            couleur_brd = "#f97316" if streak < 7 else "#ef4444"
+            couleur_txt = "#fdba74" if streak < 7 else "#fca5a5"
+        else:
+            msg_streak  = "💤 <strong>Pas d'activité récente</strong>"
+            couleur_bg  = "#1a1f35"
+            couleur_brd = "#3d4480"
+            couleur_txt = "#64748b"
+
+        record_html = f'<div style="font-size:.72rem;color:#64748b;margin-top:2px">Record : {record} jour{"s" if record > 1 else ""}</div>' if record > 0 else ""
+
+        st.markdown(
+            f'<div style="background:{couleur_bg};border-left:3px solid {couleur_brd};'
+            f'border-radius:0 8px 8px 0;padding:10px 14px;margin:6px 0">'
+            f'<div style="font-size:.88rem;color:{couleur_txt}">{msg_streak}</div>'
+            f'{record_html}'
+            f'</div>',
+            unsafe_allow_html=True
+        )
     else:
         st.markdown('<div class="warn-box">⚠️ Entre ton code pour sauvegarder ta progression.</div>', unsafe_allow_html=True)
 
@@ -1663,6 +1767,7 @@ with tab_gen:
         if eval_choix:
             envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             st.session_state.eval_gen_done = eval_choix
+            st.session_state.streak_cache  = None  # forcer recalcul streak
             # Vérifier si un boss se débloque
             if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
                 records_check = lire_progression_grist(code_eleve)
@@ -1685,6 +1790,13 @@ with tab_gen:
 
         if st.session_state.eval_gen_done:
             st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
+            # Neige si nouveau record de streak
+            if st.session_state.streak_cache is None:
+                records_s = lire_progression_grist(code_eleve or "")
+                s_data = calculer_streak(records_s)
+                st.session_state.streak_cache = s_data
+                if s_data.get("nouveau_record") and s_data.get("streak", 0) >= 3:
+                    st.snow()
 
         # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
         if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
@@ -1956,6 +2068,7 @@ with tab_ccf:
         if eval_ccf_choix:
             envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
             st.session_state.eval_ccf_done = eval_ccf_choix
+            st.session_state.streak_cache  = None  # forcer recalcul streak
             st.rerun()
 
         if st.session_state.eval_ccf_done:
