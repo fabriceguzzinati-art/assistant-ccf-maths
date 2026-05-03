@@ -1,0 +1,126 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "En tant que responsable de rayon dans un supermarché, vous devez gérer l'approvisionnement, la fixation des prix, l'aménagement du linéaire et l'analyse de la performance de vos produits. La maîtrise des calculs commerciaux est essentielle pour optimiser la rentabilité et l'attractivité de votre rayon.",
+    "rappel_cours": "**Taux de marque** = (Marge commerciale / Prix de Vente HT) * 100.\n**Rotation des stocks** = Ventes annuelles (en unités ou valeur) / Stock moyen (en unités ou valeur).\n**Indice de sensibilité (produit)** = (% du Chiffre d'affaires du produit / % du linéaire occupé par le produit).\n**Seuil de rentabilité en quantité** = Charges fixes / Marge sur Coût Variable Unitaire.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un produit est acheté 15 € HT. Le taux de marge brute habituel est de 30% sur le Prix de Vente HT. Pour une opération promotionnelle, la marge souhaitée est réduite de 5 points de pourcentage (toujours sur le PVHT). Le taux de TVA applicable est de 20%. Calculez le Prix de Vente TTC promotionnel pour ce produit.",
+        "type": "numerique",
+        "reponse": 24.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Rappelez-vous que le taux de marge se calcule sur le PVHT. La relation est PVHT = PAHT / (1 - Taux de marge). N'oubliez pas la TVA pour le prix TTC.",
+        "corrige": "1. Taux de marge promotionnel = 30% - 5% = 25%.\n2. Prix de Vente HT (PVHT) = Coût d'Achat HT (PAHT) / (1 - Taux de marge promotionnel)\n   PVHT = 15 € / (1 - 0.25) = 15 € / 0.75 = 20 €.\n3. Prix de Vente TTC (PVTTC) = PVHT * (1 + Taux de TVA)\n   PVTTC = 20 € * (1 + 0.20) = 20 € * 1.20 = 24 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Votre rayon réalise des ventes annuelles de 48 000 unités d'un certain produit. Le stock moyen actuel est de 1 200 unités. Votre direction souhaite atteindre une rotation des stocks de 50 par an pour ce produit. De combien d'unités devez-vous réduire votre stock moyen actuel pour atteindre cet objectif?",
+        "type": "numerique",
+        "reponse": 240.0,
+        "unite": "unités",
+        "tolerance": 0,
+        "indice": "La rotation des stocks est le rapport entre les ventes annuelles et le stock moyen. Déterminez le stock moyen nécessaire pour la rotation souhaitée.",
+        "corrige": "1. Calcul du stock moyen visé pour atteindre une rotation de 50 :\n   Stock moyen visé = Ventes annuelles / Rotation des stocks souhaitée\n   Stock moyen visé = 48 000 unités / 50 = 960 unités.\n2. Calcul de la réduction nécessaire du stock moyen :\n   Réduction = Stock moyen actuel - Stock moyen visé\n   Réduction = 1 200 unités - 960 unités = 240 unités."
+      },
+      {
+        "numero": 3,
+        "enonce": "Le rayon 'Produits Frais' réalise un chiffre d'affaires total de 180 000 € sur le dernier mois. Le linéaire total au sol de ce rayon est de 30 mètres. Les yaourts à la grecque, qui occupent 2 mètres de linéaire au sol, ont généré 12 600 € de chiffre d'affaires sur la même période. Calculez l'indice de sensibilité des yaourts à la grecque pour ce mois. Arrondissez le résultat à deux décimales.",
+        "type": "numerique",
+        "reponse": 1.05,
+        "unite": "",
+        "tolerance": 0.01,
+        "indice": "L'indice de sensibilité compare la part du Chiffre d'Affaires d'un produit à la part du linéaire qu'il occupe. Calculez d'abord les pourcentages respectifs.",
+        "corrige": "1. Calcul du pourcentage du chiffre d'affaires des yaourts à la grecque par rapport au CA total du rayon :\n   % CA yaourts = (12 600 € / 180 000 €) * 100 = 7%.\n2. Calcul du pourcentage du linéaire occupé par les yaourts à la grecque par rapport au linéaire total du rayon :\n   % linéaire yaourts = (2 m / 30 m) * 100 = 6.666...%.\n3. Calcul de l'indice de sensibilité :\n   Indice de sensibilité = % CA yaourts / % linéaire yaourts\n   Indice de sensibilité = 7% / 6.666...% = 1.05 (arrondi à deux décimales)."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un magasin vend un article 25 € TTC. Le taux de TVA est de 20%. Le coût d'achat unitaire de cet article est de 10 € HT. Les charges fixes mensuelles allouées à cette gamme de produits sont de 2 400 €. Quelle quantité minimale d'articles doit être vendue par mois pour que cette gamme atteigne son seuil de rentabilité?",
+        "type": "numerique",
+        "reponse": 222.0,
+        "unite": "unités",
+        "tolerance": 0,
+        "indice": "Le seuil de rentabilité en quantité est égal aux charges fixes divisées par la marge sur coût variable unitaire. N'oubliez pas de calculer le prix de vente HT avant de déterminer la marge.",
+        "corrige": "1. Calcul du Prix de Vente HT (PVHT) :\n   PVHT = PVTTC / (1 + Taux de TVA) = 25 € / (1 + 0.20) = 25 € / 1.20 = 20.8333... €.\n2. Calcul de la Marge sur Coût Variable Unitaire (MCVU) :\n   MCVU = PVHT - Coût d'Achat HT (PAHT) = 20.8333... € - 10 € = 10.8333... €.\n3. Calcul de la quantité à vendre pour le seuil de rentabilité :\n   Quantité = Charges fixes / MCVU\n   Quantité = 2 400 € / 10.8333... € = 221.53... unités.\n   Pour atteindre le seuil de rentabilité, il faut vendre au moins 222 unités (on ne peut pas vendre une fraction d'unité)."
+      },
+      {
+        "numero": 5,
+        "enonce": "Un rayon dispose d'une étagère de 1,20 mètre de long avec 4 niveaux de présentation. Un produit a les dimensions suivantes : largeur 15 cm, profondeur 20 cm, hauteur 25 cm. Chaque produit est présenté de face (facing). Pour garantir une bonne rotation, le chef de rayon a décidé d'allouer 75% du linéaire développé total de cette étagère à ce produit. Combien de produits au maximum peuvent être présentés sur cette étagère?",
+        "type": "numerique",
+        "reponse": 24.0,
+        "unite": "produits",
+        "tolerance": 0,
+        "indice": "Commencez par calculer le linéaire développé total de l'étagère, puis déterminez le linéaire alloué au produit avant de calculer le nombre de facings possibles. Attention aux unités.",
+        "corrige": "1. Calcul du linéaire développé total de l'étagère :\n   Linéaire au sol = 1,20 m = 120 cm.\n   Linéaire développé total = Longueur de l'étagère au sol * Nombre de niveaux\n   Linéaire développé total = 120 cm * 4 = 480 cm.\n2. Calcul du linéaire alloué au produit :\n   Linéaire alloué = Linéaire développé total * Pourcentage alloué\n   Linéaire alloué = 480 cm * 0.75 = 360 cm.\n3. Calcul du nombre maximum de produits pouvant être présentés (facings) :\n   Nombre de produits = Linéaire alloué / Largeur d'un produit\n   Nombre de produits = 360 cm / 15 cm = 24 produits."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Vous êtes responsable de rayon dans une grande surface. Vos compétences en calcul sont essentielles pour piloter la performance commerciale, gérer les stocks, optimiser l'implantation des produits et analyser la rentabilité des opérations promotionnelles. Chaque décision a un impact direct sur le chiffre d'affaires et la marge du magasin.",
+    "rappel_cours": "Rappels utiles :\n- Marge commerciale = Prix de vente HT - Coût d'achat HT\n- Taux de marque = (Marge commerciale / Prix de vente HT) × 100. En découle : Coût d'achat HT = Prix de vente HT × (1 - Taux de marque).\n- Taux de marge = (Marge commerciale / Coût d'achat HT) × 100.\n- Rotation des stocks (nombre de jours) = (Stock moyen en valeur / Ventes annuelles en valeur) × 365. Attention : Stock moyen et Ventes annuelles doivent être exprimés sur la même base de valeur (prix de vente ou coût d'achat).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Le stock théorique d'un produit 'X' en début de journée était de 350 unités. Durant la journée, 120 unités ont été livrées et 280 unités ont été vendues. À la fermeture, l'inventaire physique révèle un stock de 185 unités. Sachant que le coût d'achat unitaire de ce produit est de 4,50 €, calculez la valeur de la démarque inconnue en euros.",
+        "type": "numerique",
+        "reponse": 22.5,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord le stock théorique en fin de journée, puis la quantité de démarque inconnue, avant de déterminer sa valeur monétaire.",
+        "corrige": "1. Calcul du stock théorique en fin de journée :\n   Stock théorique = Stock initial + Livraisons - Ventes\n   Stock théorique = 350 + 120 - 280 = 190 unités\n2. Calcul de la quantité de démarque inconnue :\n   Démarque inconnue (quantité) = Stock théorique - Stock physique\n   Démarque inconnue (quantité) = 190 - 185 = 5 unités\n3. Calcul de la valeur de la démarque inconnue :\n   Valeur de la démarque inconnue = Quantité de démarque inconnue × Coût d'achat unitaire\n   Valeur de la démarque inconnue = 5 × 4,50 € = 22,50 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Un produit est acheté 15 € HT. Le prix de vente initial HT est fixé avec une marge commerciale de 33,33% du coût d'achat HT. Lors d'une opération promotionnelle, une réduction de 20% est appliquée sur le prix de vente HT affiché. Quel est le taux de marque final (en %) de ce produit après l'application de la réduction ? (Arrondir à deux décimales).",
+        "type": "numerique",
+        "reponse": 6.25,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord le prix de vente initial HT, puis le prix de vente réduit, avant de déterminer la marge et le taux de marque final.",
+        "corrige": "1. Calcul de la marge commerciale initiale :\n   Marge initiale = Coût d'achat HT × Taux de marge sur coût d'achat\n   Marge initiale = 15,00 € × (1/3) = 5,00 € (car 33,33% est approximativement 1/3)\n2. Calcul du prix de vente initial HT :\n   Prix de vente initial HT = Coût d'achat HT + Marge initiale\n   Prix de vente initial HT = 15,00 € + 5,00 € = 20,00 €\n3. Calcul du prix de vente HT après réduction :\n   Prix de vente après réduction = Prix de vente initial HT × (1 - Taux de réduction)\n   Prix de vente après réduction = 20,00 € × (1 - 0,20) = 20,00 € × 0,80 = 16,00 €\n4. Calcul de la marge commerciale après réduction :\n   Marge après réduction = Prix de vente après réduction - Coût d'achat HT\n   Marge après réduction = 16,00 € - 15,00 € = 1,00 €\n5. Calcul du taux de marque final :\n   Taux de marque final = (Marge après réduction / Prix de vente après réduction) × 100\n   Taux de marque final = (1,00 € / 16,00 €) × 100 = 6,25 %"
+      },
+      {
+        "numero": 3,
+        "enonce": "Un rayon de fruits secs a une longueur totale de 4,80 mètres. Pour le produit 'Mix Apéritif', la direction souhaite lui allouer 25% de la longueur de ce rayon. Chaque sachet de 'Mix Apéritif' a une largeur de 12 cm. Combien de facings de ce produit (nombre d'unités visibles en façade) peuvent être disposés sur cette longueur allouée, sachant qu'ils sont présentés de face ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "facings",
+        "tolerance": 0.0,
+        "indice": "Convertissez toutes les mesures dans la même unité avant de calculer la longueur attribuée au produit, puis le nombre de facings.",
+        "corrige": "1. Conversion de la longueur totale du rayon en centimètres :\n   Longueur totale du rayon = 4,80 m × 100 = 480 cm\n2. Calcul de la longueur allouée au produit 'Mix Apéritif' :\n   Longueur allouée = Longueur totale du rayon × Pourcentage alloué\n   Longueur allouée = 480 cm × 0,25 = 120 cm\n3. Calcul du nombre de facings :\n   Nombre de facings = Longueur allouée / Largeur d'un sachet\n   Nombre de facings = 120 cm / 12 cm = 10 facings"
+      },
+      {
+        "numero": 4,
+        "enonce": "Le chiffre d'affaires annuel HT d'un rayon de produits laitiers est de 240 000 €. Le stock moyen de ce rayon, évalué au coût d'achat HT, est de 20 000 €. Le taux de marque moyen sur ce rayon est de 25%. Calculez la rotation des stocks en nombre de jours (arrondir à l'entier le plus proche). (Utilisez 365 jours pour l'année).",
+        "type": "numerique",
+        "reponse": 41.0,
+        "unite": "jours",
+        "tolerance": 0.5,
+        "indice": "La formule de rotation des stocks nécessite que le numérateur (ventes) et le dénominateur (stock moyen) soient exprimés sur la même base de valeur (coût d'achat ou prix de vente).",
+        "corrige": "1. Calcul du coût d'achat HT des ventes annuelles :\n   Puisque le taux de marque est de 25%, cela signifie que la marge représente 25% du Prix de Vente HT. Donc, le Coût d'Achat HT représente 100% - 25% = 75% du Prix de Vente HT.\n   Coût d'achat des ventes annuelles = Chiffre d'affaires annuel HT × (1 - Taux de marque)\n   Coût d'achat des ventes annuelles = 240 000 € × (1 - 0,25) = 240 000 € × 0,75 = 180 000 €\n2. Calcul de la rotation des stocks en nombre de fois :\n   Rotation des stocks (nombre de fois) = Coût d'achat des ventes annuelles / Stock moyen au coût d'achat HT\n   Rotation des stocks (nombre de fois) = 180 000 € / 20 000 € = 9 fois\n3. Calcul de la rotation des stocks en jours :\n   Rotation des stocks (en jours) = Nombre de jours dans l'année / Rotation des stocks (nombre de fois)\n   Rotation des stocks (en jours) = 365 / 9 ≈ 40,55 jours\n   Arrondi à l'entier le plus proche : 41 jours."
+      },
+      {
+        "numero": 5,
+        "enonce": "Une opération promotionnelle est lancée pour un nouveau produit. 5 000 flyers sont imprimés à un coût unitaire de 0,08 € HT et distribués par une équipe externe à 0,05 € HT par flyer. Le produit en promotion coûte 8,00 € HT à l'achat et est vendu initialement 12,00 € HT. Durant l'opération, 800 unités de ce produit ont été vendues avec une réduction de 15% sur le prix de vente initial. Calculez le coût total HT de cette opération promotionnelle.",
+        "type": "numerique",
+        "reponse": 2090.0,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "L'opération a deux types de coûts : ceux liés à la communication (flyers) et ceux liés à la perte de marge due à la réduction de prix.",
+        "corrige": "1. Calcul du coût total d'impression et de distribution des flyers :\n   Coût impression = Nombre de flyers × Coût unitaire d'impression = 5 000 × 0,08 € = 400,00 €\n   Coût distribution = Nombre de flyers × Coût unitaire de distribution = 5 000 × 0,05 € = 250,00 €\n   Coût total flyers = 400,00 € + 250,00 € = 650,00 €\n2. Calcul de la réduction de prix par produit :\n   Réduction par produit = Prix de vente initial HT × Pourcentage de réduction\n   Réduction par produit = 12,00 € × 0,15 = 1,80 €\n3. Calcul de la perte de marge totale due à la promotion :\n   Perte de marge totale = Réduction par produit × Nombre d'unités vendues en promotion\n   Perte de marge totale = 1,80 € × 800 = 1 440,00 €\n4. Calcul du coût total de l'opération promotionnelle :\n   Coût total de l'opération = Coût total flyers + Perte de marge totale\n   Coût total de l'opération = 650,00 € + 1 440,00 € = 2 090,00 €"
+      }
+    ]
+  }
+]
