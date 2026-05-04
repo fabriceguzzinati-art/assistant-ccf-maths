@@ -360,14 +360,54 @@ def _slug(text: str) -> str:
     return text[:60]
 
 
+def _normalise(text: str) -> str:
+    """Normalise un texte pour comparaison souple : minuscules, sans accents, sans ponctuation."""
+    import unicodedata
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+    text = re.sub(r"[^a-z0-9]", "", text.lower())
+    return text
+
+
+def _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, suffixe="") -> str | None:
+    """
+    Cherche le fichier le plus proche dans BANQUE_DIR par correspondance souple.
+    Ignore les différences d'encodage, d'accents, de ponctuation et de casse.
+    suffixe = "" pour classique, "_interactif" pour interactif.
+    """
+    if not os.path.exists(BANQUE_DIR):
+        return None
+
+    # Clés normalisées pour la comparaison
+    niv_n  = _normalise(niveau)
+    fil_n  = _normalise(filiere)
+    chap_n = _normalise(chapitre)
+    diff_n = _normalise(difficulte.split(" ", 1)[-1])
+    ext    = f"{suffixe}.json"
+
+    meilleur = None
+    meilleur_score = 0
+
+    for fname in os.listdir(BANQUE_DIR):
+        if not fname.endswith(ext):
+            continue
+        fname_n = _normalise(fname)
+        # Compter combien de clés sont présentes dans le nom de fichier normalisé
+        score = sum(1 for k in [niv_n, fil_n, chap_n, diff_n] if k in fname_n)
+        if score > meilleur_score:
+            meilleur_score = score
+            meilleur = fname
+
+    # Accepter seulement si les 4 composantes sont trouvées
+    if meilleur_score >= 4:
+        return os.path.join(BANQUE_DIR, meilleur)
+    return None
+
+
 def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
     """Charge les sujets disponibles pour une combinaison donnée."""
-    diff_label = difficulte.split(" ", 1)[-1]
-    path = os.path.join(
-        BANQUE_DIR,
-        f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{_slug(diff_label)}.json"
-    )
-    if not os.path.exists(path):
+    path = _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, "")
+    if not path:
         return []
     try:
         with open(path, encoding="utf-8") as f:
@@ -378,12 +418,8 @@ def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
 
 def charger_banque_interactif(niveau, filiere, chapitre, difficulte) -> list:
     """Charge les sujets interactifs (JSON structuré avec questions) pour une combinaison."""
-    diff_label = difficulte.split(" ", 1)[-1]
-    path = os.path.join(
-        BANQUE_DIR,
-        f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{_slug(diff_label)}_interactif.json"
-    )
-    if not os.path.exists(path):
+    path = _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, "_interactif")
+    if not path:
         return []
     try:
         with open(path, encoding="utf-8") as f:
