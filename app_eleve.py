@@ -2351,50 +2351,36 @@ with tab_graphique:
             unsafe_allow_html=True
         )
 
-    # Intégration GeoGebra via l'API officielle (contourne les restrictions iframe)
+    # Intégration GeoGebra via l'API officielle
     st.components.v1.html("""
-    <div style="background:#13162a; border-radius:12px; overflow:hidden; border:1px solid #3d4480;">
-        <div id="ggb-element" style="width:100%; height:560px;"></div>
-    </div>
-    <script>
-        var params = {
-            "appName":        "graphing",
-            "width":          800,
-            "height":         560,
-            "showToolBar":    true,
-            "showAlgebraInput": true,
-            "showMenuBar":    false,
-            "showFullscreenButton": true,
-            "enableRightClick": false,
-            "capturingThreshold": null,
-            "showResetIcon":  true,
-            "language":       "fr",
-            "preventFocus":   false,
-            "scaleContainerClass": "ggb-element",
-            "autoHeight":     true,
-            "useBrowserForJS": false,
-            "allowStyleBar":  true,
-            "perspective":    "G",
-            "enableCAS":      false,
-            "enable3d":       false,
-            "algebraInputPosition": "bottom"
-        };
-
-        function loadGGB() {
-            if (typeof GGBApplet !== 'undefined') {
-                var applet = new GGBApplet(params, true);
-                applet.inject('ggb-element');
-            } else {
-                setTimeout(loadGGB, 300);
-            }
-        }
-
-        var script = document.createElement('script');
-        script.src = 'https://www.geogebra.org/apps/deployggb.js';
-        script.onload = loadGGB;
-        document.head.appendChild(script);
-    </script>
-    """, height=580)
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    </head>
+    <body style="margin:0;padding:0;background:#13162a;">
+        <div id="ggb-element"></div>
+        <script>
+            var params = {
+                "appName": "graphing",
+                "width": 780,
+                "height": 520,
+                "showToolBar": true,
+                "showAlgebraInput": true,
+                "showMenuBar": false,
+                "showFullscreenButton": true,
+                "language": "fr",
+                "showResetIcon": true,
+                "algebraInputPosition": "bottom"
+            };
+            var applet = new GGBApplet(params, true);
+            window.addEventListener("load", function() {
+                applet.inject("ggb-element");
+            });
+        </script>
+    </body>
+    </html>
+    """, height=540)
 
 # ─────────────────────────────────────────────────────────────
 # ONGLET 4 — MA PROGRESSION
