@@ -1511,7 +1511,107 @@ XP_PAR_ACTION = {
     "Boss":                  80,
 }
 
-def calculer_xp(records: list) -> int:
+def lire_classement_grist() -> list:
+    """
+    Lit les 10 meilleurs élèves par XP depuis Grist.
+    Retourne une liste triée [{code_eleve, xp, streak}].
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return []
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers, timeout=8)
+        if resp.status_code != 200:
+            return []
+        records = [r["fields"] for r in resp.json().get("records", [])]
+
+        # Grouper par élève
+        from collections import defaultdict
+        par_eleve = defaultdict(list)
+        for r in records:
+            code = r.get("code_eleve", "")
+            if code and code != "anonyme":
+                par_eleve[code].append(r)
+
+        # Calculer XP et streak pour chaque élève
+        classement = []
+        for code, recs in par_eleve.items():
+            xp     = calculer_xp(recs)
+            streak = calculer_streak(recs).get("streak", 0)
+            classement.append({"code": code, "xp": xp, "streak": streak})
+
+        return sorted(classement, key=lambda x: x["xp"], reverse=True)[:10]
+    except Exception:
+        return []
+
+
+def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str) -> dict:
+    """
+    Calcule un objectif personnalisé pour l'élève selon sa progression.
+    Retourne : {message, emoji, priorite (0-3)}
+    """
+    from datetime import date
+    s = calculer_streak(records)
+    streak = s.get("streak", 0)
+    derniere = s.get("derniere_date")
+    today = date.today()
+
+    # Priorité 1 — streak en danger
+    if derniere and derniere < today and streak > 0:
+        return {
+            "emoji": "🔥",
+            "message": f"Ton streak de {streak} jour{'s' if streak > 1 else ''} est en danger ! Fais au moins 1 exercice aujourd'hui.",
+            "couleur": "#ef4444",
+            "priorite": 3
+        }
+
+    # Priorité 2 — boss disponible sur le chapitre actif
+    if chapitre_actif and records:
+        prog = calculer_progression(records, chapitre_actif)
+        for diff in ORDRE_NIVEAUX_DIFF:
+            p = prog.get(diff, {})
+            if p.get("valide") and not p.get("boss_vaincu"):
+                mascotte = MASCOTTES[diff]["animal"]
+                return {
+                    "emoji": "⚔️",
+                    "message": f"Le boss {mascotte} t'attend sur '{chapitre_actif[:35]}' ! Affronte-le.",
+                    "couleur": "#7c3aed",
+                    "priorite": 2
+                }
+
+    # Priorité 3 — proche de valider un niveau
+    if chapitre_actif and records:
+        prog = calculer_progression(records, chapitre_actif)
+        for diff in ORDRE_NIVEAUX_DIFF:
+            p = prog.get(diff, {})
+            nb = p.get("nb_bonnes", 0)
+            if 0 < nb < SEUIL_VALIDATION and not p.get("valide"):
+                reste = SEUIL_VALIDATION - nb
+                return {
+                    "emoji": "🎯",
+                    "message": f"Plus que {reste} bonne{'s' if reste > 1 else ''} éval en {diff.split()[-1]} sur ce chapitre pour valider le niveau !",
+                    "couleur": "#f59e0b",
+                    "priorite": 1
+                }
+
+    # Défaut — encouragement simple
+    if streak == 0:
+        return {
+            "emoji": "🚀",
+            "message": "Commence ta session du jour — même 1 exercice suffit pour lancer ton streak !",
+            "couleur": "#6366f1",
+            "priorite": 0
+        }
+    return {
+        "emoji": "💪",
+        "message": f"Super ! {streak} jour{'s' if streak > 1 else ''} d'affilée. Continue comme ça !",
+        "couleur": "#22c55e",
+        "priorite": 0
+    }
     """Calcule le total XP d'un élève depuis ses records Grist."""
     total = 0
     for r in records:
@@ -1532,7 +1632,7 @@ for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
             "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done",
             "streak_cache", "interactif_sujet", "interactif_idx",
-            "interactif_reponses", "interactif_termine"]:
+            "interactif_reponses", "interactif_termine", "classement_cache"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1559,45 +1659,48 @@ with st.sidebar:
         help="Code distribué par ton professeur en début d'année."
     ).strip().upper()
     if code_eleve:
-        st.markdown(f'<div class="ok-box">✅ Connecté en tant que <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
-
-        # ── Streak ───────────────────────────────────────────
+        # ── Chargement streak ────────────────────────────────
         if not st.session_state.streak_cache:
             records_streak = lire_progression_grist(code_eleve)
             st.session_state.streak_cache = calculer_streak(records_streak)
 
-        s = st.session_state.streak_cache or {}
+        s      = st.session_state.streak_cache or {}
         streak = s.get("streak", 0)
         record = s.get("record", 0)
 
-        if streak >= 7:
-            feu = "🔥🔥🔥"
-        elif streak >= 3:
-            feu = "🔥🔥"
-        elif streak >= 1:
-            feu = "🔥"
+        # ── Message de bienvenue personnalisé ────────────────
+        from datetime import date
+        derniere = s.get("derniere_date")
+        if derniere == date.today():
+            salut = "Bonne continuation"
+        elif streak > 0:
+            salut = "Bon retour"
         else:
-            feu = "💤"
+            salut = "Bienvenue"
 
-        if streak > 0:
-            msg_streak = f"{feu} <strong>{streak} jour{'s' if streak > 1 else ''} d'affilée !</strong>"
-            couleur_bg  = "#1a0a00" if streak < 3 else "#1f0d00" if streak < 7 else "#2d0e00"
-            couleur_brd = "#f97316" if streak < 7 else "#ef4444"
-            couleur_txt = "#fdba74" if streak < 7 else "#fca5a5"
-        else:
-            msg_streak  = "💤 <strong>Pas d'activité récente</strong>"
-            couleur_bg  = "#1a1f35"
-            couleur_brd = "#3d4480"
-            couleur_txt = "#64748b"
+        if streak >= 7:   feu, couleur_bienv = "🔥🔥🔥", "#ef4444"
+        elif streak >= 3: feu, couleur_bienv = "🔥🔥",   "#f97316"
+        elif streak >= 1: feu, couleur_bienv = "🔥",     "#f59e0b"
+        else:             feu, couleur_bienv = "👋",     "#6366f1"
 
-        record_html = f'<div style="font-size:.72rem;color:#64748b;margin-top:2px">Record : {record} jour{"s" if record > 1 else ""}</div>' if record > 0 else ""
+        streak_txt = (
+            f"{feu} {streak} jour{'s' if streak > 1 else ''} d'affilée !"
+            if streak > 0 else "Lance ton premier streak aujourd'hui !"
+        )
 
         st.markdown(
-            f'<div style="background:{couleur_bg};border-left:3px solid {couleur_brd};'
-            f'border-radius:0 8px 8px 0;padding:10px 14px;margin:6px 0">'
-            f'<div style="font-size:.88rem;color:{couleur_txt}">{msg_streak}</div>'
-            f'{record_html}'
-            f'</div>',
+            f'<div style="background:linear-gradient(135deg,#13162a,#1e2235);'
+            f'border:1px solid {couleur_bienv}44;border-radius:10px;'
+            f'padding:12px 14px;margin:6px 0">'
+            f'<div style="font-size:.82rem;color:#94a3b8">{salut} 👋</div>'
+            f'<div style="font-family:Outfit,sans-serif;font-weight:800;'
+            f'color:#e2e8f0;font-size:1rem;margin:2px 0">{code_eleve}</div>'
+            f'<div style="font-size:.82rem;color:{couleur_bienv};margin-top:4px">'
+            f'{streak_txt}</div>'
+            + (f'<div style="font-size:.72rem;color:#475569;margin-top:2px">'
+               f'Record : {record} jour{"s" if record > 1 else ""}</div>'
+               if record > 1 else "")
+            + f'</div>',
             unsafe_allow_html=True
         )
     else:
@@ -1657,6 +1760,21 @@ tab_gen, tab_ccf, tab_graphique, tab_progression = st.tabs([
 # ONGLET 1 — GÉNÉRATEUR
 # ─────────────────────────────────────────────────────────────
 with tab_gen:
+    # ── Objectif du jour ─────────────────────────────────────
+    if code_eleve and st.session_state.progression_cache:
+        chap_actif = (st.session_state.meta_gen or {}).get("chapitre", "")
+        diff_active = (st.session_state.meta_gen or {}).get("difficulte", "")
+        obj = calculer_objectif(st.session_state.progression_cache, chap_actif, diff_active)
+        st.markdown(
+            f'<div style="background:#0d0f1a;border:1px solid {obj["couleur"]}55;'
+            f'border-left:4px solid {obj["couleur"]};border-radius:0 10px 10px 0;'
+            f'padding:10px 16px;margin-bottom:12px">'
+            f'<span style="font-size:1.1rem">{obj["emoji"]}</span> '
+            f'<span style="color:#e2e8f0;font-size:.88rem">{obj["message"]}</span>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+
     st.subheader("📝 Générateur de sujets et exercices")
     col1, col2 = st.columns(2)
 
@@ -2562,6 +2680,54 @@ with tab_progression:
                                if c in df.columns]
                 st.dataframe(df[cols_affich].sort_values("date", ascending=False),
                              use_container_width=True, hide_index=True)
+
+            st.divider()
+
+            # ── Classement de la classe ───────────────────────
+            st.markdown("### 🏆 Classement de la classe")
+            col_ref_class, _ = st.columns([1, 3])
+            with col_ref_class:
+                if st.button("🔄 Actualiser le classement", use_container_width=True, key="refresh_class"):
+                    st.session_state.classement_cache = None
+
+            if not st.session_state.classement_cache:
+                with st.spinner("Chargement du classement…"):
+                    st.session_state.classement_cache = lire_classement_grist()
+
+            classement = st.session_state.classement_cache or []
+
+            if not classement:
+                st.markdown('<div class="info-box">📭 Pas encore assez de données pour afficher le classement.</div>', unsafe_allow_html=True)
+            else:
+                MEDAILLES = {1: "🥇", 2: "🥈", 3: "🥉"}
+                for i, joueur in enumerate(classement, 1):
+                    est_moi   = joueur["code"] == code_eleve
+                    medaille  = MEDAILLES.get(i, f"**{i}.**")
+                    streak_j  = joueur.get("streak", 0)
+                    feu_j     = "🔥" * min(streak_j, 3) if streak_j > 0 else ""
+                    bg_color  = "#1e2a1e" if est_moi else "#13162a"
+                    border    = "#22c55e" if est_moi else "#2d3561"
+                    toi       = " ← Toi" if est_moi else ""
+
+                    st.markdown(
+                        f'<div style="display:flex;align-items:center;gap:12px;'
+                        f'background:{bg_color};border:1px solid {border};'
+                        f'border-radius:10px;padding:10px 16px;margin:4px 0">'
+                        f'<div style="font-size:1.2rem;min-width:32px">{medaille}</div>'
+                        f'<div style="flex:1;font-family:Outfit,sans-serif;'
+                        f'font-weight:{"800" if est_moi else "600"};color:#e2e8f0">'
+                        f'{joueur["code"]}{toi}</div>'
+                        f'<div style="color:#fbbf24;font-weight:700">⚡ {joueur["xp"]} XP</div>'
+                        f'<div style="color:#f97316;font-size:.85rem;min-width:40px">{feu_j}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+
+                st.markdown(
+                    '<div style="font-size:.75rem;color:#475569;margin-top:8px">'
+                    '🔒 Seuls les codes élèves sont affichés — aucun nom réel.</div>',
+                    unsafe_allow_html=True
+                )
 
 # ============================================================
 # PIED DE PAGE (CRÉDITS & LICENCE)
