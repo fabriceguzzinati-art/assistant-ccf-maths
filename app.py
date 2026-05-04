@@ -1318,12 +1318,13 @@ st.title("🎓 Assistant Professeur IA")
 st.caption("Génération de sujets · CCF Bac Pro · Correction de copies · Export Word")
 
 # ── ONGLETS ──────────────────────────────────────────────────
-tab_gen, tab_ccf, tab_coint, tab_correction, tab_export = st.tabs([
+tab_gen, tab_ccf, tab_coint, tab_correction, tab_export, tab_prop = st.tabs([
     "📝 Générateur de Sujets",
     "🎯 Sujets CCF",
     "🔗 Co-intervention",
     "📸 Correction de Copies",
-    "📊 Export Pronote"
+    "📊 Export Pronote",
+    "📥 Propositions élèves",
 ])
 
 
@@ -1767,3 +1768,147 @@ with tab_export:
 ### 💡 En attendant
 Copiez les notes depuis l'onglet **Correction de Copies** et saisissez-les manuellement dans Pronote.
     """)
+
+
+# ─────────────────────────────────────────────────────────────
+# ONGLET 6 — PROPOSITIONS ÉLÈVES
+# ─────────────────────────────────────────────────────────────
+with tab_prop:
+    st.subheader("📥 Propositions élèves — Sujets à valider")
+    st.markdown(
+        '<div class="info-box">🎓 Sujets générés par tes élèves via Gemini. '
+        'Valide les meilleurs pour les ajouter à la banque.</div>',
+        unsafe_allow_html=True
+    )
+
+    import requests as _req
+    import json as _json
+
+    # ── Chargement des propositions ──────────────────────────
+    def charger_propositions(statut_filtre="en_attente"):
+        try:
+            api_key  = st.secrets.get("GRIST_API_KEY", "")
+            doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+            base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+            if not api_key or not doc_id:
+                return []
+            import urllib.parse
+            filtre = urllib.parse.quote(_json.dumps({"statut": [statut_filtre]}))
+            url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records?filter={filtre}"
+            headers = {"Authorization": f"Bearer {api_key}"}
+            resp = _req.get(url, headers=headers, timeout=8)
+            if resp.status_code == 200:
+                return [(r["id"], r["fields"]) for r in resp.json().get("records", [])]
+        except Exception:
+            pass
+        return []
+
+    def maj_statut_proposition(record_id, nouveau_statut):
+        try:
+            api_key  = st.secrets.get("GRIST_API_KEY", "")
+            doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+            base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+            url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            payload = {"records": [{"id": record_id, "fields": {"statut": nouveau_statut}}]}
+            _req.patch(url, headers=headers, json=payload, timeout=5)
+        except Exception:
+            pass
+
+    # ── Filtres ──────────────────────────────────────────────
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        filtre_statut = st.selectbox(
+            "Statut", ["en_attente", "validé", "rejeté"], key="prop_statut"
+        )
+    with col_f2:
+        if st.button("🔄 Actualiser", use_container_width=True, key="prop_refresh"):
+            st.rerun()
+    with col_f3:
+        st.markdown("")  # spacer
+
+    propositions = charger_propositions(filtre_statut)
+
+    if not propositions:
+        st.markdown(
+            f'<div class="info-box">📭 Aucune proposition en statut '
+            f'<strong>{filtre_statut}</strong>.</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(f"**{len(propositions)} proposition(s) trouvée(s)**")
+
+        for record_id, fields in propositions:
+            with st.expander(
+                f"📄 {fields.get('chapitre','?')[:50]} — "
+                f"{fields.get('filiere','?')} {fields.get('niveau','?')} "
+                f"{fields.get('difficulte','?')} — "
+                f"par {fields.get('code_eleve','?')} le {fields.get('date','?')}"
+            ):
+                # Badges
+                badges = (
+                    f'<span class="badge">🎓 {fields.get("niveau","")}</span>'
+                    f'<span class="badge">🏢 {fields.get("filiere","")}</span>'
+                    f'<span class="badge">📖 {fields.get("chapitre","")[:35]}</span>'
+                    f'<span class="badge">{fields.get("difficulte","")}</span>'
+                )
+                if fields.get("auto_evaluation"):
+                    badges += f'<span class="badge">👤 {fields["auto_evaluation"]}</span>'
+                st.markdown(badges, unsafe_allow_html=True)
+
+                # Aperçu du contenu
+                contenu = fields.get("contenu", "")
+                if contenu:
+                    st.markdown(contenu[:2000] + ("…" if len(contenu) > 2000 else ""))
+
+                # Actions
+                if filtre_statut == "en_attente":
+                    col_v, col_r, col_dl = st.columns(3)
+                    with col_v:
+                        if st.button(
+                            "✅ Valider", type="primary",
+                            use_container_width=True, key=f"val_{record_id}"
+                        ):
+                            maj_statut_proposition(record_id, "validé")
+                            st.success("✅ Proposition validée !")
+                            st.rerun()
+                    with col_r:
+                        if st.button(
+                            "❌ Rejeter",
+                            use_container_width=True, key=f"rej_{record_id}"
+                        ):
+                            maj_statut_proposition(record_id, "rejeté")
+                            st.info("Proposition rejetée.")
+                            st.rerun()
+                    with col_dl:
+                        # Télécharger en JSON prêt pour la banque
+                        import re as _re
+                        def _slug_dl(text):
+                            text = text.replace(" ", "_").replace("—", "").replace("/", "_")
+                            return _re.sub(r"[^a-zA-Z0-9_\-àâéèêëîïôùûüç]", "", text)[:50]
+
+                        nom_fichier_dl = (
+                            f"{_slug_dl(fields.get('niveau',''))}_{_slug_dl(fields.get('filiere',''))}"
+                            f"_{_slug_dl(fields.get('chapitre',''))}_{_slug_dl(fields.get('difficulte',''))}.json"
+                        )
+                        contenu_json = _json.dumps([{
+                            "niveau":     fields.get("niveau", ""),
+                            "categorie":  "Bac Pro",
+                            "filiere":    fields.get("filiere", ""),
+                            "matiere":    fields.get("matiere", "Mathématiques"),
+                            "chapitre":   fields.get("chapitre", ""),
+                            "difficulte": fields.get("difficulte", ""),
+                            "contenu":    contenu,
+                            "source":     f"élève {fields.get('code_eleve','')}",
+                            "date_generation": fields.get("date", ""),
+                        }], ensure_ascii=False, indent=2)
+
+                        st.download_button(
+                            "📥 JSON banque",
+                            contenu_json,
+                            file_name=nom_fichier_dl,
+                            mime="application/json",
+                            use_container_width=True,
+                            key=f"dl_{record_id}"
+                        )
+                        st.caption("Télécharge → place dans banque/ → git push")

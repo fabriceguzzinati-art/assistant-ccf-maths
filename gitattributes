@@ -1,0 +1,14 @@
+# Forcer LF pour tous les fichiers texte — évite les conflits Windows/Mac/Linux
+* text=auto eol=lf
+
+# Fichiers spécifiques
+*.py    text eol=lf encoding=utf-8
+*.json  text eol=lf encoding=utf-8
+*.md    text eol=lf encoding=utf-8
+*.txt   text eol=lf encoding=utf-8
+*.toml  text eol=lf encoding=utf-8
+
+# Fichiers binaires — pas de conversion
+*.png   binary
+*.jpg   binary
+*.docx  binary

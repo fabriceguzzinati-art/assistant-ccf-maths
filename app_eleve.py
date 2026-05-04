@@ -264,6 +264,37 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
         pass
 
 
+def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
+    """
+    Envoie un sujet généré par un élève dans Banque_propositions pour validation prof.
+    Silencieux en cas d'erreur.
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return
+        now = datetime.now()
+        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"records": [{"fields": {
+            "code_eleve":    str(code_eleve),
+            "date":          now.strftime("%Y-%m-%d"),
+            "niveau":        str(meta.get("niveau", "")),
+            "filiere":       str(meta.get("filiere", "")),
+            "matiere":       str(meta.get("matiere", "")),
+            "chapitre":      str(meta.get("chapitre", "")),
+            "difficulte":    str(meta.get("difficulte", "")),
+            "contenu":       str(contenu)[:5000],  # Grist limite les textes longs
+            "auto_evaluation": str(auto_evaluation),
+            "statut":        "en_attente",
+        }}]}
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass
+
+
 def lire_progression_grist(code_eleve: str) -> list:
     """
     Lit toutes les lignes Grist pour un élève donné.
@@ -1939,6 +1970,12 @@ with tab_gen:
                         "niveau": niv, "matiere": mat, "chapitre": chap,
                         "filiere": filiere, "difficulte": difficulte, "source": "Gemini"
                     }
+                    # Envoyer dans Banque_propositions pour validation prof
+                    envoyer_proposition_grist(
+                        code_eleve or "anonyme",
+                        st.session_state.meta_gen,
+                        res
+                    )
                     st.success("✅ Sujet généré !")
                 except Exception as e:
                     if "429" in str(e):
@@ -2140,6 +2177,12 @@ with tab_gen:
 
         if eval_choix:
             envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
+            # Mettre à jour l'auto-évaluation dans la proposition si c'est un sujet Gemini
+            if m.get("source") == "Gemini" and st.session_state.generated_md:
+                envoyer_proposition_grist(
+                    code_eleve or "anonyme", m,
+                    st.session_state.generated_md, eval_choix
+                )
             st.session_state.eval_gen_done = eval_choix
             st.session_state.streak_cache  = None  # forcer recalcul streak
             # Vérifier si un boss se débloque
