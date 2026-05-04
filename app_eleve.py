@@ -1511,6 +1511,23 @@ XP_PAR_ACTION = {
     "Boss":                  80,
 }
 
+def calculer_xp(records: list) -> int:
+    """Calcule le total XP d'un élève depuis ses records Grist."""
+    total = 0
+    for r in records:
+        if r.get("auto_evaluation", "") not in ("😊 Bien", "🌟 Très bien"):
+            continue
+        type_a = r.get("type_activite", "")
+        diff   = r.get("niveau_difficulte", "")
+        if "Boss" in type_a:
+            total += XP_PAR_ACTION["Boss"]
+        elif "CCF" in type_a:
+            total += XP_PAR_ACTION["CCF"]
+        else:
+            total += XP_PAR_ACTION.get(f"Exercice-{diff}", 10)
+    return total
+
+
 def lire_classement_grist() -> list:
     """
     Lit les 10 meilleurs élèves par XP depuis Grist.
