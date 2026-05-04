@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
   {
     "niveau": "1ère Pro",
@@ -41,4 +42,49 @@
       }
     ]
   }
+=======
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Résolution graphique d'équations et d'inéquations f(x)=g(x)",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "En tant qu'aide-soignant(e), agent de service hospitalier ou accompagnant(e), vous êtes régulièrement confronté(e) à des choix ou des suivis qui impliquent des comparaisons de coûts, de temps ou de quantités. Comprendre comment les situations évoluent et quand certaines conditions sont atteintes est essentiel pour une gestion efficace et des soins optimaux.",
+    "rappel_cours": "La résolution d'une équation f(x)=g(x) permet de trouver la valeur de 'x' pour laquelle deux situations (représentées par f(x) et g(x)) sont équivalentes. Graphiquement, cela correspond au point d'intersection des deux courbes. La résolution d'une inéquation f(x) < g(x) ou f(x) > g(x) permet de déterminer l'ensemble des valeurs de 'x' pour lesquelles une situation est plus avantageuse ou dépasse un seuil donné.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un hôpital compare deux fournisseurs pour l'achat de compresses stériles. Le Fournisseur A propose un abonnement mensuel de 75€ plus 0,12€ par compresse. Le Fournisseur B propose un abonnement mensuel de 105€ plus 0,08€ par compresse. À partir de combien de compresses utilisées par mois les deux fournisseurs coûteront-ils exactement le même prix ?",
+        "type": "numerique",
+        "reponse": 750.0,
+        "unite": "compresses",
+        "tolerance": 0.0,
+        "indice": "Modélisez le coût de chaque fournisseur par une fonction linéaire (y = ax + b). Égalisez les deux fonctions pour trouver 'x', le nombre de compresses.",
+        "corrige": "Soit x le nombre de compresses utilisées par mois.\nCoût Fournisseur A (C_A) : C_A(x) = 75 + 0.12x\nCoût Fournisseur B (C_B) : C_B(x) = 105 + 0.08x\nPour que les coûts soient égaux, nous résolvons l'équation : C_A(x) = C_B(x)\n75 + 0.12x = 105 + 0.08x\n0.12x - 0.08x = 105 - 75\n0.04x = 30\nx = 30 / 0.04\nx = 750\nLes deux fournisseurs coûteront le même prix pour 750 compresses."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une infirmière doit planifier le temps nécessaire pour deux types de soins. Le Soin S1 prend un temps initial de 10 minutes (préparation) et 3 minutes par patient. Le Soin S2 prend un temps initial de 25 minutes (préparation) et 2 minutes par patient. Pour quel nombre minimum de patients le Soin S2 deviendra-t-il moins long à effectuer que le Soin S1 ?",
+        "type": "numerique",
+        "reponse": 16.0,
+        "unite": "patients",
+        "tolerance": 0.0,
+        "indice": "Modélisez le temps de chaque soin en fonction du nombre de patients. Posez une inéquation pour exprimer que le temps du Soin S2 est inférieur à celui du Soin S1, puis résolvez-la. Le nombre de patients doit être un entier.",
+        "corrige": "Soit x le nombre de patients.\nTemps pour le Soin S1 (T_S1) : T_S1(x) = 10 + 3x\nTemps pour le Soin S2 (T_S2) : T_S2(x) = 25 + 2x\nPour que le Soin S2 soit moins long que le Soin S1 : T_S2(x) < T_S1(x)\n25 + 2x < 10 + 3x\n25 - 10 < 3x - 2x\n15 < x\nou x > 15\nPuisque le nombre de patients doit être un entier, le Soin S2 devient moins long à partir de 16 patients (le premier entier strictement supérieur à 15)."
+      },
+      {
+        "numero": 3,
+        "enonce": "Le taux d'hydratation (en %) d'un patient après l'administration d'un soluté par voie intraveineuse peut être estimé par la fonction `H(t) = 85 + 0.5t`, où 't' est le temps en heures après l'administration. L'objectif est d'atteindre un taux d'hydratation de 90%. Combien de temps (en heures) après l'administration le patient atteindra-t-il cet objectif de 90% ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "%",
+        "tolerance": 0.1,
+        "indice": "Égalisez la fonction de taux d'hydratation à l'objectif de 90% et résolvez l'équation pour 't'.",
+        "corrige": "Soit H(t) le taux d'hydratation et t le temps en heures.\nLa fonction d'hydratation est H(t) = 85 + 0.5t.\nL'objectif est d'atteindre 90%.\nNous résolvons l'équation : H(t) = 90\n85 + 0.5t = 90\n0.5t = 90 - 85\n0.5t = 5\nt = 5 / 0.5\nt = 10\nLe patient atteindra l'objectif de 90% d'hydratation après 10 heures."
+      }
+    ]
+  }
+>>>>>>> 35fe6c0b852325cdc931eb9d20dc32983725a7a6
 ]

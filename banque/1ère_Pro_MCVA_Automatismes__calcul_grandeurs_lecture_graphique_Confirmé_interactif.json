@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
   {
     "niveau": "1ère Pro",
@@ -123,4 +124,131 @@
       }
     ]
   }
+=======
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Dans l'univers stimulant du commerce, la maîtrise des chiffres est un atout indispensable. Qu'il s'agisse de fixer des prix, de gérer un linéaire ou d'analyser la performance d'un produit, les calculs sont au cœur de la prise de décision. Cet exercice vous plonge dans des situations concrètes de la vie d'un magasin.",
+    "rappel_cours": "Quelques formules clés : \n- Prix de Vente TTC = Prix de Vente HT × (1 + Taux TVA)\n- Marge Commerciale = Prix de Vente HT - Prix d'Achat HT\n- Taux de marque = (Marge Commerciale / Prix de Vente HT) × 100\n- Taux de rotation des stocks = Ventes annuelles / Stock moyen",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un nouveau produit est acheté 15,00 € HT par le magasin. Le commerçant souhaite appliquer une marge de 40% sur son prix d'achat HT. Sachant que le taux de TVA en vigueur est de 20%, quel sera le prix de vente TTC de ce produit ?",
+        "type": "numerique",
+        "reponse": 25.2,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord le prix de vente HT en appliquant la marge, puis déduisez le prix de vente TTC en incluant la TVA.",
+        "corrige": "Prix de vente HT = Prix d'achat HT × (1 + Taux de marge sur prix d'achat)\nPV HT = 15,00 € × (1 + 0,40) = 15,00 € × 1,40 = 21,00 €\n\nPrix de vente TTC = PV HT × (1 + Taux de TVA)\nPV TTC = 21,00 € × (1 + 0,20) = 21,00 € × 1,20 = 25,20 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Un linéaire a une longueur disponible de 3 mètres. Le magasin souhaite y exposer des boîtes de conserve dont la largeur est de 10 cm chacune. Le plan de merchandising prévoit 4 facings par produit et 3 niveaux d'étagères superposés. Quelle est la quantité maximale de boîtes (toutes références confondues) que ce linéaire peut contenir ?",
+        "type": "numerique",
+        "reponse": 360.0,
+        "unite": "boîtes",
+        "tolerance": 0.0,
+        "indice": "Convertissez la longueur du linéaire en centimètres. Calculez ensuite le nombre de boîtes par niveau, puis multipliez par le nombre de facings et de niveaux.",
+        "corrige": "Longueur du linéaire en cm = 3 mètres × 100 cm/m = 300 cm\nNombre de boîtes par facing sur un niveau = Longueur linéaire / Largeur d'une boîte = 300 cm / 10 cm = 30 boîtes\nNombre total de boîtes = Nombre de boîtes par facing sur un niveau × Nombre de facings × Nombre de niveaux\nNombre total de boîtes = 30 × 4 × 3 = 360 boîtes"
+      },
+      {
+        "numero": 3,
+        "enonce": "Un client achète un article dont le prix affiché est de 45,00 €. Une première remise de 15% est appliquée en caisse. De plus, le client utilise un coupon offrant une réduction supplémentaire de 5% sur le prix déjà remisé. Quel est le prix final de l'article que le client doit payer ?",
+        "type": "numerique",
+        "reponse": 36.41,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Appliquez les réductions successivement. Chaque réduction s'applique sur le prix déjà réduit.",
+        "corrige": "Prix après la première remise = Prix initial × (1 - Taux de première remise)\nPrix après première remise = 45,00 € × (1 - 0,15) = 45,00 € × 0,85 = 38,25 €\n\nPrix final après la deuxième remise = Prix après première remise × (1 - Taux de deuxième remise)\nPrix final = 38,25 € × (1 - 0,05) = 38,25 € × 0,95 = 36,3375 €\nArrondi au centime près : 36,41 €"
+      },
+      {
+        "numero": 4,
+        "enonce": "Un produit est vendu 28,00 € TTC. Le taux de TVA applicable est de 20%. Le prix d'achat HT de ce produit est de 15,00 €. Quel est le taux de marque appliqué par le magasin sur ce produit, exprimé en pourcentage et arrondi à deux décimales ?",
+        "type": "numerique",
+        "reponse": 35.71,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord le prix de vente HT, puis la marge commerciale, et enfin le taux de marque. N'oubliez pas d'exprimer le résultat en pourcentage.",
+        "corrige": "Prix de vente HT = Prix de vente TTC / (1 + Taux de TVA)\nPV HT = 28,00 € / (1 + 0,20) = 28,00 € / 1,20 ≈ 23,3333 €\n\nMarge commerciale = Prix de vente HT - Prix d'achat HT\nMarge commerciale = 23,3333 € - 15,00 € = 8,3333 €\n\nTaux de marque = (Marge commerciale / Prix de vente HT) × 100\nTaux de marque = (8,3333 € / 23,3333 €) × 100 ≈ 0,35714 × 100 ≈ 35,71 %\nArrondi à deux décimales : 35,71 %"
+      },
+      {
+        "numero": 5,
+        "enonce": "Le magasin a vendu 12 500 unités d'un article A l'année dernière. Cette année, les ventes de l'article A ont augmenté de 8%. Le stock moyen pour cet article est maintenu à 600 unités. Quel est le taux de rotation des stocks pour l'article A cette année, arrondi à un chiffre après la virgule ?",
+        "type": "numerique",
+        "reponse": 22.5,
+        "unite": "rotations",
+        "tolerance": 0.1,
+        "indice": "Calculez les ventes de l'année en cours en appliquant l'augmentation. Utilisez ensuite la formule du taux de rotation des stocks.",
+        "corrige": "Ventes de l'article A cette année = Ventes l'année dernière × (1 + Taux d'augmentation)\nVentes cette année = 12 500 unités × (1 + 0,08) = 12 500 unités × 1,08 = 13 500 unités\n\nTaux de rotation des stocks = Ventes annuelles / Stock moyen\nTaux de rotation = 13 500 unités / 600 unités = 22,5 rotations\nArrondi à un chiffre après la virgule : 22,5"
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Vous êtes stagiaire au sein du service commercial d'un supermarché. Votre tuteur vous confie des tâches de calculs et d'analyse courantes pour gérer au mieux l'activité du magasin, de la gestion des stocks à l'analyse des ventes et des performances des rayons.",
+    "rappel_cours": "Quelques formules clés : \n- Marge Commerciale HT = Prix de Vente HT - Prix d'Achat HT\n- Prix de Vente HT = Prix de Vente TTC / (1 + Taux de TVA)\n- Stock Final = Stock Initial + Entrées - Sorties (Ventes + Démarque)\n- Prix après réduction = Prix Initial * (1 - Taux de Réduction)\n- Taux d'évolution = ((Valeur Finale - Valeur Initiale) / Valeur Initiale) * 100\n- Rendement au mètre linéaire = Chiffre d'affaires / Longueur du linéaire",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un article est acheté par le magasin à 18 € HT. Il est revendu 29.90 € TTC. Le taux de TVA appliqué est de 20%. Calculez la marge commerciale unitaire HORS TAXES réalisée sur cet article.",
+        "type": "numerique",
+        "reponse": 6.92,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Rappelez-vous que la marge commerciale s'exprime souvent en HT. Pour passer du TTC au HT, divisez par (1 + taux de TVA).",
+        "corrige": "1. Calcul du prix de vente HT : 29.90 € / (1 + 0.20) = 29.90 € / 1.20 ≈ 24.9167 € HT\n2. Calcul de la marge commerciale HT : 24.9167 € - 18 € = 6.9167 €\n3. Arrondi à deux décimales : 6.92 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Au début du mois, le stock de chemises dans le rayon est de 120 unités. Durant le mois, le magasin a reçu 4 livraisons de 45 chemises chacune. 235 chemises ont été vendues et 8 chemises ont été identifiées comme défectueuses et mises de côté. Quel est le stock physique final de chemises dans le rayon ?",
+        "type": "numerique",
+        "reponse": 57.0,
+        "unite": "unités",
+        "tolerance": 0,
+        "indice": "Le stock final prend en compte le stock initial, les entrées (livraisons) et les sorties (ventes, démarque).",
+        "corrige": "1. Calcul des entrées (livraisons) : 4 livraisons * 45 unités/livraison = 180 unités\n2. Stock avant sorties : 120 (initial) + 180 (livraisons) = 300 unités\n3. Calcul du stock final : 300 (stock avant sorties) - 235 (ventes) - 8 (défectueuses) = 57 unités"
+      },
+      {
+        "numero": 3,
+        "enonce": "Un robot de cuisine est affiché au prix de 150 € TTC. Le magasin applique une première remise de 10%. Lors d'une opération spéciale, les clients bénéficient d'une réduction supplémentaire de 5% sur le prix déjà remisé. Quel est le prix final TTC du robot après ces deux réductions successives ?",
+        "type": "numerique",
+        "reponse": 128.25,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Les réductions successives ne s'additionnent pas. Appliquez la première réduction, puis la seconde sur le nouveau prix obtenu.",
+        "corrige": "1. Prix après la première remise de 10% : 150 € * (1 - 0.10) = 150 € * 0.90 = 135 €\n2. Prix après la seconde remise de 5% (sur le prix remisé) : 135 € * (1 - 0.05) = 135 € * 0.95 = 128.25 €"
+      },
+      {
+        "numero": 4,
+        "enonce": "Le chiffre d'affaires (CA) du rayon 'Électroménager' était de 15 500 € en mars. En avril, grâce à une promotion, le CA a atteint 18 200 €. Calculez le taux d'évolution du chiffre d'affaires entre mars et avril, exprimé en pourcentage.",
+        "type": "numerique",
+        "reponse": 17.42,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Le taux d'évolution se calcule par (Valeur Finale - Valeur Initiale) / Valeur Initiale, le tout multiplié par 100 pour obtenir un pourcentage.",
+        "corrige": "1. Calcul de la variation absolue : 18 200 € - 15 500 € = 2 700 €\n2. Calcul du taux d'évolution : (2 700 € / 15 500 €) * 100 ≈ 0.17419 * 100 = 17.419 %\n3. Arrondi à deux décimales : 17.42 %"
+      },
+      {
+        "numero": 5,
+        "enonce": "Le rayon 'Fruits et Légumes' du magasin mesure 12.5 mètres linéaires. Sur une journée, ce rayon a généré un chiffre d'affaires de 3 750 €. Calculez le rendement au mètre linéaire pour cette journée.",
+        "type": "numerique",
+        "reponse": 300.0,
+        "unite": "€/ml",
+        "tolerance": 0.01,
+        "indice": "Le rendement au mètre linéaire est obtenu en divisant le chiffre d'affaires par la longueur du linéaire.",
+        "corrige": "1. Calcul du rendement au mètre linéaire : 3 750 € / 12.5 ml = 300 €/ml"
+      }
+    ]
+  }
+>>>>>>> 35fe6c0b852325cdc931eb9d20dc32983725a7a6
 ]

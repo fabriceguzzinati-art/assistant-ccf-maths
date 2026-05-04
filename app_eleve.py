@@ -16,25 +16,220 @@ import json
 
 st.markdown("""
     <style>
-    /* Arrondir les boutons et les boites */
-    .stButton>button {
-        border-radius: 20px;
-        border: 1px solid #4CAF50;
-        transition: all 0.3s;
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    /* ── Base sombre ── */
+    .stApp {
+        background: #0d0f1a;
+        color: #e2e8f0;
+        font-family: 'Outfit', sans-serif;
     }
-    .stButton>button:hover {
-        transform: scale(1.05);
-        background-color: #4CAF50;
+    .stApp > header { background: transparent !important; }
+
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background: #13162a !important;
+        border-right: 1px solid #2d3561;
+    }
+    [data-testid="stSidebar"] * { color: #cbd5e1 !important; }
+
+    /* ── Onglets ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #13162a;
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+        border: 1px solid #2d3561;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        color: #94a3b8;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+        font-size: .85rem;
+        padding: 8px 16px;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        color: white !important;
+        box-shadow: 0 0 16px rgba(99,102,241,.5);
+    }
+
+    /* ── Boutons primaires ── */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 12px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: .95rem;
+        padding: 10px 20px;
         color: white;
+        box-shadow: 0 0 20px rgba(99,102,241,.4);
+        transition: all .25s;
     }
-    /* Style pour les cartes d'exercices */
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border-radius: 15px;
-        background-color: #f0f2f6; /* Ou sombre si tu préfères */
-        padding: 20px;
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(99,102,241,.7);
+    }
+
+    /* ── Boutons secondaires ── */
+    .stButton > button:not([kind="primary"]) {
+        background: #1e2235;
+        border: 1px solid #3d4480;
+        border-radius: 12px;
+        color: #94a3b8;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        transition: all .2s;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        border-color: #6366f1;
+        color: #a5b4fc;
+        background: #252a45;
+    }
+
+    /* ── Selectbox / Inputs ── */
+    .stSelectbox > div > div,
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        background: #1a1f35 !important;
+        border: 1px solid #2d3561 !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    .stSelectbox > div > div:focus-within,
+    .stTextInput > div > div:focus-within {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99,102,241,.2) !important;
+    }
+
+    /* ── Slider ── */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+    }
+
+    /* ── Divider ── */
+    hr { border-color: #2d3561 !important; }
+
+    /* ── Metric cards ── */
+    [data-testid="stMetric"] {
+        background: #13162a;
+        border: 1px solid #2d3561;
+        border-radius: 12px;
+        padding: 16px;
+    }
+    [data-testid="stMetricValue"] {
+        color: #a5b4fc !important;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+    }
+
+    /* ── Boîtes custom ── */
+    .info-box {
+        background: #1a2040;
+        border-left: 4px solid #6366f1;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #a5b4fc;
+    }
+    .warn-box {
+        background: #1f1a00;
+        border-left: 4px solid #f59e0b;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #fcd34d;
+    }
+    .ok-box {
+        background: #0d2018;
+        border-left: 4px solid #22c55e;
+        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
+        font-size: .88rem;
+        color: #86efac;
+    }
+    .badge {
+        display: inline-block;
+        background: #252a45;
+        color: #a5b4fc;
+        border: 1px solid #3d4480;
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: .78rem;
+        font-family: 'Outfit', sans-serif;
+        margin-right: 6px;
+        margin-bottom: 4px;
+    }
+
+    /* ── XP Banner ── */
+    .xp-banner {
+        background: linear-gradient(135deg, #1a1f35, #252a45);
+        border: 1px solid #3d4480;
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .xp-value {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #fbbf24;
+    }
+    .xp-label { font-size: .8rem; color: #64748b; }
+
+    /* ── Niveau card ── */
+    .niveau-card {
+        background: linear-gradient(135deg, #1a1f35, #1e2745);
+        border: 1px solid #3d4480;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 8px 0;
+        transition: border-color .2s;
+    }
+    .niveau-card:hover { border-color: #6366f1; }
+
+    /* ── Boss banner ── */
+    .boss-banner {
+        background: linear-gradient(135deg, #1a0a2e, #2d1060);
+        border: 2px solid #7c3aed;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        margin: 16px 0;
+        box-shadow: 0 0 40px rgba(124,58,237,.3);
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0d0f1a; }
+    ::-webkit-scrollbar-thumb { background: #2d3561; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+    /* ── Markdown content ── */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        font-family: 'Outfit', sans-serif;
+        color: #e2e8f0;
+    }
+    .stMarkdown p, .stMarkdown li { color: #cbd5e1; line-height: 1.7; }
+    .stMarkdown code {
+        background: #1e2235;
+        color: #a5b4fc;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-family: 'JetBrains Mono', monospace;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ============================================================
 # 0. INTÉGRATION GRIST — Suivi des élèves
@@ -93,6 +288,69 @@ def lire_progression_grist(code_eleve: str) -> list:
     return []
 
 
+def calculer_streak(records: list) -> dict:
+    """
+    Calcule le streak quotidien d'un élève.
+    Retourne :
+      - streak       : nb de jours consécutifs jusqu'à aujourd'hui (ou hier)
+      - record       : meilleur streak historique
+      - nouveau_record : True si le streak actuel bat le record
+      - derniere_date  : date ISO de la dernière activité
+    """
+    from datetime import date, timedelta
+
+    # Extraire les dates uniques avec au moins une bonne éval
+    dates_ok = set()
+    for r in records:
+        if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien"):
+            d = r.get("date", "")
+            if d:
+                try:
+                    dates_ok.add(date.fromisoformat(str(d)[:10]))
+                except ValueError:
+                    pass
+
+    if not dates_ok:
+        return {"streak": 0, "record": 0, "nouveau_record": False, "derniere_date": None}
+
+    today     = date.today()
+    yesterday = today - timedelta(days=1)
+    dates_ok_sorted = sorted(dates_ok, reverse=True)
+    derniere  = dates_ok_sorted[0]
+
+    # Le streak ne compte que si l'élève a travaillé aujourd'hui ou hier
+    if derniere < yesterday:
+        streak_actuel = 0
+    else:
+        streak_actuel = 1
+        curseur = derniere
+        for d in dates_ok_sorted[1:]:
+            if curseur - d == timedelta(days=1):
+                streak_actuel += 1
+                curseur = d
+            else:
+                break
+
+    # Calcul du record historique (toutes les séquences)
+    record = 0
+    if dates_ok_sorted:
+        seq_cur = 1
+        for i in range(1, len(dates_ok_sorted)):
+            if dates_ok_sorted[i-1] - dates_ok_sorted[i] == timedelta(days=1):
+                seq_cur += 1
+            else:
+                record = max(record, seq_cur)
+                seq_cur = 1
+        record = max(record, seq_cur)
+
+    return {
+        "streak":         streak_actuel,
+        "record":         record,
+        "nouveau_record": streak_actuel > 0 and streak_actuel >= record,
+        "derniere_date":  derniere,
+    }
+
+
 # ── Banque d'exercices ────────────────────────────────────────
 
 
@@ -102,14 +360,66 @@ def _slug(text: str) -> str:
     return text[:60]
 
 
+def _normalise(text: str) -> str:
+    """Normalise un texte pour comparaison souple : minuscules, sans accents, sans ponctuation."""
+    import unicodedata
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+    text = re.sub(r"[^a-z0-9]", "", text.lower())
+    return text
+
+
+def _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, suffixe="") -> str | None:
+    """
+    Cherche le fichier le plus proche dans BANQUE_DIR par correspondance souple.
+    Ignore les différences d'encodage, d'accents, de ponctuation et de casse.
+    suffixe = "" pour classique, "_interactif" pour interactif.
+    """
+    if not os.path.exists(BANQUE_DIR):
+        return None
+
+    # Clés normalisées pour la comparaison
+    niv_n  = _normalise(niveau)
+    fil_n  = _normalise(filiere)
+    chap_n = _normalise(chapitre)
+    diff_n = _normalise(difficulte.split(" ", 1)[-1])
+    ext    = f"{suffixe}.json"
+
+    meilleur = None
+    meilleur_score = 0
+
+    for fname in os.listdir(BANQUE_DIR):
+        if not fname.endswith(ext):
+            continue
+        fname_n = _normalise(fname)
+        # Compter combien de clés sont présentes dans le nom de fichier normalisé
+        score = sum(1 for k in [niv_n, fil_n, chap_n, diff_n] if k in fname_n)
+        if score > meilleur_score:
+            meilleur_score = score
+            meilleur = fname
+
+    # Accepter seulement si les 4 composantes sont trouvées
+    if meilleur_score >= 4:
+        return os.path.join(BANQUE_DIR, meilleur)
+    return None
+
+
 def charger_banque(niveau, filiere, chapitre, difficulte) -> list:
     """Charge les sujets disponibles pour une combinaison donnée."""
-    diff_label = difficulte.split(" ", 1)[-1]
-    path = os.path.join(
-        BANQUE_DIR,
-        f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{_slug(diff_label)}.json"
-    )
-    if not os.path.exists(path):
+    path = _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, "")
+    if not path:
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def charger_banque_interactif(niveau, filiere, chapitre, difficulte) -> list:
+    """Charge les sujets interactifs (JSON structuré avec questions) pour une combinaison."""
+    path = _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, "_interactif")
+    if not path:
         return []
     try:
         with open(path, encoding="utf-8") as f:
@@ -1220,45 +1530,243 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-  .stButton>button { border-radius: 8px; font-weight: 600; }
-  .info-box  { background:#f0f4ff; border-left:4px solid #4a6cf7; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .warn-box  { background:#fff8e1; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .ok-box    { background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }
-  .badge     { display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px;
-               padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }
+  /* Override minimal — le thème principal est dans le premier bloc */
+  .stCheckbox > label { color: #94a3b8 !important; }
+  .stRadio > label { color: #94a3b8 !important; }
+  .stExpander { background: #13162a !important; border: 1px solid #2d3561 !important; border-radius: 10px !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# ── Système XP ───────────────────────────────────────────────
+XP_PAR_ACTION = {
+    "Exercice-🟢 Débutant":  10,
+    "Exercice-🟡 Moyen":     20,
+    "Exercice-🟠 Confirmé":  35,
+    "Exercice-🔴 Expert":    50,
+    "CCF":                   40,
+    "Boss":                  80,
+}
+
+def calculer_xp(records: list) -> int:
+    """Calcule le total XP d'un élève depuis ses records Grist."""
+    total = 0
+    for r in records:
+        if r.get("auto_evaluation", "") not in ("😊 Bien", "🌟 Très bien"):
+            continue
+        type_a = r.get("type_activite", "")
+        diff   = r.get("niveau_difficulte", "")
+        if "Boss" in type_a:
+            total += XP_PAR_ACTION["Boss"]
+        elif "CCF" in type_a:
+            total += XP_PAR_ACTION["CCF"]
+        else:
+            total += XP_PAR_ACTION.get(f"Exercice-{diff}", 10)
+    return total
+
+
+def lire_classement_grist() -> list:
+    """
+    Lit les 10 meilleurs élèves par XP depuis Grist.
+    Retourne une liste triée [{code_eleve, xp, streak}].
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return []
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers, timeout=8)
+        if resp.status_code != 200:
+            return []
+        records = [r["fields"] for r in resp.json().get("records", [])]
+
+        # Grouper par élève
+        from collections import defaultdict
+        par_eleve = defaultdict(list)
+        for r in records:
+            code = r.get("code_eleve", "")
+            if code and code != "anonyme":
+                par_eleve[code].append(r)
+
+        # Calculer XP et streak pour chaque élève
+        classement = []
+        for code, recs in par_eleve.items():
+            xp     = calculer_xp(recs)
+            streak = calculer_streak(recs).get("streak", 0)
+            classement.append({"code": code, "xp": xp, "streak": streak})
+
+        return sorted(classement, key=lambda x: x["xp"], reverse=True)[:10]
+    except Exception:
+        return []
+
+
+def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str) -> dict:
+    """
+    Calcule un objectif personnalisé pour l'élève selon sa progression.
+    Retourne : {message, emoji, priorite (0-3)}
+    """
+    from datetime import date
+    s = calculer_streak(records)
+    streak = s.get("streak", 0)
+    derniere = s.get("derniere_date")
+    today = date.today()
+
+    # Priorité 1 — streak en danger
+    if derniere and derniere < today and streak > 0:
+        return {
+            "emoji": "🔥",
+            "message": f"Ton streak de {streak} jour{'s' if streak > 1 else ''} est en danger ! Fais au moins 1 exercice aujourd'hui.",
+            "couleur": "#ef4444",
+            "priorite": 3
+        }
+
+    # Priorité 2 — boss disponible sur le chapitre actif
+    if chapitre_actif and records:
+        prog = calculer_progression(records, chapitre_actif)
+        for diff in ORDRE_NIVEAUX_DIFF:
+            p = prog.get(diff, {})
+            if p.get("valide") and not p.get("boss_vaincu"):
+                mascotte = MASCOTTES[diff]["animal"]
+                return {
+                    "emoji": "⚔️",
+                    "message": f"Le boss {mascotte} t'attend sur '{chapitre_actif[:35]}' ! Affronte-le.",
+                    "couleur": "#7c3aed",
+                    "priorite": 2
+                }
+
+    # Priorité 3 — proche de valider un niveau
+    if chapitre_actif and records:
+        prog = calculer_progression(records, chapitre_actif)
+        for diff in ORDRE_NIVEAUX_DIFF:
+            p = prog.get(diff, {})
+            nb = p.get("nb_bonnes", 0)
+            if 0 < nb < SEUIL_VALIDATION and not p.get("valide"):
+                reste = SEUIL_VALIDATION - nb
+                return {
+                    "emoji": "🎯",
+                    "message": f"Plus que {reste} bonne{'s' if reste > 1 else ''} éval en {diff.split()[-1]} sur ce chapitre pour valider le niveau !",
+                    "couleur": "#f59e0b",
+                    "priorite": 1
+                }
+
+    # Défaut — encouragement simple
+    if streak == 0:
+        return {
+            "emoji": "🚀",
+            "message": "Commence ta session du jour — même 1 exercice suffit pour lancer ton streak !",
+            "couleur": "#6366f1",
+            "priorite": 0
+        }
+    return {
+        "emoji": "💪",
+        "message": f"Super ! {streak} jour{'s' if streak > 1 else ''} d'affilée. Continue comme ça !",
+        "couleur": "#22c55e",
+        "priorite": 0
+    }
+    """Calcule le total XP d'un élève depuis ses records Grist."""
+    total = 0
+    for r in records:
+        if r.get("auto_evaluation", "") not in ("😊 Bien", "🌟 Très bien"):
+            continue
+        type_a = r.get("type_activite", "")
+        diff   = r.get("niveau_difficulte", "")
+        if "Boss" in type_a:
+            total += XP_PAR_ACTION["Boss"]
+        elif "CCF" in type_a:
+            total += XP_PAR_ACTION["CCF"]
+        else:
+            total += XP_PAR_ACTION.get(f"Exercice-{diff}", 10)
+    return total
 
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
-            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done"]:
+            "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done",
+            "streak_cache", "interactif_sujet", "interactif_idx",
+            "interactif_reponses", "interactif_termine", "classement_cache"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
 # ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.markdown("""
+    <div style="text-align:center;padding:16px 0 8px">
+        <div style="font-size:2.5rem">🎓</div>
+        <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem;
+                    color:#a5b4fc;letter-spacing:.5px">MATHS BAC PRO</div>
+        <div style="font-size:.75rem;color:#475569;margin-top:2px">Entraînement IA</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
 
     # ── Code élève ───────────────────────────────────────────
-    st.subheader("🎓 Identification")
+    st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🎮 TON IDENTIFIANT</div>', unsafe_allow_html=True)
     code_eleve = st.text_input(
-        "Ton code élève",
+        "Code élève",
         placeholder="Ex : ASSP-03",
         key="code_eleve",
+        label_visibility="collapsed",
         help="Code distribué par ton professeur en début d'année."
     ).strip().upper()
     if code_eleve:
-        st.markdown(f'<div class="ok-box">✅ Connecté : <strong>{code_eleve}</strong></div>', unsafe_allow_html=True)
+        # ── Chargement streak ────────────────────────────────
+        if not st.session_state.streak_cache:
+            records_streak = lire_progression_grist(code_eleve)
+            st.session_state.streak_cache = calculer_streak(records_streak)
+
+        s      = st.session_state.streak_cache or {}
+        streak = s.get("streak", 0)
+        record = s.get("record", 0)
+
+        # ── Message de bienvenue personnalisé ────────────────
+        from datetime import date
+        derniere = s.get("derniere_date")
+        if derniere == date.today():
+            salut = "Bonne continuation"
+        elif streak > 0:
+            salut = "Bon retour"
+        else:
+            salut = "Bienvenue"
+
+        if streak >= 7:   feu, couleur_bienv = "🔥🔥🔥", "#ef4444"
+        elif streak >= 3: feu, couleur_bienv = "🔥🔥",   "#f97316"
+        elif streak >= 1: feu, couleur_bienv = "🔥",     "#f59e0b"
+        else:             feu, couleur_bienv = "👋",     "#6366f1"
+
+        streak_txt = (
+            f"{feu} {streak} jour{'s' if streak > 1 else ''} d'affilée !"
+            if streak > 0 else "Lance ton premier streak aujourd'hui !"
+        )
+
+        st.markdown(
+            f'<div style="background:linear-gradient(135deg,#13162a,#1e2235);'
+            f'border:1px solid {couleur_bienv}44;border-radius:10px;'
+            f'padding:12px 14px;margin:6px 0">'
+            f'<div style="font-size:.82rem;color:#94a3b8">{salut} 👋</div>'
+            f'<div style="font-family:Outfit,sans-serif;font-weight:800;'
+            f'color:#e2e8f0;font-size:1rem;margin:2px 0">{code_eleve}</div>'
+            f'<div style="font-size:.82rem;color:{couleur_bienv};margin-top:4px">'
+            f'{streak_txt}</div>'
+            + (f'<div style="font-size:.72rem;color:#475569;margin-top:2px">'
+               f'Record : {record} jour{"s" if record > 1 else ""}</div>'
+               if record > 1 else "")
+            + f'</div>',
+            unsafe_allow_html=True
+        )
     else:
-        st.markdown('<div class="warn-box">⚠️ Entre ton code élève pour que ta progression soit enregistrée.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warn-box">⚠️ Entre ton code pour sauvegarder ta progression.</div>', unsafe_allow_html=True)
 
     st.divider()
-    cle_api = st.text_input("Ta clé Google Gemini", type="password", key="gemini_key")
+
+    st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🔑 CLÉ GEMINI</div>', unsafe_allow_html=True)
+    cle_api = st.text_input("Clé API", type="password", key="gemini_key", label_visibility="collapsed")
     if cle_api:
-        st.markdown('<div class="ok-box">✅ Clé renseignée — prêt à générer !</div>', unsafe_allow_html=True)
+        st.markdown('<div class="ok-box">✅ Prêt à générer !</div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="warn-box">⚠️ Entre ta clé API pour commencer.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warn-box">⚠️ Clé API manquante.</div>', unsafe_allow_html=True)
 
     with st.expander("📋 Obtenir une clé gratuite (2 min)"):
         st.markdown("""
@@ -1278,13 +1786,25 @@ with st.sidebar:
     st.caption("Entraînement Bac Pro · Gemini 2.5 Flash")
 
 # ── TITRE ────────────────────────────────────────────────────
-st.title("📚 Entraînement Bac Pro — Mathématiques")
-st.caption("Génère des exercices et des sujets CCF pour t'entraîner à ton rythme.")
+st.markdown("""
+<div style="padding:24px 0 8px">
+    <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:2rem;
+                background:linear-gradient(90deg,#a5b4fc,#c084fc,#67e8f9);
+                -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                background-clip:text;line-height:1.2">
+        📚 Entraînement Bac Pro
+    </div>
+    <div style="color:#475569;font-size:.9rem;margin-top:4px">
+        Exercices · CCF · Progression — propulsé par l'IA
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ── ONGLETS ──────────────────────────────────────────────────
-tab_gen, tab_ccf, tab_progression = st.tabs([
+tab_gen, tab_ccf, tab_graphique, tab_progression = st.tabs([
     "📝 Exercices d'entraînement",
     "🎯 Sujets CCF",
+    "📈 Graphique GeoGebra",
     "📊 Ma progression",
 ])
 
@@ -1293,6 +1813,21 @@ tab_gen, tab_ccf, tab_progression = st.tabs([
 # ONGLET 1 — GÉNÉRATEUR
 # ─────────────────────────────────────────────────────────────
 with tab_gen:
+    # ── Objectif du jour ─────────────────────────────────────
+    if code_eleve and st.session_state.progression_cache:
+        chap_actif = (st.session_state.meta_gen or {}).get("chapitre", "")
+        diff_active = (st.session_state.meta_gen or {}).get("difficulte", "")
+        obj = calculer_objectif(st.session_state.progression_cache, chap_actif, diff_active)
+        st.markdown(
+            f'<div style="background:#0d0f1a;border:1px solid {obj["couleur"]}55;'
+            f'border-left:4px solid {obj["couleur"]};border-radius:0 10px 10px 0;'
+            f'padding:10px 16px;margin-bottom:12px">'
+            f'<span style="font-size:1.1rem">{obj["emoji"]}</span> '
+            f'<span style="color:#e2e8f0;font-size:.88rem">{obj["message"]}</span>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+
     st.subheader("📝 Générateur de sujets et exercices")
     col1, col2 = st.columns(2)
 
@@ -1331,32 +1866,59 @@ with tab_gen:
     )
 
     # ── Mode banque ou génération ─────────────────────────────
-    sujets_banque = charger_banque(niv, filiere, chap, difficulte)
-    nb_banque = len(sujets_banque)
+    sujets_banque      = charger_banque(niv, filiere, chap, difficulte)
+    sujets_interactifs = charger_banque_interactif(niv, filiere, chap, difficulte)
+    nb_banque      = len(sujets_banque)
+    nb_interactifs = len(sujets_interactifs)
 
-    col_btn1, col_btn2 = st.columns(2)
+    col_btn1, col_btn2, col_btn3 = st.columns(3)
     with col_btn1:
-        btn_banque = st.button(
-            f"📚 Sujet depuis la banque ({nb_banque} disponible{'s' if nb_banque > 1 else ''})",
+        btn_interactif = st.button(
+            f"⚡ Mode interactif ({nb_interactifs} dispo)",
             type="primary",
+            use_container_width=True,
+            disabled=(nb_interactifs == 0),
+            key="btn_interactif"
+        )
+        if nb_interactifs == 0:
+            st.caption("Aucun sujet interactif en banque.")
+    with col_btn2:
+        btn_banque = st.button(
+            f"📚 Sujet classique ({nb_banque} dispo)",
             use_container_width=True,
             disabled=(nb_banque == 0),
             key="btn_banque"
         )
         if nb_banque == 0:
-            st.caption("Aucun sujet en banque pour cette combinaison.")
-    with col_btn2:
+            st.caption("Aucun sujet classique en banque.")
+    with col_btn3:
         btn_gemini = st.button(
-            "✨ Générer un sujet inédit (Gemini)",
+            "✨ Générer (Gemini)",
             use_container_width=True,
             key="btn_gemini"
         )
 
+    if btn_interactif and nb_interactifs > 0:
+        import random
+        sujet_i = random.choice(sujets_interactifs)
+        st.session_state.interactif_sujet   = sujet_i
+        st.session_state.interactif_idx     = 0
+        st.session_state.interactif_reponses = {}
+        st.session_state.interactif_termine  = False
+        st.session_state.generated_md        = None
+        st.session_state.eval_gen_done       = None
+        st.session_state.meta_gen = {
+            "niveau": niv, "matiere": mat, "chapitre": chap,
+            "filiere": filiere, "difficulte": difficulte, "source": "Banque interactif"
+        }
+        st.rerun()
+
     if btn_banque and nb_banque > 0:
         import random
         sujet = random.choice(sujets_banque)
-        st.session_state.generated_md = sujet["contenu"]
-        st.session_state.eval_gen_done = None
+        st.session_state.generated_md        = sujet["contenu"]
+        st.session_state.interactif_sujet    = None
+        st.session_state.eval_gen_done       = None
         st.session_state.meta_gen = {
             "niveau": niv, "matiere": mat, "chapitre": chap,
             "filiere": filiere, "difficulte": difficulte, "source": "Banque"
@@ -1370,8 +1932,9 @@ with tab_gen:
             with st.spinner("⏳ Génération en cours…"):
                 try:
                     res = call_gemini(cle_api, build_prompt_exercices(niv, cat, mat, chap, consignes, filiere, difficulte))
-                    st.session_state.generated_md = res
-                    st.session_state.eval_gen_done = None
+                    st.session_state.generated_md     = res
+                    st.session_state.interactif_sujet = None
+                    st.session_state.eval_gen_done    = None
                     st.session_state.meta_gen = {
                         "niveau": niv, "matiere": mat, "chapitre": chap,
                         "filiere": filiere, "difficulte": difficulte, "source": "Gemini"
@@ -1382,6 +1945,164 @@ with tab_gen:
                         st.error("⏱️ Quota dépassé (429). Attends 1 minute ou utilise un sujet de la banque.")
                     else:
                         st.error(f"Erreur API : {e}")
+
+    # ── MODE INTERACTIF ───────────────────────────────────────
+    if st.session_state.get("interactif_sujet"):
+        sujet_i   = st.session_state.interactif_sujet
+        questions = sujet_i.get("questions", [])
+        idx       = st.session_state.get("interactif_idx", 0)
+        reponses  = st.session_state.get("interactif_reponses", {})
+        termine   = st.session_state.get("interactif_termine", False)
+
+        # Contexte et rappel de cours
+        if sujet_i.get("contexte"):
+            st.markdown(
+                f'<div class="info-box">🏢 <strong>Mise en situation</strong><br>'
+                f'{sujet_i["contexte"]}</div>',
+                unsafe_allow_html=True
+            )
+        if sujet_i.get("rappel_cours"):
+            st.markdown(
+                f'<div style="background:#1a2040;border:1px solid #3d4480;border-radius:10px;'
+                f'padding:12px 16px;margin:8px 0;font-size:.88rem;color:#a5b4fc">'
+                f'📐 <strong>Rappel</strong> : {sujet_i["rappel_cours"]}</div>',
+                unsafe_allow_html=True
+            )
+
+        if not termine:
+            # Barre de progression
+            st.markdown(
+                f'<div style="margin:12px 0 4px;font-size:.82rem;color:#64748b">'
+                f'Question {idx + 1} / {len(questions)}</div>',
+                unsafe_allow_html=True
+            )
+            st.progress((idx) / len(questions))
+
+            q = questions[idx]
+            st.markdown(
+                f'<div style="background:#13162a;border:1px solid #3d4480;border-radius:12px;'
+                f'padding:18px 20px;margin:12px 0">'
+                f'<div style="font-size:.8rem;color:#6366f1;font-weight:700;margin-bottom:6px">'
+                f'QUESTION {q["numero"]}</div>'
+                f'<div style="color:#e2e8f0;font-size:.95rem">{q["enonce"]}</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+
+            col_rep, col_ind = st.columns([3, 1])
+            with col_rep:
+                unite = q.get("unite", "")
+                rep_saisie = st.number_input(
+                    f"Ta réponse {f'({unite})' if unite else ''}",
+                    value=0.0, step=0.01, format="%.2f",
+                    key=f"rep_q_{idx}"
+                )
+            with col_ind:
+                if q.get("indice") and st.button("💡 Indice", key=f"ind_{idx}", use_container_width=True):
+                    st.info(q["indice"])
+
+            col_v, col_p = st.columns(2)
+            with col_v:
+                if st.button("✅ Valider", type="primary", use_container_width=True, key=f"val_{idx}"):
+                    tolerance = float(q.get("tolerance", 0.5))
+                    bonne = abs(rep_saisie - float(q["reponse"])) <= tolerance
+                    reponses[idx] = {"saisie": rep_saisie, "bonne": bonne,
+                                     "reponse": q["reponse"], "unite": unite,
+                                     "corrige": q.get("corrige", "")}
+                    st.session_state.interactif_reponses = reponses
+                    if idx + 1 < len(questions):
+                        st.session_state.interactif_idx = idx + 1
+                    else:
+                        st.session_state.interactif_termine = True
+                    st.rerun()
+            with col_p:
+                if idx > 0 and st.button("⬅️ Précédente", use_container_width=True, key=f"prev_{idx}"):
+                    st.session_state.interactif_idx = idx - 1
+                    st.rerun()
+
+        else:
+            # ── RÉSULTATS FINAUX ──────────────────────────────
+            nb_bonnes_i = sum(1 for r in reponses.values() if r["bonne"])
+            nb_total_i  = len(questions)
+            score_pct   = int(nb_bonnes_i / nb_total_i * 100) if nb_total_i else 0
+
+            if score_pct == 100:
+                st.balloons()
+                verdict, couleur = "🏆 Parfait !", "#065f46"
+            elif score_pct >= 70:
+                verdict, couleur = "👍 Bien joué !", "#1e3a5f"
+            elif score_pct >= 50:
+                verdict, couleur = "😐 Peut mieux faire", "#3f2a00"
+            else:
+                verdict, couleur = "💪 Continue à t'entraîner !", "#3b0000"
+
+            st.markdown(
+                f'<div style="background:{couleur};border-radius:14px;padding:20px;'
+                f'text-align:center;margin:12px 0">'
+                f'<div style="font-size:2rem">{verdict}</div>'
+                f'<div style="font-size:1.5rem;font-weight:800;color:white;margin:8px 0">'
+                f'{nb_bonnes_i} / {nb_total_i} — {score_pct}%</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+
+            # Détail des réponses
+            st.markdown("### 📋 Correction détaillée")
+            for i, q in enumerate(questions):
+                r = reponses.get(i, {})
+                icone  = "✅" if r.get("bonne") else "❌"
+                unite  = r.get("unite", "")
+                st.markdown(
+                    f'<div style="background:#13162a;border-left:3px solid '
+                    f'{"#22c55e" if r.get("bonne") else "#ef4444"};'
+                    f'border-radius:0 10px 10px 0;padding:12px 16px;margin:6px 0">'
+                    f'<div style="font-size:.8rem;color:#64748b">Q{q["numero"]}</div>'
+                    f'<div style="color:#e2e8f0;margin:4px 0">{q["enonce"]}</div>'
+                    f'<div style="font-size:.88rem;margin-top:6px">'
+                    f'{icone} Ta réponse : <strong>{r.get("saisie","?"):.2f} {unite}</strong> — '
+                    f'Bonne réponse : <strong>{float(q["reponse"]):.2f} {unite}</strong></div>'
+                    f'<div style="font-size:.82rem;color:#94a3b8;margin-top:4px">'
+                    f'💡 {r.get("corrige","")}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
+            # Auto-évaluation du ressenti
+            st.divider()
+            st.markdown("**🎯 Et ton ressenti ?**")
+            col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+            eval_choix_i = None
+            with col_e1:
+                if st.button("😕 Difficile", use_container_width=True, key="eval_i_1"):
+                    eval_choix_i = "😕 Difficile"
+            with col_e2:
+                if st.button("😐 Moyen", use_container_width=True, key="eval_i_2"):
+                    eval_choix_i = "😐 Moyen"
+            with col_e3:
+                if st.button("😊 Bien", use_container_width=True, key="eval_i_3"):
+                    eval_choix_i = "😊 Bien"
+            with col_e4:
+                if st.button("🌟 Très bien", use_container_width=True, key="eval_i_4"):
+                    eval_choix_i = "🌟 Très bien"
+
+            if eval_choix_i:
+                m_i = st.session_state.meta_gen or {}
+                envoyer_grist(
+                    code_eleve or "anonyme",
+                    f"Exercice-interactif ({score_pct}%)",
+                    {**m_i, "score_auto": f"{nb_bonnes_i}/{nb_total_i}"},
+                    eval_choix_i
+                )
+                st.session_state.eval_gen_done   = eval_choix_i
+                st.session_state.streak_cache    = None
+                st.session_state.interactif_sujet = None
+                st.rerun()
+
+            if st.button("🔄 Nouvel exercice", use_container_width=True, key="btn_reset_i"):
+                st.session_state.interactif_sujet    = None
+                st.session_state.interactif_reponses = {}
+                st.session_state.interactif_termine  = False
+                st.rerun()
 
     if st.session_state.generated_md:
         m = st.session_state.meta_gen or {}
@@ -1420,6 +2141,7 @@ with tab_gen:
         if eval_choix:
             envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             st.session_state.eval_gen_done = eval_choix
+            st.session_state.streak_cache  = None  # forcer recalcul streak
             # Vérifier si un boss se débloque
             if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
                 records_check = lire_progression_grist(code_eleve)
@@ -1442,6 +2164,13 @@ with tab_gen:
 
         if st.session_state.eval_gen_done:
             st.markdown(f'<div class="ok-box">✅ Auto-évaluation enregistrée : <strong>{st.session_state.eval_gen_done}</strong> — continue comme ça !</div>', unsafe_allow_html=True)
+            # Neige si nouveau record de streak
+            if st.session_state.streak_cache is None:
+                records_s = lire_progression_grist(code_eleve or "")
+                s_data = calculer_streak(records_s)
+                st.session_state.streak_cache = s_data
+                if s_data.get("nouveau_record") and s_data.get("streak", 0) >= 3:
+                    st.snow()
 
         # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
         if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
@@ -1449,15 +2178,17 @@ with tab_gen:
             mascotte  = MASCOTTES.get(diff_boss, {})
             st.markdown("---")
             st.markdown(
-                f'<div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);'
-                f'color:white;padding:20px;border-radius:12px;text-align:center;margin:12px 0">'
-                f'<div style="font-size:3rem">{mascotte.get("animal","⚔️")}</div>'
-                f'<div style="font-size:1.3rem;font-weight:bold;margin:8px 0">'
-                f'BOSS DÉBLOQUÉ — {mascotte.get("nom","Boss").upper()} !</div>'
-                f'<div style="font-size:.95rem;opacity:.9">'
-                f'Tu as validé le niveau <strong>{diff_boss.split(" ",1)[-1]}</strong> '
-                f'sur <strong>{m.get("chapitre","")[:40]}</strong>.<br>'
-                f'Prouve que tu maîtrises vraiment ce chapitre !</div>'
+                f'<div class="boss-banner">'
+                f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
+                f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
+                f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
+                f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
+                f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
+                f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
+                f'Tu as validé le niveau <strong style="color:#a5b4fc">'
+                f'{diff_boss.split(" ",1)[-1]}</strong> sur '
+                f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
+                f'Bats ce boss pour débloquer le niveau suivant !</div>'
                 f'</div>',
                 unsafe_allow_html=True
             )
@@ -1528,13 +2259,17 @@ with tab_gen:
                     st.rerun()
 
         if st.session_state.eval_boss_done == "win":
+            st.balloons()
             diff_boss = st.session_state.boss_niveau or ""
             msg = MESSAGES_VICTOIRE.get(diff_boss, "🏆 Félicitations !")
             st.markdown(
-                f'<div style="background:linear-gradient(135deg,#065f46,#047857);'
-                f'color:white;padding:16px;border-radius:10px;text-align:center;'
-                f'font-size:1.1rem;font-weight:bold;margin:8px 0">'
-                f'🏆 {msg}</div>',
+                f'<div style="background:linear-gradient(135deg,#052e16,#14532d);'
+                f'border:2px solid #22c55e;color:white;padding:20px;border-radius:14px;'
+                f'text-align:center;font-family:Outfit,sans-serif;'
+                f'box-shadow:0 0 30px rgba(34,197,94,.3);margin:8px 0">'
+                f'<div style="font-size:2.5rem;margin-bottom:8px">🏆</div>'
+                f'<div style="font-size:1.2rem;font-weight:800;color:#86efac">{msg}</div>'
+                f'</div>',
                 unsafe_allow_html=True
             )
         elif st.session_state.eval_boss_done == "fail":
@@ -1707,6 +2442,7 @@ with tab_ccf:
         if eval_ccf_choix:
             envoyer_grist(code_eleve or "anonyme", "CCF", m, eval_ccf_choix)
             st.session_state.eval_ccf_done = eval_ccf_choix
+            st.session_state.streak_cache  = None  # forcer recalcul streak
             st.rerun()
 
         if st.session_state.eval_ccf_done:
@@ -1751,8 +2487,80 @@ with tab_ccf:
 # ─────────────────────────────────────────────────────────────
 # ONGLET 3 — MA PROGRESSION
 # ─────────────────────────────────────────────────────────────
+with tab_graphique:
+    st.markdown("""
+    <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem;
+                color:#e2e8f0;padding:8px 0 4px">📈 Laboratoire Graphique</div>
+    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div class="info-box">📐 Trace tes fonctions, vérifie tes dérivées, '
+        'explore les paraboles — tape directement dans la barre de saisie en bas à gauche.</div>',
+        unsafe_allow_html=True
+    )
+
+    # Suggestions de fonctions selon le chapitre sélectionné
+    suggestions = {
+        "Fonctions polynômes de degré 2": ["f(x) = x^2 - 4x + 3", "g(x) = -2x^2 + 4x"],
+        "Fonctions polynômes de degré 3": ["f(x) = x^3 - 3x", "g(x) = x^3 - x^2 - x + 1"],
+        "Fonction dérivée": ["f(x) = x^2 + 2x", "f'(x) = 2x + 2"],
+        "Suites": ["f(x) = 2x + 1", "g(x) = 3 * 1.5^x"],
+        "Fonctions exponentielles": ["f(x) = exp(x)", "g(x) = 2^x"],
+    }
+
+    # Trouver une suggestion selon le chapitre actif
+    chap_actif = (st.session_state.meta_gen or {}).get("chapitre", "")
+    suggestion_actuelle = None
+    for mot_cle, exemples in suggestions.items():
+        if mot_cle.lower() in chap_actif.lower():
+            suggestion_actuelle = exemples
+            break
+
+    if suggestion_actuelle:
+        st.markdown(
+            f'<div class="ok-box">💡 Exercice en cours : essaie de tracer '
+            f'<code>{suggestion_actuelle[0]}</code></div>',
+            unsafe_allow_html=True
+        )
+
+    # Intégration GeoGebra via l'API officielle
+    st.components.v1.html("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    </head>
+    <body style="margin:0;padding:0;background:#13162a;">
+        <div id="ggb-element"></div>
+        <script>
+            var params = {
+                "appName": "graphing",
+                "width": 780,
+                "height": 520,
+                "showToolBar": true,
+                "showAlgebraInput": true,
+                "showMenuBar": false,
+                "showFullscreenButton": true,
+                "language": "fr",
+                "showResetIcon": true,
+                "algebraInputPosition": "bottom"
+            };
+            var applet = new GGBApplet(params, true);
+            window.addEventListener("load", function() {
+                applet.inject("ggb-element");
+            });
+        </script>
+    </body>
+    </html>
+    """, height=540)
+
+# ─────────────────────────────────────────────────────────────
+# ONGLET 4 — MA PROGRESSION
+# ─────────────────────────────────────────────────────────────
 with tab_progression:
-    st.subheader("📊 Ma progression")
+    st.markdown("""
+    <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem;
+                color:#e2e8f0;padding:8px 0 4px">📊 Ma progression</div>
+    """, unsafe_allow_html=True)
 
     if not code_eleve:
         st.markdown('<div class="warn-box">⚠️ Entre ton code élève dans le panneau gauche pour voir ta progression.</div>', unsafe_allow_html=True)
@@ -1763,29 +2571,50 @@ with tab_progression:
                 st.session_state.progression_cache = None
 
         with col_info:
-            st.markdown(f"Progression de : **{code_eleve}**")
+            st.markdown(f'<span style="color:#475569;font-size:.85rem">Joueur : <strong style="color:#a5b4fc">{code_eleve}</strong></span>', unsafe_allow_html=True)
 
         # Chargement depuis Grist (avec cache session)
         if not st.session_state.progression_cache:
-            with st.spinner("Chargement de ta progression…"):
+            with st.spinner("⚡ Chargement de ta progression…"):
                 records = lire_progression_grist(code_eleve)
                 st.session_state.progression_cache = records
         else:
             records = st.session_state.progression_cache
 
         if not records:
-            st.markdown('<div class="info-box">📭 Aucune activité enregistrée pour ce code. Commence par faire des exercices !</div>', unsafe_allow_html=True)
+            st.markdown('<div class="info-box">📭 Aucune activité enregistrée. Commence par faire des exercices !</div>', unsafe_allow_html=True)
         else:
-            # ── Statistiques globales ─────────────────────────
-            nb_total = len(records)
-            bonnes    = [r for r in records if r.get("auto_evaluation", "") in ("😊 Bien", "🌟 Très bien")]
-            nb_bonnes = len(bonnes)
+            # ── XP Banner ────────────────────────────────────
+            total_xp  = calculer_xp(records)
+            nb_total  = len(records)
+            nb_bonnes = sum(1 for r in records if r.get("auto_evaluation","") in ("😊 Bien","🌟 Très bien"))
             taux      = int(nb_bonnes / nb_total * 100) if nb_total else 0
 
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Activités totales", nb_total)
-            c2.metric("😊 Bien ou mieux", nb_bonnes)
-            c3.metric("Taux de réussite", f"{taux}%")
+            # Niveau XP
+            if total_xp < 100:    rang, rang_label = "🥉", "Apprenti"
+            elif total_xp < 300:  rang, rang_label = "🥈", "Initié"
+            elif total_xp < 600:  rang, rang_label = "🥇", "Confirmé"
+            elif total_xp < 1000: rang, rang_label = "💎", "Expert"
+            else:                 rang, rang_label = "👑", "Maître"
+
+            st.markdown(
+                f'<div class="xp-banner">'
+                f'<div style="font-size:2.5rem">{rang}</div>'
+                f'<div style="flex:1">'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:700;color:#e2e8f0">{rang_label}</div>'
+                f'<div class="xp-label">Rang actuel</div>'
+                f'</div>'
+                f'<div style="text-align:center">'
+                f'<div class="xp-value">⚡ {total_xp} XP</div>'
+                f'<div class="xp-label">points d\'expérience</div>'
+                f'</div>'
+                f'<div style="text-align:center;border-left:1px solid #2d3561;padding-left:16px">'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:800;font-size:1.3rem;color:#86efac">{taux}%</div>'
+                f'<div class="xp-label">taux de réussite</div>'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
 
             st.divider()
 
@@ -1904,3 +2733,65 @@ with tab_progression:
                                if c in df.columns]
                 st.dataframe(df[cols_affich].sort_values("date", ascending=False),
                              use_container_width=True, hide_index=True)
+
+            st.divider()
+
+            # ── Classement de la classe ───────────────────────
+            st.markdown("### 🏆 Classement de la classe")
+            col_ref_class, _ = st.columns([1, 3])
+            with col_ref_class:
+                if st.button("🔄 Actualiser le classement", use_container_width=True, key="refresh_class"):
+                    st.session_state.classement_cache = None
+
+            if not st.session_state.classement_cache:
+                with st.spinner("Chargement du classement…"):
+                    st.session_state.classement_cache = lire_classement_grist()
+
+            classement = st.session_state.classement_cache or []
+
+            if not classement:
+                st.markdown('<div class="info-box">📭 Pas encore assez de données pour afficher le classement.</div>', unsafe_allow_html=True)
+            else:
+                MEDAILLES = {1: "🥇", 2: "🥈", 3: "🥉"}
+                for i, joueur in enumerate(classement, 1):
+                    est_moi   = joueur["code"] == code_eleve
+                    medaille  = MEDAILLES.get(i, f"**{i}.**")
+                    streak_j  = joueur.get("streak", 0)
+                    feu_j     = "🔥" * min(streak_j, 3) if streak_j > 0 else ""
+                    bg_color  = "#1e2a1e" if est_moi else "#13162a"
+                    border    = "#22c55e" if est_moi else "#2d3561"
+                    toi       = " ← Toi" if est_moi else ""
+
+                    st.markdown(
+                        f'<div style="display:flex;align-items:center;gap:12px;'
+                        f'background:{bg_color};border:1px solid {border};'
+                        f'border-radius:10px;padding:10px 16px;margin:4px 0">'
+                        f'<div style="font-size:1.2rem;min-width:32px">{medaille}</div>'
+                        f'<div style="flex:1;font-family:Outfit,sans-serif;'
+                        f'font-weight:{"800" if est_moi else "600"};color:#e2e8f0">'
+                        f'{joueur["code"]}{toi}</div>'
+                        f'<div style="color:#fbbf24;font-weight:700">⚡ {joueur["xp"]} XP</div>'
+                        f'<div style="color:#f97316;font-size:.85rem;min-width:40px">{feu_j}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+
+                st.markdown(
+                    '<div style="font-size:.75rem;color:#475569;margin-top:8px">'
+                    '🔒 Seuls les codes élèves sont affichés — aucun nom réel.</div>',
+                    unsafe_allow_html=True
+                )
+
+# ============================================================
+# PIED DE PAGE (CRÉDITS & LICENCE)
+# ============================================================
+st.divider()
+
+st.markdown(f"""
+    <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
+        Conçu et développé par <b>Fabrice GUZZINATI</b> & <b>Gemini&Claude</b> (Architecte IA)<br>
+        Version 1.4 — 2026 • Ozoir-la-Ferrière<br>
+        <br>
+        <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i>
+    </div>
+    """, unsafe_allow_html=True)

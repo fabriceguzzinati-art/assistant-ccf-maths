@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
   {
     "niveau": "1ère Pro",
@@ -51,4 +52,59 @@
       }
     ]
   }
+=======
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Résolution graphique d'équations et d'inéquations f(x)=g(x)",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Dans le cadre de vos missions en EHPAD ou en pharmacie, vous devez suivre l'évolution de divers paramètres (santé des résidents, stocks, plannings). La compréhension des tendances et des points critiques est essentielle pour assurer la qualité des soins et la bonne gestion, souvent à l'aide de modèles mathématiques.",
+    "rappel_cours": "Résoudre graphiquement une équation du type f(x) = C (où C est une constante) revient à trouver les abscisses (valeurs de x) des points d'intersection de la courbe représentative de f avec la droite horizontale d'équation y = C. Résoudre f(x) = g(x) revient à trouver les abscisses des points d'intersection des courbes représentatives de f et de g. Ces solutions peuvent aussi être trouvées par le calcul.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un résident, Monsieur Dupont, a un poids initial de 80 kg. Suite à un régime alimentaire adapté, son poids P(s) en kg, 's' semaines après le début du régime, est modélisé par la fonction P(s) = 80 - 0.75s. L'équipe médicale s'inquiète si le poids descend sous 75.5 kg. Après combien de semaines le poids de Monsieur Dupont atteindra-t-il exactement 75.5 kg ?",
+        "type": "numerique",
+        "reponse": 6.0,
+        "unite": "semaines",
+        "tolerance": 0.1,
+        "indice": "Vous cherchez la valeur de 's' pour laquelle P(s) est égale à la valeur seuil. Mettez l'équation en forme pour isoler 's'.",
+        "corrige": "L'équation à résoudre est P(s) = 75.5, soit 80 - 0.75s = 75.5.\n1. Soustraire 80 des deux côtés : -0.75s = 75.5 - 80\n2. Effectuer la soustraction : -0.75s = -4.5\n3. Diviser par -0.75 : s = -4.5 / -0.75\n4. Calculer le résultat : s = 6.\nLe poids de Monsieur Dupont atteindra 75.5 kg après 6 semaines."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un EHPAD compare deux fournisseurs pour l'achat de gants à usage unique. Le fournisseur A propose un coût total C_A(x) = 1.5x + 50 € (où x est le nombre de boîtes de gants et 50 € sont des frais de livraison fixes). Le fournisseur B propose un coût total C_B(x) = 1.2x + 80 € (avec 80 € de frais de livraison fixes). À partir de quel nombre de boîtes le coût des deux fournisseurs devient-il identique ?",
+        "type": "numerique",
+        "reponse": 100.0,
+        "unite": "boîtes",
+        "tolerance": 0.5,
+        "indice": "Pour trouver le nombre de boîtes où les coûts sont identiques, vous devez résoudre l'équation C_A(x) = C_B(x).",
+        "corrige": "L'équation à résoudre est C_A(x) = C_B(x), soit 1.5x + 50 = 1.2x + 80.\n1. Regrouper les termes en 'x' : 1.5x - 1.2x = 80 - 50\n2. Simplifier l'équation : 0.3x = 30\n3. Diviser par 0.3 : x = 30 / 0.3\n4. Calculer le résultat : x = 100.\nLe coût des deux fournisseurs sera identique pour l'achat de 100 boîtes."
+      },
+      {
+        "numero": 3,
+        "enonce": "Le stock initial de masques FFP2 dans une pharmacie est de 3000. La consommation quotidienne moyenne est de 150 masques. Un réapprovisionnement est déclenché quand le stock restant S(j) est égal ou inférieur à 600 masques. Combien de masques seront encore en stock *la veille* du jour où le réapprovisionnement est déclenché ? (j représente le nombre de jours écoulés).",
+        "type": "numerique",
+        "reponse": 750.0,
+        "unite": "masques",
+        "tolerance": 0.5,
+        "indice": "Commencez par trouver le jour 'j' où le stock atteint 600 masques. Ensuite, calculez le stock pour le jour précédent (j-1).",
+        "corrige": "La fonction du stock est S(j) = 3000 - 150j.\n1. On cherche 'j' tel que S(j) = 600 : 3000 - 150j = 600\n2. Isoler le terme en 'j' : -150j = 600 - 3000\n3. Simplifier : -150j = -2400\n4. Calculer 'j' : j = -2400 / -150 = 16.\nLe stock atteint 600 masques au début du 16ème jour. Le réapprovisionnement est donc déclenché le jour 16. La veille correspond au stock à la fin du 15ème jour (j=15).\n5. Calculer S(15) : S(15) = 3000 - (150 * 15)\n6. Effectuer le calcul : S(15) = 3000 - 2250 = 750.\nIl y aura 750 masques en stock la veille du déclenchement du réapprovisionnement."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un service de restauration d'un EHPAD estime que le bénéfice journalier B(p) en euros, en fonction du prix 'p' (en euros) du repas par résident, est modélisé par la fonction B(p) = -10p^2 + 120p - 200. Quel est le bénéfice journalier maximal que l'EHPAD peut espérer obtenir ?",
+        "type": "numerique",
+        "reponse": 160.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Pour une fonction quadratique de la forme ax² + bx + c (avec a<0), le maximum est atteint au sommet de la parabole. L'abscisse du sommet est donnée par la formule -b/(2a). Une fois que vous avez la valeur de 'p' qui maximise le bénéfice, remplacez cette valeur dans la fonction B(p).",
+        "corrige": "La fonction de bénéfice est B(p) = -10p^2 + 120p - 200. C'est une fonction quadratique (parabole) avec a = -10, b = 120, c = -200.\nPuisque a < 0, la parabole est ouverte vers le bas et admet un maximum. L'abscisse 'p' du sommet (qui correspond au prix maximisant le bénéfice) est donnée par la formule p = -b / (2a).\n1. Calculer l'abscisse du sommet : p = -120 / (2 * -10) = -120 / -20 = 6.\nLe prix du repas qui maximise le bénéfice est de 6 €.\n2. Pour trouver le bénéfice maximal, substituer p = 6 dans la fonction B(p) :\nB(6) = -10 * (6)^2 + 120 * (6) - 200\nB(6) = -10 * 36 + 720 - 200\nB(6) = -360 + 720 - 200\nB(6) = 360 - 200 = 160.\nLe bénéfice journalier maximal que l'EHPAD peut espérer obtenir est de 160 €."
+      }
+    ]
+  }
+>>>>>>> 35fe6c0b852325cdc931eb9d20dc32983725a7a6
 ]

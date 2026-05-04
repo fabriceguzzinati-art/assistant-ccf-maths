@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
   {
     "niveau": "1ère Pro",
@@ -123,4 +124,131 @@
       }
     ]
   }
+=======
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Calculs commerciaux et financiers — intérêts simples, coûts",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "En tant que gestionnaire de rayon dans une grande surface spécialisée, vous devez maîtriser les calculs commerciaux et financiers pour optimiser la rentabilité de votre assortiment. Ces exercices vous aideront à affiner vos compétences en gestion des prix, des stocks et de la performance linéaire.",
+    "rappel_cours": "Coût d'achat net = Prix d'achat brut - Remises - Escomptes. Prix de revient = Coût d'achat net + Frais d'approvisionnement + Frais de distribution. Marge brute = Prix de Vente HT - Coût d'achat. Taux de marque = (Marge brute / Prix de Vente HT) * 100. Prix de vente HT = Coût de revient / (1 - Taux de marque/100). Prix de vente TTC = Prix de vente HT * (1 + Taux de TVA/100). Intérêt simple (I) = Capital (C) * Taux (t) * Durée (n). (n en années ou ajuster le taux si en jours/mois). Stock final (FIFO) : Les premiers articles entrés sont les premiers sortis.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un lot de 500 jeux vidéo est acheté 25 € l'unité. Le fournisseur accorde une remise de 10% puis un escompte de 2% pour paiement comptant. Les frais de transport s'élèvent à 150 € pour le lot, et les frais de stockage représentent 0,50 € par jeu. Calculez le prix de revient unitaire de chaque jeu vidéo.",
+        "type": "numerique",
+        "reponse": 22.85,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Appliquez les réductions commerciales et financières séquentiellement au prix d'achat brut. N'oubliez pas d'intégrer tous les frais pour obtenir le prix de revient total avant de le diviser par le nombre d'unités.",
+        "corrige": "1. Prix d'achat brut du lot : 25 €/unité * 500 unités = 12 500 €\n2. Après remise de 10% : 12 500 € * (1 - 0.10) = 11 250 €\n3. Après escompte de 2% : 11 250 € * (1 - 0.02) = 11 025 € (Coût d'achat net du lot)\n4. Frais totaux : Frais de transport (150 €) + Frais de stockage (0,50 €/unité * 500 unités = 250 €) = 400 €\n5. Prix de revient total du lot : 11 025 € + 400 € = 11 425 €\n6. Prix de revient unitaire : 11 425 € / 500 unités = 22,85 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Le prix de revient unitaire d'un smartphone est de 180 €. L'enseigne souhaite réaliser un taux de marque de 30%. Le taux de TVA applicable est de 20%. Calculez le prix de vente TTC de ce smartphone.",
+        "type": "numerique",
+        "reponse": 308.57,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Le taux de marque s'applique sur le Prix de Vente HT. Commencez par déterminer le Prix de Vente HT, puis ajoutez la TVA.",
+        "corrige": "1. Calcul du Prix de Vente HT (PV HT) : PV HT = Prix de revient / (1 - Taux de marque)\n   PV HT = 180 € / (1 - 0.30) = 180 € / 0.70 = 257,1428... €\n2. Calcul du Prix de Vente TTC (PV TTC) : PV TTC = PV HT * (1 + Taux de TVA)\n   PV TTC = 257,1428... € * (1 + 0.20) = 257,1428... € * 1.20 = 308,5714... €\n3. Arrondi à deux décimales : 308,57 €"
+      },
+      {
+        "numero": 3,
+        "enonce": "Un linéaire de 3 mètres linéaires (ML) présente un facing de 0,60 mètre pour un article. Chaque facing expose 4 produits en profondeur. Le magasin vend en moyenne 50 unités de cet article par ML et par semaine. Le prix de vente unitaire est de 12 € TTC et le coût d'achat unitaire est de 6 € HT. Le taux de TVA est de 20%. Calculez la marge brute totale générée par ce linéaire sur un mois (4 semaines).",
+        "type": "numerique",
+        "reponse": 2400.0,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Commencez par calculer la marge unitaire HT. Ensuite, déterminez le nombre total d'unités vendues par le linéaire sur la période donnée.",
+        "corrige": "1. Calcul du Prix de Vente HT (PV HT) unitaire : PV HT = Prix de vente TTC / (1 + Taux de TVA) = 12 € / (1 + 0.20) = 12 € / 1.20 = 10 €\n2. Calcul de la marge brute unitaire : Marge brute unitaire = PV HT - Coût d'achat unitaire = 10 € - 6 € = 4 €\n3. Calcul des ventes totales sur le linéaire en une semaine : Ventes par semaine = 50 unités/ML * 3 ML = 150 unités\n4. Calcul des ventes totales sur le linéaire en un mois (4 semaines) : Ventes par mois = 150 unités/semaine * 4 semaines = 600 unités\n5. Calcul de la marge brute totale sur un mois : Marge brute totale = Marge brute unitaire * Ventes par mois = 4 € * 600 = 2 400 €"
+      },
+      {
+        "numero": 4,
+        "enonce": "Un magasin doit régler une facture de 7 500 € à son fournisseur. La date d'échéance était le 15 mars N. Le paiement a finalement été effectué le 14 avril N. Le taux d'intérêt légal pour les pénalités de retard est de 10% par an, majoré de 2 points. Calculez le montant des intérêts de retard que le magasin devra payer au fournisseur, en utilisant la méthode des intérêts simples. (Un mois compte 30 jours, une année 360 jours pour ce calcul commercial).",
+        "type": "numerique",
+        "reponse": 75.0,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "Déterminez précisément le nombre de jours de retard (la date d'échéance n'est pas comprise dans les jours de retard, le premier jour de retard est le lendemain de l'échéance). Le taux d'intérêt doit être annualisé puis converti pour la durée exacte.",
+        "corrige": "1. Calcul du nombre de jours de retard :\n   - Mars : Du 16 mars au 31 mars inclus = 31 - 16 + 1 = 16 jours.\n   - Avril : Du 1er avril au 14 avril inclus = 14 jours.\n   - Total des jours de retard : 16 + 14 = 30 jours.\n2. Calcul du taux d'intérêt annuel total : 10% + 2% = 12% par an.\n3. Calcul des intérêts de retard (formule des intérêts simples : C * t * n) :\n   Intérêts = 7 500 € * (12 / 100) * (30 / 360 jours)\n   Intérêts = 7 500 € * 0,12 * (1 / 12)\n   Intérêts = 7 500 € * 0,01 = 75 €"
+      },
+      {
+        "numero": 5,
+        "enonce": "Un magasin d'articles de sport a le stock de vélos VTT suivant au 01/03/N : 10 unités achetées à 300 € HT l'unité. Durant le mois de mars : Achats : Le 10/03/N : 15 unités à 320 € HT l'unité. Le 20/03/N : 20 unités à 310 € HT l'unité. Ventes : Le 05/03/N : 8 unités. Le 25/03/N : 25 unités. En utilisant la méthode FIFO (First In, First Out), calculez la valeur HT du stock final de vélos VTT au 31/03/N.",
+        "type": "numerique",
+        "reponse": 3720.0,
+        "unite": "€",
+        "tolerance": 0.01,
+        "indice": "La méthode FIFO suppose que les premiers articles entrés en stock sont les premiers vendus. Suivez l'ordre chronologique des entrées pour déterminer de quelles 'couches' de stock proviennent les ventes.",
+        "corrige": "1. Stock initial au 01/03/N : 10 unités à 300 €/unité.\n2. Vente du 05/03/N (8 unités) : Ces unités proviennent du stock initial.\n   Stock initial restant : 10 - 8 = 2 unités à 300 €/unité.\n3. Achat du 10/03/N : 15 unités à 320 €/unité.\n4. Achat du 20/03/N : 20 unités à 310 €/unité.\n   État du stock avant la 2ème vente (par ordre d'entrée) :\n   - 2 unités à 300 €\n   - 15 unités à 320 €\n   - 20 unités à 310 €\n5. Vente du 25/03/N (25 unités) :\n   - Les 2 unités restantes du stock initial sont vendues (2 unités @ 300 €). Reste à vendre : 25 - 2 = 23 unités.\n   - Les 15 unités de l'achat du 10/03 sont vendues (15 unités @ 320 €). Reste à vendre : 23 - 15 = 8 unités.\n   - Les 8 unités restantes proviennent de l'achat du 20/03 (8 unités @ 310 €).\n6. Stock final au 31/03/N :\n   Il reste des unités de l'achat du 20/03/N.\n   Nombre d'unités restantes de l'achat du 20/03/N : 20 unités - 8 unités vendues = 12 unités.\n   Valeur HT du stock final : 12 unités * 310 €/unité = 3 720 €"
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Calculs commerciaux et financiers — intérêts simples, coûts",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Vous travaillez en tant qu'assistant commercial dans une grande surface spécialisée en produits culturels et technologiques. Votre responsable vous confie diverses tâches de calcul pour optimiser la rentabilité des rayons, gérer les stocks et analyser les performances commerciales, en prévision des prochaines opérations promotionnelles et de l'inventaire annuel.",
+    "rappel_cours": "Formules clés pour les calculs commerciaux et financiers :\n- **Prix d'achat net (PAN)** = Prix d'achat brut - Réduction(s)\n- **Coût d'achat (CA)** = PAN + Frais d'achat\n- **Prix de vente HT (PVHT)** = Prix de vente TTC / (1 + Taux de TVA)\n- **Marge commerciale** = PVHT - CA\n- **Intérêts simples (I)** = Capital (C) × Taux annuel (t) × Durée (n jours) / 36000\n- **Taux annuel équivalent** = (Coût de l'opération / Capital utilisé) × (360 / Durée en jours)\n- **Coût de possession du stock** = Valeur moyenne du stock × Taux annuel de possession",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un téléviseur est acheté à un fournisseur pour un prix brut de 750 € HT. Le magasin bénéficie d'une remise commerciale de 15% et d'un escompte de caisse de 2% pour paiement immédiat. Les frais de transport s'élèvent à 15 € HT. Le magasin revend ce téléviseur au prix de 999 € TTC, avec un taux de TVA de 20%. Calculez la marge commerciale nette (PVHT - Coût d'achat) réalisée sur ce téléviseur.",
+        "type": "numerique",
+        "reponse": 192.75,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Commencez par calculer le Prix d'Achat Net (PAN) après avoir appliqué les remises successives. Ensuite, ajoutez les frais de transport pour obtenir le Coût d'Achat (CA). Enfin, déduisez le Prix de Vente HT (PVHT) du Prix de Vente TTC.",
+        "corrige": "1. Prix d'achat brut HT = 750 €\n2. Après remise commerciale de 15% : 750 * (1 - 0.15) = 750 * 0.85 = 637.50 €\n3. Après escompte de caisse de 2% : 637.50 * (1 - 0.02) = 637.50 * 0.98 = 624.75 € (Prix d'Achat Net)\n4. Coût d'Achat (CA) = Prix d'Achat Net + Frais de transport = 624.75 + 15 = 639.75 €\n5. Prix de Vente TTC = 999 €\n6. Prix de Vente HT (PVHT) = 999 / (1 + 0.20) = 999 / 1.20 = 832.50 €\n7. Marge commerciale nette = PVHT - CA = 832.50 - 639.75 = 192.75 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Un fournisseur propose au magasin une facture de 8 000 € HT payable à 30 jours. Il offre un escompte de 2% pour un paiement comptant immédiat. Si le magasin décide de ne pas profiter de l'escompte et de payer à 30 jours, quel est le coût financier annuel équivalent (en pourcentage, sur 360 jours) de cette décision pour le magasin ?",
+        "type": "numerique",
+        "reponse": 24.49,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Le montant de l'escompte non perçu représente le coût d'un 'crédit' que le fournisseur vous accorde. Le capital utilisé pour calculer le taux est le montant que vous auriez payé avec l'escompte. Utilisez la formule du taux annuel équivalent.",
+        "corrige": "1. Montant de l'escompte non perçu = 8 000 € * 2% = 160 €\n2. Capital réellement financé (montant qui aurait été payé avec l'escompte) = 8 000 € - 160 € = 7 840 €\n3. L'escompte de 160 € représente le coût du crédit de 7 840 € pour une durée de 30 jours.\n4. Taux annuel équivalent (t) = (Intérêts / Capital) * (360 / Durée en jours) * 100\n   t = (160 / 7 840) * (360 / 30) * 100\n   t = (0.02040816...) * 12 * 100\n   t = 0.2448979... * 100 ≈ 24.49 %"
+      },
+      {
+        "numero": 3,
+        "enonce": "Le magasin gère un stock moyen de 250 unités pour un produit. Le coût d'acquisition unitaire est de 30 €. Le coût annuel de possession du stock représente 10% de la valeur moyenne du stock. De plus, chaque commande passée auprès du fournisseur coûte 50 € en frais administratifs et logistiques, et le magasin passe 6 commandes par an pour ce produit. Calculez le coût annuel total de gestion du stock (possession + commandes) pour ce produit.",
+        "type": "numerique",
+        "reponse": 1050.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord la valeur moyenne du stock pour déterminer le coût de possession. Ensuite, déterminez le coût total annuel des commandes.",
+        "corrige": "1. Valeur moyenne du stock = Stock moyen en unités × Coût d'acquisition unitaire\n   Valeur moyenne du stock = 250 unités * 30 €/unité = 7 500 €\n2. Coût annuel de possession du stock = Valeur moyenne du stock × Taux de possession\n   Coût annuel de possession = 7 500 € * 10% = 750 €\n3. Coût annuel des commandes = Nombre de commandes par an × Coût par commande\n   Coût annuel des commandes = 6 commandes/an * 50 €/commande = 300 €\n4. Coût annuel total de gestion du stock = Coût de possession + Coût des commandes\n   Coût annuel total = 750 € + 300 € = 1 050 €"
+      },
+      {
+        "numero": 4,
+        "enonce": "Un linéaire de 8 mètres, dédié aux accessoires high-tech, génère un chiffre d'affaires mensuel de 1200 € par mètre linéaire. Le loyer de cet espace linéaire est de 40 € par mètre par mois. La marge commerciale moyenne sur ces produits est de 35% du chiffre d'affaires HT. Calculez le bénéfice net annuel (Marge commerciale HT - Coût du linéaire) généré par l'ensemble de ce linéaire.",
+        "type": "numerique",
+        "reponse": 36480.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez le chiffre d'affaires annuel total pour l'ensemble du linéaire, puis la marge commerciale totale annuelle. N'oubliez pas de calculer le coût annuel total du linéaire.",
+        "corrige": "1. Chiffre d'affaires mensuel total pour 8 mètres = 1 200 €/m * 8 m = 9 600 €\n2. Chiffre d'affaires annuel total = 9 600 €/mois * 12 mois = 115 200 €\n3. Marge commerciale annuelle = Chiffre d'affaires annuel total * Taux de marge\n   Marge commerciale annuelle = 115 200 € * 35% = 40 320 €\n4. Coût mensuel total du linéaire = Loyer par mètre par mois * Nombre de mètres\n   Coût mensuel total du linéaire = 40 €/m * 8 m = 320 €\n5. Coût annuel total du linéaire = Coût mensuel total du linéaire * 12 mois\n   Coût annuel total du linéaire = 320 €/mois * 12 mois = 3 840 €\n6. Bénéfice net annuel = Marge commerciale annuelle - Coût annuel total du linéaire\n   Bénéfice net annuel = 40 320 € - 3 840 € = 36 480 €"
+      },
+      {
+        "numero": 5,
+        "enonce": "Le magasin importe 300 unités d'un produit depuis le Canada. Le prix unitaire fournisseur est de 20 dollars canadiens (CAD). Le taux de change est de 1 € = 1.45 CAD. Les frais de transport et d'assurance s'élèvent à 180 € HT. Les droits de douane représentent 6% du prix d'achat HT en euros. Calculez le coût d'achat total (en €) pour cette commande de 300 unités avant TVA.",
+        "type": "numerique",
+        "reponse": 4566.21,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Convertissez d'abord le prix total fournisseur en dollars canadiens en euros. Ajoutez ensuite les frais de transport et les droits de douane calculés sur le montant en euros obtenu.",
+        "corrige": "1. Prix total fournisseur en CAD = 300 unités * 20 CAD/unité = 6 000 CAD\n2. Conversion en Euros : Prix total fournisseur en € = Prix total en CAD / Taux de change\n   Prix total fournisseur en € = 6 000 CAD / 1.45 CAD/€ ≈ 4 137.93 €\n3. Droits de douane = Prix total fournisseur en € * Taux des droits de douane\n   Droits de douane = 4 137.93 € * 6% ≈ 248.28 €\n4. Coût d'achat total = Prix total fournisseur en € + Frais de transport/assurance + Droits de douane\n   Coût d'achat total = 4 137.93 € + 180 € + 248.28 € = 4 566.21 €"
+      }
+    ]
+  }
+>>>>>>> 35fe6c0b852325cdc931eb9d20dc32983725a7a6
 ]

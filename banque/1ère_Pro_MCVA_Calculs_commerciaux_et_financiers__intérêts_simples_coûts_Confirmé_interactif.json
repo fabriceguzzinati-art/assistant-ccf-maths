@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
   {
     "niveau": "1ère Pro",
@@ -123,4 +124,131 @@
       }
     ]
   }
+=======
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Calculs commerciaux et financiers — intérêts simples, coûts",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "Vous êtes apprenti vendeur en 1ère Bac Pro Métiers du Commerce et de la Vente dans un magasin spécialisé. Votre responsable vous confie des missions variées, allant de la fixation des prix de vente à l'analyse de la rentabilité des produits, en passant par le suivi des stocks et des financements. Une bonne maîtrise des calculs commerciaux est essentielle pour réussir ces tâches.",
+    "rappel_cours": "Les calculs commerciaux et financiers sont fondamentaux. Rappels : Prix de Vente HT = Coût d'achat + Marge brute. Prix de Vente TTC = PV HT * (1 + Taux de TVA). Taux de marque = (Marge brute / PV HT) * 100. Taux de marge = (Marge brute / Coût d'achat) * 100. Intérêts simples (I) = Capital (C) * Taux annuel (t) * Durée (n en années ou n/360). Rotation des stocks = Coût des ventes / Stock moyen.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un nouveau modèle de chaussures est acheté 42 € HT par le magasin. Le responsable souhaite appliquer un taux de marge de 35% sur le coût d'achat. Le taux de TVA applicable est de 20%. Quel sera le prix de vente TTC (en €) de cette paire de chaussures ?",
+        "type": "numerique",
+        "reponse": 68.04,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord la marge, puis le prix de vente HT, et enfin le prix de vente TTC en appliquant la TVA.",
+        "corrige": "1. Calcul de la marge brute : 42 € * 35% = 42 * 0.35 = 14.70 €\n2. Calcul du Prix de Vente HT : 42 € (coût d'achat) + 14.70 € (marge brute) = 56.70 €\n3. Calcul du Prix de Vente TTC : 56.70 € * (1 + 0.20) = 56.70 * 1.20 = 68.04 €"
+      },
+      {
+        "numero": 2,
+        "enonce": "Un lot de sacs à main est vendu 95 € TTC l'unité. Le taux de TVA en vigueur est de 20%. Sachant que le coût d'achat de chaque sac est de 55 € HT, calculez le taux de marque (en pourcentage, arrondi à deux décimales) réalisé sur ce produit.",
+        "type": "numerique",
+        "reponse": 29.82,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Commencez par trouver le Prix de Vente HT à partir du Prix de Vente TTC et du taux de TVA. Ensuite, calculez la marge brute et enfin le taux de marque.",
+        "corrige": "1. Calcul du Prix de Vente HT : 95 € / (1 + 0.20) = 95 / 1.20 = 79.1666... €\n2. Calcul de la Marge brute : 79.1666... € (PV HT) - 55 € (coût d'achat) = 24.1666... €\n3. Calcul du Taux de marque : (24.1666... € / 79.1666... €) * 100 = 30.526... % ≈ 29.82 %"
+      },
+      {
+        "numero": 3,
+        "enonce": "Le chiffre d'affaires annuel (au coût d'achat des marchandises vendues) d'un rayon de votre magasin est de 240 000 €. Le stock moyen de ce rayon, calculé au coût d'achat, est de 20 000 €. Combien de fois (nombre entier) le stock a-t-il été renouvelé sur l'année ?",
+        "type": "numerique",
+        "reponse": 12.0,
+        "unite": "fois",
+        "tolerance": 0.1,
+        "indice": "La rotation des stocks est le rapport entre le coût des ventes et le stock moyen.",
+        "corrige": "Calcul de la rotation des stocks : Coût des ventes / Stock moyen = 240 000 € / 20 000 € = 12 fois"
+      },
+      {
+        "numero": 4,
+        "enonce": "Pour réaménager une partie du magasin, votre entreprise contracte un emprunt de 15 000 € auprès de sa banque. Cet emprunt est à intérêts simples, au taux annuel de 3,8%, sur une durée de 90 jours. Calculez le montant des intérêts (en €) que l'entreprise devra payer. (Utilisez la base de 360 jours pour l'année).",
+        "type": "numerique",
+        "reponse": 142.5,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La formule des intérêts simples est I = C * t * (n/360), où C est le capital, t le taux annuel et n la durée en jours.",
+        "corrige": "Calcul des intérêts simples : I = Capital * Taux annuel * (Durée en jours / 360)\nI = 15 000 € * 0.038 * (90 / 360)\nI = 15 000 * 0.038 * 0.25\nI = 570 * 0.25 = 142.50 €"
+      },
+      {
+        "numero": 5,
+        "enonce": "Lors de l'inventaire des jeans, le stock théorique indiquait 320 pièces. Chaque jean a un coût d'achat de 25 € HT. Le stock réel constaté est de 305 pièces. Quel est le montant total (en €) de la démarque inconnue pour les jeans ?",
+        "type": "numerique",
+        "reponse": 375.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord la différence de quantité entre le stock théorique et le stock réel, puis valorisez cette différence au coût d'achat unitaire.",
+        "corrige": "1. Calcul de la quantité manquante : 320 pièces (théorique) - 305 pièces (réel) = 15 pièces\n2. Calcul du montant de la démarque inconnue : 15 pièces * 25 €/pièce = 375 €"
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVA",
+    "chapitre": "Calculs commerciaux et financiers — intérêts simples, coûts",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-03",
+    "contexte": "En tant que futur professionnel des Métiers du Commerce et de la Vente, vous êtes régulièrement confronté à des décisions impactant la rentabilité d'un rayon ou d'un magasin. Cet exercice vous prépare à maîtriser les calculs financiers essentiels pour la gestion quotidienne : détermination des prix, gestion des stocks et évaluation des coûts.",
+    "rappel_cours": "Les calculs commerciaux incluent le Prix d'Achat (PA), le Prix de Vente (PV), la Marge et la TVA. Le Taux de marque = (Marge / PV HT) * 100. La formule PV HT = PA HT / (1 - Taux de marque) est très utile. Les intérêts simples (I) sont calculés par I = C * t * n, où C est le capital, t le taux annuel et n la durée en années.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Votre magasin achète 1500 unités d'un produit à 8,50 € HT l'unité. Les frais de transport et d'assurance s'élèvent à 450 € HT pour l'ensemble de la commande. Les frais de distribution (salaires des vendeurs, publicité) sont estimés à 1,20 € HT par unité vendue. Quel est le coût de revient unitaire de ce produit ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Le coût de revient comprend le coût d'achat (prix d'achat + frais sur achat) et les frais de distribution. N'oubliez pas de ramener les frais de transport à l'unité.",
+        "corrige": "1. Calcul du coût d'achat unitaire :\n   - Prix d'achat unitaire = 8,50 €\n   - Frais de transport et d'assurance unitaires = 450 € / 1500 unités = 0,30 €\n   - Coût d'achat unitaire = 8,50 € + 0,30 € = 8,80 €\n2. Calcul du coût de revient unitaire :\n   - Coût d'achat unitaire = 8,80 €\n   - Frais de distribution unitaires = 1,20 €\n   - Coût de revient unitaire = 8,80 € + 1,20 € = 10,00 €\nLe coût de revient unitaire de ce produit est de 10,00 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Le stock initial de produits X dans votre entrepôt est valorisé à 12 500 € HT. Au cours du trimestre, vous avez réalisé des achats pour un montant total de 35 000 € HT. L'inventaire de fin de trimestre révèle une valeur de stock final de 10 200 € HT. Quel est le coût d'achat des marchandises vendues (CAMV) pour ce trimestre ?",
+        "type": "numerique",
+        "reponse": 37300.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Le coût d'achat des marchandises vendues se calcule en prenant en compte le stock initial, les achats de la période et le stock final.",
+        "corrige": "Formule du Coût d'Achat des Marchandises Vendues (CAMV) = Stock Initial + Achats - Stock Final\nCAMV = 12 500 € + 35 000 € - 10 200 €\nCAMV = 47 500 € - 10 200 €\nCAMV = 37 300 €\nLe coût d'achat des marchandises vendues pour ce trimestre est de 37 300 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un nouveau produit est acheté 25 € HT par votre magasin. Le responsable de rayon souhaite appliquer un taux de marque de 35 % sur le prix de vente HT de ce produit. Le taux de TVA applicable est de 20 %. Quel sera le prix de vente TTC de ce produit ?",
+        "type": "numerique",
+        "reponse": 46.15,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Le taux de marque est calculé sur le prix de vente HT. Il faut d'abord trouver le PV HT en utilisant la formule PV HT = PA HT / (1 - Taux de marque), puis appliquer la TVA.",
+        "corrige": "1. Calcul du Prix de Vente HT :\n   - Le taux de marque est de 35 %, soit 0,35.\n   - PV HT = Prix d'achat HT / (1 - Taux de marque)\n   - PV HT = 25 € / (1 - 0,35)\n   - PV HT = 25 € / 0,65\n   - PV HT ≈ 38,4615 €\n2. Calcul du Prix de Vente TTC :\n   - PV TTC = PV HT * (1 + Taux de TVA)\n   - PV TTC = 38,4615 € * (1 + 0,20)\n   - PV TTC = 38,4615 € * 1,20\n   - PV TTC ≈ 46,15 €\nLe prix de vente TTC de ce produit sera de 46,15 €."
+      },
+      {
+        "numero": 4,
+        "enonce": "Votre magasin obtient un découvert autorisé de 15 000 € auprès de sa banque pour financer un besoin de trésorerie ponctuel. Ce découvert est utilisé pendant 45 jours. Le taux d'intérêt annuel appliqué est de 8,5 %. Quel sera le montant des intérêts simples à payer pour cette période ? (Base 360 jours pour l'année bancaire)",
+        "type": "numerique",
+        "reponse": 159.38,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Rappelez-vous la formule I = C * t * n, où n est la durée exprimée en fraction d'année. L'année bancaire est généralement de 360 jours.",
+        "corrige": "Formule des intérêts simples : I = C * t * n\nOù :\n- C (Capital) = 15 000 €\n- t (Taux annuel) = 8,5 % = 0,085\n- n (Durée en années) = 45 jours / 360 jours = 0,125 année\nCalcul :\n- I = 15 000 € * 0,085 * (45 / 360)\n- I = 15 000 € * 0,085 * 0,125\n- I = 1275 € * 0,125\n- I = 159,375 €\nArrondi à deux décimales, le montant des intérêts à payer est de 159,38 €."
+      },
+      {
+        "numero": 5,
+        "enonce": "Votre magasin commande 500 unités d'un article à 12 € HT l'unité. Le fournisseur vous accorde une remise commerciale de 10 % sur le montant brut de la commande. De plus, si vous payez comptant, vous bénéficiez d'un escompte de 2 % sur le prix net commercial. Les frais de port s'élèvent à 80 € HT. Quel est le coût d'achat net HT de cette commande si vous payez comptant ?",
+        "type": "numerique",
+        "reponse": 5372.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Appliquez les réductions commerciales dans l'ordre (remise, puis escompte) avant d'ajouter les frais de port pour obtenir le coût d'achat net. Le coût d'achat net est le prix net financier + les frais de port.",
+        "corrige": "1. Calcul du prix brut de la commande :\n   - Prix brut = Nombre d'unités * Prix unitaire HT\n   - Prix brut = 500 * 12 € = 6 000 €\n2. Calcul du montant de la remise commerciale :\n   - Remise = Prix brut * Taux de remise\n   - Remise = 6 000 € * 10 % = 600 €\n3. Calcul du prix net commercial :\n   - Prix net commercial = Prix brut - Remise\n   - Prix net commercial = 6 000 € - 600 € = 5 400 €\n4. Calcul du montant de l'escompte de caisse :\n   - Escompte = Prix net commercial * Taux d'escompte\n   - Escompte = 5 400 € * 2 % = 108 €\n5. Calcul du prix net financier :\n   - Prix net financier = Prix net commercial - Escompte\n   - Prix net financier = 5 400 € - 108 € = 5 292 €\n6. Calcul du coût d'achat net HT :\n   - Coût d'achat net HT = Prix net financier + Frais de port HT\n   - Coût d'achat net HT = 5 292 € + 80 € = 5 372 €\nLe coût d'achat net HT de cette commande est de 5 372 €."
+      }
+    ]
+  }
+>>>>>>> 35fe6c0b852325cdc931eb9d20dc32983725a7a6
 ]
