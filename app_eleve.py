@@ -2317,36 +2317,84 @@ with tab_ccf:
 # ONGLET 3 — MA PROGRESSION
 # ─────────────────────────────────────────────────────────────
 with tab_graphique:
-    st.header("📈 Laboratoire Graphique Interactif")
-    st.markdown("""
-        Utilise cette calculatrice GeoGebra pour :
-        * Tracer les fonctions de tes exercices.
-        * Vérifier tes calculs de dérivées ou de sommets.
-        * Explorer l'impact des coefficients sur une parabole.
-    """)
-    
-    # Intégration de l'application GeoGebra Classique
-    geogebra_url = "https://www.geogebra.org/classic"
-    st.components.v1.iframe(geogebra_url, height=600, scrolling=True)
-    
-    st.info("💡 Astuce : Tu peux taper directement l'équation dans la barre à gauche (ex: f(x) = 2x^2 - 3x + 1).")
     st.markdown("""
     <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem;
-                color:#e2e8f0;padding:8px 0 4px">📈 Graphique GeoGebra</div>
+                color:#e2e8f0;padding:8px 0 4px">📈 Laboratoire Graphique</div>
     """, unsafe_allow_html=True)
+    st.markdown(
+        '<div class="info-box">📐 Trace tes fonctions, vérifie tes dérivées, '
+        'explore les paraboles — tape directement dans la barre de saisie en bas à gauche.</div>',
+        unsafe_allow_html=True
+    )
 
-    if not code_eleve:
-        st.markdown('<div class="warn-box">⚠️ Entre ton code élève dans le panneau gauche pour voir le graphique.</div>', unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style="background:linear-gradient(135deg,#1a1f35,#252a45);border:1px solid #3d4480;border-radius:14px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
-        <div style="font-size:2.5rem">🎓</div>
-        <div style="flex:1">
-        <div style="font-family:'Outfit',sans-serif;font-weight:800;color:#e2e8f0">Rang actuel</div>
-        <div class="xp-label">Rang actuel</div>
-        </div>
-        </div>
-        """, unsafe_allow_html=True)
+    # Suggestions de fonctions selon le chapitre sélectionné
+    suggestions = {
+        "Fonctions polynômes de degré 2": ["f(x) = x^2 - 4x + 3", "g(x) = -2x^2 + 4x"],
+        "Fonctions polynômes de degré 3": ["f(x) = x^3 - 3x", "g(x) = x^3 - x^2 - x + 1"],
+        "Fonction dérivée": ["f(x) = x^2 + 2x", "f'(x) = 2x + 2"],
+        "Suites": ["f(x) = 2x + 1", "g(x) = 3 * 1.5^x"],
+        "Fonctions exponentielles": ["f(x) = exp(x)", "g(x) = 2^x"],
+    }
+
+    # Trouver une suggestion selon le chapitre actif
+    chap_actif = (st.session_state.meta_gen or {}).get("chapitre", "")
+    suggestion_actuelle = None
+    for mot_cle, exemples in suggestions.items():
+        if mot_cle.lower() in chap_actif.lower():
+            suggestion_actuelle = exemples
+            break
+
+    if suggestion_actuelle:
+        st.markdown(
+            f'<div class="ok-box">💡 Exercice en cours : essaie de tracer '
+            f'<code>{suggestion_actuelle[0]}</code></div>',
+            unsafe_allow_html=True
+        )
+
+    # Intégration GeoGebra via l'API officielle (contourne les restrictions iframe)
+    st.components.v1.html("""
+    <div style="background:#13162a; border-radius:12px; overflow:hidden; border:1px solid #3d4480;">
+        <div id="ggb-element" style="width:100%; height:560px;"></div>
+    </div>
+    <script>
+        var params = {
+            "appName":        "graphing",
+            "width":          800,
+            "height":         560,
+            "showToolBar":    true,
+            "showAlgebraInput": true,
+            "showMenuBar":    false,
+            "showFullscreenButton": true,
+            "enableRightClick": false,
+            "capturingThreshold": null,
+            "showResetIcon":  true,
+            "language":       "fr",
+            "preventFocus":   false,
+            "scaleContainerClass": "ggb-element",
+            "autoHeight":     true,
+            "useBrowserForJS": false,
+            "allowStyleBar":  true,
+            "perspective":    "G",
+            "enableCAS":      false,
+            "enable3d":       false,
+            "algebraInputPosition": "bottom"
+        };
+
+        function loadGGB() {
+            if (typeof GGBApplet !== 'undefined') {
+                var applet = new GGBApplet(params, true);
+                applet.inject('ggb-element');
+            } else {
+                setTimeout(loadGGB, 300);
+            }
+        }
+
+        var script = document.createElement('script');
+        script.src = 'https://www.geogebra.org/apps/deployggb.js';
+        script.onload = loadGGB;
+        document.head.appendChild(script);
+    </script>
+    """, height=580)
 
 # ─────────────────────────────────────────────────────────────
 # ONGLET 4 — MA PROGRESSION
