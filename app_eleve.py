@@ -409,11 +409,11 @@ def _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, suffixe="") -
     if not os.path.exists(BANQUE_DIR):
         return None
 
-    # Clés normalisées pour la comparaison
     niv_n  = _normalise(niveau)
     fil_n  = _normalise(filiere)
-    chap_n = _normalise(chapitre)
     diff_n = _normalise(difficulte.split(" ", 1)[-1])
+    # Tronquer le chapitre normalisé à 45 chars — les noms de fichiers sont tronqués par _slug
+    chap_n = _normalise(chapitre)[:45]
     ext    = f"{suffixe}.json"
 
     meilleur = None
@@ -422,15 +422,19 @@ def _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, suffixe="") -
     for fname in os.listdir(BANQUE_DIR):
         if not fname.endswith(ext):
             continue
+        # Pour les fichiers classiques, exclure les fichiers interactifs
+        if suffixe == "" and fname.endswith("_interactif.json"):
+            continue
         fname_n = _normalise(fname)
-        # Compter combien de clés sont présentes dans le nom de fichier normalisé
-        score = sum(1 for k in [niv_n, fil_n, chap_n, diff_n] if k in fname_n)
+        score = sum(1 for k in [niv_n, fil_n, chap_n, diff_n] if k and k in fname_n)
         if score > meilleur_score:
             meilleur_score = score
             meilleur = fname
 
-    # Accepter seulement si les 4 composantes sont trouvées
     if meilleur_score >= 4:
+        return os.path.join(BANQUE_DIR, meilleur)
+    # Si on ne trouve pas avec 4/4, essayer avec 3/4 (chapitre peut différer légèrement)
+    if meilleur_score == 3 and meilleur:
         return os.path.join(BANQUE_DIR, meilleur)
     return None
 
@@ -1901,6 +1905,21 @@ with tab_gen:
     sujets_interactifs = charger_banque_interactif(niv, filiere, chap, difficulte)
     nb_banque      = len(sujets_banque)
     nb_interactifs = len(sujets_interactifs)
+
+    # ── Debug temporaire ──────────────────────────────────────
+    with st.expander("🔍 Debug banque (temporaire)", expanded=False):
+        st.write(f"**BANQUE_DIR** : `{BANQUE_DIR}`")
+        st.write(f"**Dossier existe** : {os.path.exists(BANQUE_DIR)}")
+        if os.path.exists(BANQUE_DIR):
+            fichiers = sorted(os.listdir(BANQUE_DIR))
+            st.write(f"**Fichiers présents ({len(fichiers)})** :")
+            for f in fichiers:
+                st.write(f"  - `{f}`")
+        st.write(f"**Recherche** : niveau=`{niv}` filière=`{filiere}` chapitre=`{chap[:40]}` diff=`{difficulte}`")
+        st.write(f"**Normalisé** : niv=`{_normalise(niv)}` fil=`{_normalise(filiere)}` diff=`{_normalise(difficulte.split(' ',1)[-1])}`")
+        st.write(f"**Chap normalisé (45c)** : `{_normalise(chap)[:45]}`")
+        st.write(f"**Résultat classique** : {nb_banque} sujet(s)")
+        st.write(f"**Résultat interactif** : {nb_interactifs} sujet(s)")
 
     col_btn1, col_btn2, col_btn3 = st.columns(3)
     with col_btn1:
