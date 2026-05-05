@@ -1,0 +1,106 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-05",
+    "contexte": "Vous travaillez en tant que commercial junior dans une entreprise de distribution de produits high-tech. Votre quotidien est rythmé par la prospection, la négociation avec les clients et le suivi de vos objectifs de vente. Ces exercices vous aideront à maîtriser les calculs essentiels à votre activité professionnelle.",
+    "rappel_cours": "Pour calculer un pourcentage d'une valeur : Valeur * (Pourcentage / 100). Pour calculer une valeur après augmentation/réduction de pourcentage : Valeur Initiale * (1 + Pourcentage / 100) pour une augmentation, ou Valeur Initiale * (1 - Pourcentage / 100) pour une réduction. Le Chiffre d'Affaires (CA) est le montant total des ventes réalisées.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Mme Dubois, vendeuse, a réalisé un chiffre d'affaires (CA) de 12 500 € le mois dernier. Son contrat stipule qu'elle touche une commission de 3% sur son CA. Quel est le montant de sa commission pour ce mois ?",
+        "type": "numerique",
+        "reponse": 375.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La commission est un pourcentage du chiffre d'affaires. Pensez à convertir le pourcentage en valeur décimale avant de multiplier.",
+        "corrige": "Calcul de la commission : 12 500 € * (3 / 100) = 12 500 € * 0.03 = 375 €. Mme Dubois percevra 375 € de commission."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un client achète un lot de 50 coques de téléphone. Le prix unitaire Hors Taxes (HT) d'une coque est de 8,50 €. Le taux de TVA applicable est de 20%. Quel est le prix Toutes Taxes Comprises (TTC) total que le client devra payer pour l'ensemble du lot ?",
+        "type": "numerique",
+        "reponse": 510.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Commencez par calculer le prix total HT du lot, puis ajoutez la TVA. Rappelez-vous que Prix TTC = Prix HT * (1 + Taux TVA/100).",
+        "corrige": "Calcul du prix HT du lot : 50 coques * 8,50 €/coque = 425 € HT.\nCalcul du prix TTC : 425 € HT * (1 + 20/100) = 425 € * 1.20 = 510 €. Le client devra payer 510 € TTC."
+      },
+      {
+        "numero": 3,
+        "enonce": "Lors d'une campagne de prospection, un commercial contacte 150 prospects. Le taux de conversion moyen de cette campagne est de 8%, c'est-à-dire que 8% des prospects contactés deviennent des clients. Combien de nouveaux clients ce commercial a-t-il acquis ?",
+        "type": "numerique",
+        "reponse": 12.0,
+        "unite": "clients",
+        "tolerance": 0.5,
+        "indice": "Le nombre de clients acquis correspond à un pourcentage du nombre total de prospects contactés.",
+        "corrige": "Calcul du nombre de nouveaux clients : 150 prospects * (8 / 100) = 150 * 0.08 = 12 clients. Le commercial a acquis 12 nouveaux clients."
+      },
+      {
+        "numero": 4,
+        "enonce": "Le mois dernier, l'objectif de chiffre d'affaires pour votre équipe était de 45 000 €. Votre équipe a finalement réalisé un CA de 49 500 €. Quel pourcentage de l'objectif a été dépassé par votre équipe ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord l'écart entre le CA réalisé et l'objectif, puis exprimez cet écart en pourcentage par rapport à l'objectif initial.",
+        "corrige": "Calcul de l'écart : 49 500 € (réalisé) - 45 000 € (objectif) = 4 500 €.\nCalcul du pourcentage de dépassement : (4 500 € / 45 000 €) * 100 = 0.1 * 100 = 10 %. L'équipe a dépassé l'objectif de 10 %."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-05",
+    "contexte": "Dans le secteur des Métiers du Commerce et de la Vente, il est essentiel de maîtriser les calculs rapides liés aux prix, aux remises, aux commissions et à l'analyse des performances. Cet exercice vous met en situation pour pratiquer ces automatismes numériques, indispensables à votre future carrière.",
+    "rappel_cours": "Calcul d'un pourcentage: P = (ValeurPartielle / ValeurTotale) * 100. Application d'une remise: PrixFinal = PrixInitial * (1 - TauxRemise). Calcul d'une moyenne: SommeDesValeurs / NombreDeValeurs.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un article de maroquinerie est affiché à un prix initial de 120 €. Le magasin propose une remise exceptionnelle de 25 % sur cet article pour une durée limitée. Quel est le prix net que le client devra payer après l'application de cette remise ?",
+        "type": "numerique",
+        "reponse": 90.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Pour calculer le prix après une remise, vous pouvez soit calculer le montant de la remise et le soustraire, soit multiplier le prix initial par (1 - le taux de remise).",
+        "corrige": "Montant de la remise = 120 € * 25 % = 120 * 0.25 = 30 €. Prix net après remise = 120 € - 30 € = 90 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un commercial perçoit un salaire fixe de 1 500 € par mois, auquel s'ajoute une commission de 3 % sur le montant total de ses ventes. Ce mois-ci, il a réalisé un chiffre d'affaires de 8 500 €. Quel est le montant de sa commission pour ce mois ?",
+        "type": "numerique",
+        "reponse": 255.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La commission est un pourcentage direct du chiffre d'affaires réalisé. N'oubliez pas de convertir le pourcentage en nombre décimal avant de multiplier.",
+        "corrige": "Montant de la commission = Chiffre d'affaires * Taux de commission = 8 500 € * 3 % = 8 500 * 0.03 = 255 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Lors d'une matinée de prospection, un vendeur a contacté 5 clients potentiels. Les chiffres d'affaires prévisionnels générés par chacun de ces contacts sont les suivants : 150 €, 220 €, 90 €, 180 €, et 260 €. Quel est le chiffre d'affaires prévisionnel moyen par client contacté ?",
+        "type": "numerique",
+        "reponse": 180.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Pour calculer une moyenne, additionnez toutes les valeurs et divisez le total par le nombre de valeurs.",
+        "corrige": "Somme des chiffres d'affaires prévisionnels = 150 + 220 + 90 + 180 + 260 = 900 €. Nombre de clients contactés = 5. Chiffre d'affaires prévisionnel moyen = 900 € / 5 = 180 €."
+      },
+      {
+        "numero": 4,
+        "enonce": "Le chiffre d'affaires d'une boutique était de 15 000 € en janvier. Grâce à une opération promotionnelle réussie en février, le chiffre d'affaires a atteint 16 500 €. Quel est le pourcentage d'augmentation du chiffre d'affaires entre janvier et février ? (Arrondir le résultat à deux décimales si nécessaire).",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Le pourcentage d'augmentation se calcule en divisant l'augmentation réelle par la valeur initiale, puis en multipliant le résultat par 100.",
+        "corrige": "Augmentation du chiffre d'affaires = 16 500 € - 15 000 € = 1 500 €. Pourcentage d'augmentation = (Augmentation / Chiffre d'affaires initial) * 100 = (1 500 € / 15 000 €) * 100 = 0.10 * 100 = 10 %."
+      }
+    ]
+  }
+]

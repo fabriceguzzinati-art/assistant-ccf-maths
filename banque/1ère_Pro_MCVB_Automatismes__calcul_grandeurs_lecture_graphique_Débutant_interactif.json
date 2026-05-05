@@ -1,0 +1,86 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-05",
+    "contexte": "Vous êtes stagiaire dans un magasin de prêt-à-porter et vous participez aux opérations courantes de vente. Vous devez réaliser des calculs rapides et précis pour informer les clients, gérer les stocks ou préparer des commandes.",
+    "rappel_cours": "Pour calculer un pourcentage d'un nombre : multipliez le nombre par le pourcentage exprimé en décimal (ex: 10% = 0.10). Pour calculer une réduction : soustrayez le montant de la réduction du prix initial.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un client souhaite acheter un jean affiché à 60 €. Le magasin propose une promotion de 15 % sur cet article. Quel est le prix final du jean après la réduction ?",
+        "type": "numerique",
+        "reponse": 51.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le montant de la réduction en euros, puis soustrayez-le du prix initial.",
+        "corrige": "Montant de la réduction = 60 € * 15 % = 60 * 0.15 = 9 €. Prix final = 60 € - 9 € = 51 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une vendeuse reçoit une commission de 8 % sur le montant total de ses ventes. Si elle réalise un chiffre d'affaires de 750 € en une journée, quel est le montant de sa commission ?",
+        "type": "numerique",
+        "reponse": 60.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La commission est un pourcentage direct du chiffre d'affaires réalisé. Multipliez le chiffre d'affaires par le taux de commission en décimal.",
+        "corrige": "Montant de la commission = 750 € * 8 % = 750 * 0.08 = 60 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Pour une commande de matériel de caisse, le responsable achète 5 rouleaux de papier thermique à 2.20 € l'unité et 3 stylos à 1.50 € l'unité. Quel est le coût total de cette commande ?",
+        "type": "numerique",
+        "reponse": 15.5,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le coût total pour les rouleaux, puis pour les stylos, et enfin additionnez les deux montants.",
+        "corrige": "Coût des rouleaux = 5 * 2.20 € = 11.00 €. Coût des stylos = 3 * 1.50 € = 4.50 €. Coût total de la commande = 11.00 € + 4.50 € = 15.50 €."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Automatismes — calcul, grandeurs, lecture graphique",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-05",
+    "contexte": "Un jeune commercial en Bac Pro Métiers du Commerce et de la Vente effectue un stage dans un magasin d'électronique. Il doit réaliser des calculs rapides liés aux ventes, aux remises et à ses commissions journalières.",
+    "rappel_cours": "Pour calculer un pourcentage d'un montant : Montant partiel = Montant total × Pourcentage / 100. Pour calculer un chiffre d'affaires total : additionnez les revenus de chaque vente.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un client achète un casque audio affiché à 80 €. Le magasin lui accorde une remise commerciale de 15 %. Quel est le montant de la remise en euros ?",
+        "type": "numerique",
+        "reponse": 12.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La remise se calcule en multipliant le prix affiché par le taux de remise, puis en divisant par 100.",
+        "corrige": "Montant de la remise = 80 € × 15 / 100 = 12 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Après l'application de la remise de la question précédente, le casque est vendu 68 €. Le commercial reçoit une commission de 4 % sur le prix de vente final de chaque produit. Quel est le montant de sa commission pour la vente de ce casque ?",
+        "type": "numerique",
+        "reponse": 2.72,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La commission est un pourcentage du prix de vente final du produit.",
+        "corrige": "Montant de la commission = 68 € × 4 / 100 = 2,72 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Durant la matinée, le commercial a vendu 3 enceintes Bluetooth d'une valeur unitaire de 45 € et 2 webcams d'une valeur unitaire de 25 €. Quel est le chiffre d'affaires total qu'il a généré ce matin-là, avant application de toute remise ?",
+        "type": "numerique",
+        "reponse": 185.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez le chiffre d'affaires pour les enceintes, puis pour les webcams, et additionnez les deux montants.",
+        "corrige": "CA Enceintes = 3 enceintes × 45 €/enceinte = 135 €.\nCA Webcams = 2 webcams × 25 €/webcam = 50 €.\nCA Total = 135 € + 50 € = 185 €."
+      }
+    ]
+  }
+]
