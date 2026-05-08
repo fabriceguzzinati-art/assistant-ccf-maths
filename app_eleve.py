@@ -1,6 +1,43 @@
 import google.generativeai as genai
 import PIL.Image
 import streamlit as st
+
+# Configuration des thèmes
+THEMES = {
+    "🌌 Nébuleuse": {
+        "primary": "#6366f1", "secondary": "#8b5cf6", "bg_app": "#0d0f1a", 
+        "bg_side": "#13162a", "text": "#e2e8f0", "accent": "#a5b4fc", "border": "#2d3561"
+    },
+    "✨ Pastel": {
+        "primary": "#ec4899", "secondary": "#f472b6", "bg_app": "#fff1f2", 
+        "bg_side": "#ffe4e6", "text": "#881337", "accent": "#be185d", "border": "#fecdd3"
+    },
+    "🦾 Cyberpunk": {
+        "primary": "#00FF41", "secondary": "#008F11", "bg_app": "#000000", 
+        "bg_side": "#050505", "text": "#00FF41", "accent": "#00FF41", "border": "#003B00"
+    },
+    "📄 Examen": {
+        "primary": "#2563eb", "secondary": "#1d4ed8", "bg_app": "#ffffff", 
+        "bg_side": "#f8fafc", "text": "#1e293b", "accent": "#334155", "border": "#cbd5e1"
+    }
+}
+
+# 2. Le menu de choix dans la barre latérale
+if 'theme_pref' not in st.session_state:
+    st.session_state.theme_pref = "🌌 Nébuleuse"
+
+# Le sélecteur utilise maintenant la valeur stockée en mémoire
+theme_nom = st.sidebar.selectbox(
+    "🎨 Style de l'interface", 
+    list(THEMES.keys()), 
+    index=list(THEMES.keys()).index(st.session_state.theme_pref)
+)
+
+# On met à jour la mémoire si l'élève change le choix
+st.session_state.theme_pref = theme_nom
+
+# On extrait les couleurs pour le CSS
+t = THEMES[theme_nom]
 from io import BytesIO
 from docx import Document as DocxDocument
 from docx.shared import Pt, Inches
@@ -14,223 +51,126 @@ import requests
 from datetime import datetime
 import json
 
-st.markdown("""
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    /* ── Base sombre ── */
-    .stApp {
-        background: #0d0f1a;
-        color: #e2e8f0;
+    /* ── Base ── */
+    .stApp {{
+        background: {t['bg_app']};
+        color: {t['text']};
         font-family: 'Outfit', sans-serif;
-    }
-    .stApp > header { background: transparent !important; }
+    }}
+    .stApp > header {{ background: transparent !important; }}
 
     /* ── Sidebar ── */
-    [data-testid="stSidebar"] {
-        background: #13162a !important;
-        border-right: 1px solid #2d3561;
-    }
-    [data-testid="stSidebar"] * { color: #cbd5e1 !important; }
+    [data-testid="stSidebar"] {{
+        background: {t['bg_side']} !important;
+        border-right: 1px solid {t['border']};
+    }}
+    [data-testid="stSidebar"] * {{ color: {t['text']} !important; }}
 
     /* ── Onglets ── */
-    .stTabs [data-baseweb="tab-list"] {
-        background: #13162a;
+    .stTabs [data-baseweb="tab-list"] {{
+        background: {t['bg_side']};
         border-radius: 12px;
         padding: 4px;
         gap: 4px;
-        border: 1px solid #2d3561;
-    }
-    .stTabs [data-baseweb="tab"] {
+        border: 1px solid {t['border']};
+    }}
+    .stTabs [data-baseweb="tab"] {{
         background: transparent;
-        color: #94a3b8;
+        color: {t['text']};
+        opacity: 0.7;
         border-radius: 8px;
         font-weight: 600;
         font-family: 'Outfit', sans-serif;
-        font-size: .85rem;
-        padding: 8px 16px;
-    }
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    }}
+    .stTabs [aria-selected="true"] {{
+        background: linear-gradient(135deg, {t['primary']}, {t['secondary']}) !important;
         color: white !important;
-        box-shadow: 0 0 16px rgba(99,102,241,.5);
-    }
+        box-shadow: 0 0 16px {t['primary']}80;
+    }}
 
     /* ── Boutons primaires ── */
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    .stButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, {t['primary']}, {t['secondary']});
         border: none;
         border-radius: 12px;
         font-family: 'Outfit', sans-serif;
         font-weight: 700;
-        font-size: .95rem;
-        padding: 10px 20px;
         color: white;
-        box-shadow: 0 0 20px rgba(99,102,241,.4);
+        box-shadow: 0 0 20px {t['primary']}66;
         transition: all .25s;
-    }
-    .stButton > button[kind="primary"]:hover {
+    }}
+    .stButton > button[kind="primary"]:hover {{
         transform: translateY(-2px);
-        box-shadow: 0 0 30px rgba(99,102,241,.7);
-    }
-
-    /* ── Boutons secondaires ── */
-    .stButton > button:not([kind="primary"]) {
-        background: #1e2235;
-        border: 1px solid #3d4480;
-        border-radius: 12px;
-        color: #94a3b8;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 600;
-        transition: all .2s;
-    }
-    .stButton > button:not([kind="primary"]):hover {
-        border-color: #6366f1;
-        color: #a5b4fc;
-        background: #252a45;
-    }
+        box-shadow: 0 0 30px {t['primary']}B3;
+    }}
 
     /* ── Selectbox / Inputs ── */
     .stSelectbox > div > div,
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea {
-        background: #1a1f35 !important;
-        border: 1px solid #2d3561 !important;
+    .stTextInput > div > div > input {{
+        background: {t['bg_side']} !important;
+        border: 1px solid {t['border']} !important;
+        color: {t['text']} !important;
         border-radius: 10px !important;
-        color: #e2e8f0 !important;
-        font-family: 'Outfit', sans-serif !important;
-    }
-    .stSelectbox > div > div:focus-within,
-    .stTextInput > div > div:focus-within {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99,102,241,.2) !important;
-    }
-
-    /* ── Slider ── */
-    .stSlider > div > div > div > div {
-        background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
-    }
-
-    /* ── Divider ── */
-    hr { border-color: #2d3561 !important; }
+    }}
 
     /* ── Metric cards ── */
-    [data-testid="stMetric"] {
-        background: #13162a;
-        border: 1px solid #2d3561;
+    [data-testid="stMetric"] {{
+        background: {t['bg_side']};
+        border: 1px solid {t['border']};
         border-radius: 12px;
         padding: 16px;
-    }
-    [data-testid="stMetricValue"] {
-        color: #a5b4fc !important;
-        font-family: 'Outfit', sans-serif;
+    }}
+    [data-testid="stMetricValue"] {{
+        color: {t['accent']} !important;
         font-weight: 800;
-    }
-
-    /* ── Boîtes custom ── */
-    .info-box {
-        background: #1a2040;
-        border-left: 4px solid #6366f1;
-        border-radius: 0 10px 10px 0;
-        padding: 12px 16px;
-        margin: 8px 0;
-        font-size: .88rem;
-        color: #a5b4fc;
-    }
-    .warn-box {
-        background: #1f1a00;
-        border-left: 4px solid #f59e0b;
-        border-radius: 0 10px 10px 0;
-        padding: 12px 16px;
-        margin: 8px 0;
-        font-size: .88rem;
-        color: #fcd34d;
-    }
-    .ok-box {
-        background: #0d2018;
-        border-left: 4px solid #22c55e;
-        border-radius: 0 10px 10px 0;
-        padding: 12px 16px;
-        margin: 8px 0;
-        font-size: .88rem;
-        color: #86efac;
-    }
-    .badge {
-        display: inline-block;
-        background: #252a45;
-        color: #a5b4fc;
-        border: 1px solid #3d4480;
-        border-radius: 20px;
-        padding: 3px 12px;
-        font-size: .78rem;
-        font-family: 'Outfit', sans-serif;
-        margin-right: 6px;
-        margin-bottom: 4px;
-    }
+    }}
 
     /* ── XP Banner ── */
-    .xp-banner {
-        background: linear-gradient(135deg, #1a1f35, #252a45);
-        border: 1px solid #3d4480;
+    .xp-banner {{
+        background: linear-gradient(135deg, {t['bg_side']}, {t['bg_app']});
+        border: 1px solid {t['border']};
         border-radius: 14px;
         padding: 14px 20px;
         margin-bottom: 16px;
         display: flex;
         align-items: center;
         gap: 16px;
-    }
-    .xp-value {
+    }}
+    .xp-value {{
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         font-size: 1.4rem;
-        color: #fbbf24;
-    }
-    .xp-label { font-size: .8rem; color: #64748b; }
-
-    /* ── Niveau card ── */
-    .niveau-card {
-        background: linear-gradient(135deg, #1a1f35, #1e2745);
-        border: 1px solid #3d4480;
-        border-radius: 14px;
-        padding: 16px 20px;
-        margin: 8px 0;
-        transition: border-color .2s;
-    }
-    .niveau-card:hover { border-color: #6366f1; }
+        color: {t['primary']}; /* Adapté au thème */
+    }}
 
     /* ── Boss banner ── */
-    .boss-banner {
-        background: linear-gradient(135deg, #1a0a2e, #2d1060);
-        border: 2px solid #7c3aed;
+    .boss-banner {{
+        background: linear-gradient(135deg, {t['bg_side']}, {t['secondary']}44);
+        border: 2px solid {t['primary']};
         border-radius: 16px;
         padding: 24px;
         text-align: center;
         margin: 16px 0;
-        box-shadow: 0 0 40px rgba(124,58,237,.3);
-    }
+        box-shadow: 0 0 40px {t['primary']}33;
+    }}
 
     /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0d0f1a; }
-    ::-webkit-scrollbar-thumb { background: #2d3561; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+    ::-webkit-scrollbar {{ width: 6px; }}
+    ::-webkit-scrollbar-track {{ background: {t['bg_app']}; }}
+    ::-webkit-scrollbar-thumb {{ background: {t['border']}; border-radius: 3px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: {t['primary']}; }}
 
     /* ── Markdown content ── */
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-        font-family: 'Outfit', sans-serif;
-        color: #e2e8f0;
-    }
-    .stMarkdown p, .stMarkdown li { color: #cbd5e1; line-height: 1.7; }
-    .stMarkdown code {
-        background: #1e2235;
-        color: #a5b4fc;
-        border-radius: 4px;
-        padding: 2px 6px;
-        font-family: 'JetBrains Mono', monospace;
-    }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{
+        color: {t['text']};
+    }}
+    .stMarkdown p, .stMarkdown li {{ color: {t['text']}; opacity: 0.9; }}
     </style>
 """, unsafe_allow_html=True)
-
 # ============================================================
 # 0. INTÉGRATION GRIST — Suivi des élèves
 # ============================================================
