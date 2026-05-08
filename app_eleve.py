@@ -2049,56 +2049,54 @@ with tab_gen:
                     else:
                         st.error(f"Erreur API : {e}")
 
-    
+# ── BOSS DÉBLOQUÉ ─────────────────────────────────────
 
-        # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
+
         if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
-        diff_boss = st.session_state.boss_niveau
-        mascotte  = MASCOTTES.get(diff_boss, {})   # ← était tronqué : MASCOTTES.get# puis
-                                                    #   le bloc MODE INTERACTIF commençait
-                                                    #   à l'intérieur du if, sans indentation
-                                                    #   correcte.
-        st.markdown("---")
-        st.markdown(
-            f'<div class="boss-banner">'
-            f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
-            f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
-            f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
-            f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
-            f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
-            f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
-            f'Tu as validé le niveau <strong style="color:#a5b4fc">'
-            f'{diff_boss.split(" ",1)[-1]}</strong> sur '
-            f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
-            f'Bats ce boss pour débloquer le niveau suivant !</div>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-        col_boss1, col_boss2 = st.columns(2)
-        with col_boss1:
-            if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
-                         type="primary", use_container_width=True, key="btn_boss"):
-                if not cle_api:
-                    st.error("🔑 Clé API manquante !")
-                else:
-                    with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
-                        try:
-                            prompt_boss = build_prompt_boss(
-                                niv, filiere,
-                                st.session_state.boss_chapitre,
-                                st.session_state.boss_niveau
-                            )
-                            res_boss = call_gemini(cle_api, prompt_boss)
-                            st.session_state.boss_md        = res_boss
-                            st.session_state.eval_boss_done = None
-                            st.session_state.boss_actif     = False
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Erreur : {e}")
-        with col_boss2:
-            if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
-                st.session_state.boss_actif = False
-                st.rerun()
+            diff_boss = st.session_state.boss_niveau          # ← 12 espaces (3 niveaux)
+            mascotte  = MASCOTTES.get(diff_boss, {})
+            st.markdown("---")
+            st.markdown(
+                f'<div class="boss-banner">'
+                f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
+                f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
+                f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
+                f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
+                f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
+                f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
+                f'Tu as validé le niveau <strong style="color:#a5b4fc">'
+                f'{diff_boss.split(" ",1)[-1]}</strong> sur '
+                f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
+                f'Bats ce boss pour débloquer le niveau suivant !</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            col_boss1, col_boss2 = st.columns(2)
+            with col_boss1:
+                if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
+                             type="primary", use_container_width=True, key="btn_boss"):
+                    if not cle_api:
+                        st.error("🔑 Clé API manquante !")
+                    else:
+                        with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
+                            try:
+                                prompt_boss = build_prompt_boss(
+                                    niv, filiere,
+                                    st.session_state.boss_chapitre,
+                                    st.session_state.boss_niveau
+                                )
+                                res_boss = call_gemini(cle_api, prompt_boss)
+                                st.session_state.boss_md        = res_boss
+                                st.session_state.eval_boss_done = None
+                                st.session_state.boss_actif     = False
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erreur : {e}")
+            with col_boss2:
+                if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
+                    st.session_state.boss_actif = False
+                    st.rerun()
+
         # ── MODE INTERACTIF ───────────────────────────────────────
         if st.session_state.get("interactif_sujet"):
             sujet_i   = st.session_state.interactif_sujet
