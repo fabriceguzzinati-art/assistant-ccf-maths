@@ -2103,7 +2103,7 @@ with tab_gen:
             questions = sujet_i.get("questions", [])
             idx       = st.session_state.get("interactif_idx", 0)
             reponses  = st.session_state.get("interactif_reponses", {})
-        t   ermine   = st.session_state.get("interactif_termine", False)
+            termine   = st.session_state.get("interactif_termine", False)
 
         # Contexte et rappel de cours
         if sujet_i.get("contexte"):
