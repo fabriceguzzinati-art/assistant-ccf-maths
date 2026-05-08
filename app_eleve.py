@@ -2097,7 +2097,7 @@ with tab_gen:
                     st.session_state.boss_actif = False
                     st.rerun()
 
-        # ── MODE INTERACTIF ───────────────────────────────────────
+# ── MODE INTERACTIF ───────────────────────────────────────
         if st.session_state.get("interactif_sujet"):
             sujet_i   = st.session_state.interactif_sujet
             questions = sujet_i.get("questions", [])
@@ -2105,149 +2105,152 @@ with tab_gen:
             reponses  = st.session_state.get("interactif_reponses", {})
             termine   = st.session_state.get("interactif_termine", False)
 
-        # Contexte et rappel de cours
-        if sujet_i.get("contexte"):
-            st.markdown(
-                f'<div class="info-box">🏢 <strong>Mise en situation</strong><br>'
-                f'{sujet_i["contexte"]}</div>',
-                unsafe_allow_html=True
-            )
-        if sujet_i.get("rappel_cours"):
-            st.markdown(
-                f'<div style="background:#1a2040;border:1px solid #3d4480;border-radius:10px;'
-                f'padding:12px 16px;margin:8px 0;font-size:.88rem;color:#a5b4fc">'
-                f'📐 <strong>Rappel</strong> : {sujet_i["rappel_cours"]}</div>',
-                unsafe_allow_html=True
-            )
-
-        if not termine:
-            # Barre de progression
-            st.markdown(
-                f'<div style="margin:12px 0 4px;font-size:.82rem;color:#64748b">'
-                f'Question {idx + 1} / {len(questions)}</div>',
-                unsafe_allow_html=True
-            )
-            st.progress((idx) / len(questions))
-
-            q = questions[idx]
-            st.markdown(
-                f'<div style="background:#13162a;border:1px solid #3d4480;border-radius:12px;'
-                f'padding:18px 20px;margin:12px 0">'
-                f'<div style="font-size:.8rem;color:#6366f1;font-weight:700;margin-bottom:6px">'
-                f'QUESTION {q["numero"]}</div>'
-                f'<div style="color:#e2e8f0;font-size:.95rem">{q["enonce"]}</div>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-
-            col_rep, col_ind = st.columns([3, 1])
-            with col_rep:
-                unite = q.get("unite", "")
-                rep_saisie = st.number_input(
-                    f"Ta réponse {f'({unite})' if unite else ''}",
-                    value=0.0, step=0.01, format="%.2f",
-                    key=f"rep_q_{idx}"
-                )
-            with col_ind:
-                if q.get("indice") and st.button("💡 Indice", key=f"ind_{idx}", use_container_width=True):
-                    st.info(q["indice"])
-
-            col_v, col_p = st.columns(2)
-            with col_v:
-                if st.button("✅ Valider", type="primary", use_container_width=True, key=f"val_{idx}"):
-                    tolerance = float(q.get("tolerance", 0.5))
-                    bonne = abs(rep_saisie - float(q["reponse"])) <= tolerance
-                    reponses[idx] = {"saisie": rep_saisie, "bonne": bonne,
-                                     "reponse": q["reponse"], "unite": unite,
-                                     "corrige": q.get("corrige", "")}
-                    st.session_state.interactif_reponses = reponses
-                    if idx + 1 < len(questions):
-                        st.session_state.interactif_idx = idx + 1
-                    else:
-                        st.session_state.interactif_termine = True
-                    st.rerun()
-            with col_p:
-                if idx > 0 and st.button("⬅️ Précédente", use_container_width=True, key=f"prev_{idx}"):
-                    st.session_state.interactif_idx = idx - 1
-                    st.rerun()
-
-        else:
-            # ── RÉSULTATS FINAUX ──────────────────────────────
-            nb_bonnes_i = sum(1 for r in reponses.values() if r["bonne"])
-            nb_total_i  = len(questions)
-            score_pct   = int(nb_bonnes_i / nb_total_i * 100) if nb_total_i else 0
-
-            if score_pct == 100:
-                st.balloons()
-                verdict, couleur = "🏆 Parfait !", "#065f46"
-            elif score_pct >= 70:
-                verdict, couleur = "👍 Bien joué !", "#1e3a5f"
-            elif score_pct >= 50:
-                verdict, couleur = "😐 Peut mieux faire", "#3f2a00"
-            else:
-                verdict, couleur = "💪 Continue à t'entraîner !", "#3b0000"
-
-            st.markdown(
-                f'<div style="background:{couleur};border-radius:14px;padding:20px;'
-                f'text-align:center;margin:12px 0">'
-                f'<div style="font-size:2rem">{verdict}</div>'
-                f'<div style="font-size:1.5rem;font-weight:800;color:white;margin:8px 0">'
-                f'{nb_bonnes_i} / {nb_total_i} — {score_pct}%</div>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-
-            # Détail des réponses
-            st.markdown("### 📋 Correction détaillée")
-            for i, q in enumerate(questions):
-                r = reponses.get(i, {})
-                icone  = "✅" if r.get("bonne") else "❌"
-                unite  = r.get("unite", "")
+            # Contexte et rappel de cours
+            if sujet_i.get("contexte"):
                 st.markdown(
-                    f'<div style="background:#13162a;border-left:3px solid '
-                    f'{"#22c55e" if r.get("bonne") else "#ef4444"};'
-                    f'border-radius:0 10px 10px 0;padding:12px 16px;margin:6px 0">'
-                    f'<div style="font-size:.8rem;color:#64748b">Q{q["numero"]}</div>'
-                    f'<div style="color:#e2e8f0;margin:4px 0">{q["enonce"]}</div>'
-                    f'<div style="font-size:.88rem;margin-top:6px">'
-                    f'{icone} Ta réponse : <strong>{r.get("saisie","?"):.2f} {unite}</strong> — '
-                    f'Bonne réponse : <strong>{float(q["reponse"]):.2f} {unite}</strong></div>'
-                    f'<div style="font-size:.82rem;color:#94a3b8;margin-top:4px">'
-                    f'💡 {r.get("corrige","")}</div>'
+                    f'<div class="info-box">🏢 <strong>Mise en situation</strong><br>'
+                    f'{sujet_i["contexte"]}</div>',
+                    unsafe_allow_html=True
+                )
+            if sujet_i.get("rappel_cours"):
+                st.markdown(
+                    f'<div style="background:#1a2040;border:1px solid #3d4480;border-radius:10px;'
+                    f'padding:12px 16px;margin:8px 0;font-size:.88rem;color:#a5b4fc">'
+                    f'📐 <strong>Rappel</strong> : {sujet_i["rappel_cours"]}</div>',
+                    unsafe_allow_html=True
+                )
+
+            if not termine:
+                st.markdown(
+                    f'<div style="margin:12px 0 4px;font-size:.82rem;color:#64748b">'
+                    f'Question {idx + 1} / {len(questions)}</div>',
+                    unsafe_allow_html=True
+                )
+                st.progress((idx) / len(questions))
+
+                q = questions[idx]
+                st.markdown(
+                    f'<div style="background:#13162a;border:1px solid #3d4480;border-radius:12px;'
+                    f'padding:18px 20px;margin:12px 0">'
+                    f'<div style="font-size:.8rem;color:#6366f1;font-weight:700;margin-bottom:6px">'
+                    f'QUESTION {q["numero"]}</div>'
+                    f'<div style="color:#e2e8f0;font-size:.95rem">{q["enonce"]}</div>'
                     f'</div>',
                     unsafe_allow_html=True
                 )
 
-            # Auto-évaluation du ressenti
-            st.divider()
-            st.markdown("**🎯 Et ton ressenti ?**")
-            col_e1, col_e2, col_e3, col_e4 = st.columns(4)
-            eval_choix_i = None
-            with col_e1:
-                if st.button("😕 Difficile", use_container_width=True, key="eval_i_1"):
-                    eval_choix_i = "😕 Difficile"
-            with col_e2:
-                if st.button("😐 Moyen", use_container_width=True, key="eval_i_2"):
-                    eval_choix_i = "😐 Moyen"
-            with col_e3:
-                if st.button("😊 Bien", use_container_width=True, key="eval_i_3"):
-                    eval_choix_i = "😊 Bien"
-            with col_e4:
-                if st.button("🌟 Très bien", use_container_width=True, key="eval_i_4"):
-                    eval_choix_i = "🌟 Très bien"
+                col_rep, col_ind = st.columns([3, 1])
+                with col_rep:
+                    unite = q.get("unite", "")
+                    rep_saisie = st.number_input(
+                        f"Ta réponse {f'({unite})' if unite else ''}",
+                        value=0.0, step=0.01, format="%.2f",
+                        key=f"rep_q_{idx}"
+                    )
+                with col_ind:
+                    if q.get("indice") and st.button("💡 Indice", key=f"ind_{idx}", use_container_width=True):
+                        st.info(q["indice"])
 
-            if eval_choix_i:
-                m_i = st.session_state.meta_gen or {}
-                envoyer_grist(
-                    code_eleve or "anonyme",
-                    f"Exercice-interactif ({score_pct}%)",
-                    {**m_i, "score_auto": f"{nb_bonnes_i}/{nb_total_i}"},
-                    eval_choix_i
+                col_v, col_p = st.columns(2)
+                with col_v:
+                    if st.button("✅ Valider", type="primary", use_container_width=True, key=f"val_{idx}"):
+                        tolerance = float(q.get("tolerance", 0.5))
+                        bonne = abs(rep_saisie - float(q["reponse"])) <= tolerance
+                        reponses[idx] = {"saisie": rep_saisie, "bonne": bonne,
+                                         "reponse": q["reponse"], "unite": unite,
+                                         "corrige": q.get("corrige", "")}
+                        st.session_state.interactif_reponses = reponses
+                        if idx + 1 < len(questions):
+                            st.session_state.interactif_idx = idx + 1
+                        else:
+                            st.session_state.interactif_termine = True
+                        st.rerun()
+                with col_p:
+                    if idx > 0 and st.button("⬅️ Précédente", use_container_width=True, key=f"prev_{idx}"):
+                        st.session_state.interactif_idx = idx - 1
+                        st.rerun()
+
+            else:
+                # ── RÉSULTATS FINAUX ──────────────────────────────
+                nb_bonnes_i = sum(1 for r in reponses.values() if r["bonne"])
+                nb_total_i  = len(questions)
+                score_pct   = int(nb_bonnes_i / nb_total_i * 100) if nb_total_i else 0
+
+                if score_pct == 100:
+                    st.balloons()
+                    verdict, couleur = "🏆 Parfait !", "#065f46"
+                elif score_pct >= 70:
+                    verdict, couleur = "👍 Bien joué !", "#1e3a5f"
+                elif score_pct >= 50:
+                    verdict, couleur = "😐 Peut mieux faire", "#3f2a00"
+                else:
+                    verdict, couleur = "💪 Continue à t'entraîner !", "#3b0000"
+
+                st.markdown(
+                    f'<div style="background:{couleur};border-radius:14px;padding:20px;'
+                    f'text-align:center;margin:12px 0">'
+                    f'<div style="font-size:2rem">{verdict}</div>'
+                    f'<div style="font-size:1.5rem;font-weight:800;color:white;margin:8px 0">'
+                    f'{nb_bonnes_i} / {nb_total_i} — {score_pct}%</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
                 )
-                st.session_state.eval_gen_done   = eval_choix_i
-                st.session_state.streak_cache    = None
-                st.session_state.interactif_sujet = None
-                st.rerun()
+
+                st.markdown("### 📋 Correction détaillée")
+                for i, q in enumerate(questions):
+                    r = reponses.get(i, {})
+                    icone = "✅" if r.get("bonne") else "❌"
+                    unite = r.get("unite", "")
+                    st.markdown(
+                        f'<div style="background:#13162a;border-left:3px solid '
+                        f'{"#22c55e" if r.get("bonne") else "#ef4444"};'
+                        f'border-radius:0 10px 10px 0;padding:12px 16px;margin:6px 0">'
+                        f'<div style="font-size:.8rem;color:#64748b">Q{q["numero"]}</div>'
+                        f'<div style="color:#e2e8f0;margin:4px 0">{q["enonce"]}</div>'
+                        f'<div style="font-size:.88rem;margin-top:6px">'
+                        f'{icone} Ta réponse : <strong>{r.get("saisie","?"):.2f} {unite}</strong> — '
+                        f'Bonne réponse : <strong>{float(q["reponse"]):.2f} {unite}</strong></div>'
+                        f'<div style="font-size:.82rem;color:#94a3b8;margin-top:4px">'
+                        f'💡 {r.get("corrige","")}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+
+                st.divider()
+                st.markdown("**🎯 Et ton ressenti ?**")
+                col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+                eval_choix_i = None
+                with col_e1:
+                    if st.button("😕 Difficile", use_container_width=True, key="eval_i_1"):
+                        eval_choix_i = "😕 Difficile"
+                with col_e2:
+                    if st.button("😐 Moyen", use_container_width=True, key="eval_i_2"):
+                        eval_choix_i = "😐 Moyen"
+                with col_e3:
+                    if st.button("😊 Bien", use_container_width=True, key="eval_i_3"):
+                        eval_choix_i = "😊 Bien"
+                with col_e4:
+                    if st.button("🌟 Très bien", use_container_width=True, key="eval_i_4"):
+                        eval_choix_i = "🌟 Très bien"
+
+                if eval_choix_i:
+                    m_i = st.session_state.meta_gen or {}
+                    envoyer_grist(
+                        code_eleve or "anonyme",
+                        f"Exercice-interactif ({score_pct}%)",
+                        {**m_i, "score_auto": f"{nb_bonnes_i}/{nb_total_i}"},  # ✅ clé corrigée
+                        eval_choix_i
+                    )
+                    st.session_state.eval_gen_done    = eval_choix_i
+                    st.session_state.streak_cache     = None
+                    st.session_state.interactif_sujet = None
+                    st.rerun()
+
+                if st.button("🔄 Nouvel exercice", use_container_width=True, key="btn_reset_i"):
+                    st.session_state.interactif_sujet    = None
+                    st.session_state.interactif_reponses = {}
+                    st.session_state.interactif_termine  = False
+                    st.rerun()
 
             if st.button("🔄 Nouvel exercice", use_container_width=True, key="btn_reset_i"):
                 st.session_state.interactif_sujet    = None
