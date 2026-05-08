@@ -1,0 +1,54 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Fonctions polynômes de degré 2 — racines, signe, forme factorisée",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-08",
+    "contexte": "Dans le secteur de la vente, la performance d'un commercial ou l'efficacité d'une stratégie marketing peut souvent être modélisée par des fonctions mathématiques. Comprendre ces modèles, notamment les fonctions polynômes de degré 2, permet d'optimiser les actions, d'anticiper les résultats ou d'analyser les retours sur investissement.",
+    "rappel_cours": "Pour une fonction polynôme de degré 2 de la forme f(x) = ax² + bx + c (avec a ≠ 0) : Les racines sont les valeurs de x pour lesquelles f(x) = 0. On les trouve avec le discriminant Δ = b² - 4ac. Si Δ > 0, x₁ = (-b - √Δ)/(2a) et x₂ = (-b + √Δ)/(2a). La forme factorisée est f(x) = a(x - x₁)(x - x₂). Le signe de f(x) est celui de 'a' à l'extérieur des racines et opposé à celui de 'a' entre les racines.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un commercial estime que son bénéfice B(x) (en euros) en fonction du nombre x d'appels téléphoniques effectués dans la semaine est modélisé par la fonction B(x) = -x² + 20x - 84. Quel est le nombre minimal d'appels qu'il doit passer pour commencer à réaliser un bénéfice (c'est-à-dire quand B(x) devient positif après avoir été nul ou négatif) ?",
+        "type": "numerique",
+        "reponse": 6.0,
+        "unite": "appels",
+        "tolerance": 0.5,
+        "indice": "Pour commencer à faire du bénéfice, B(x) doit être supérieur à 0. Cherchez les racines de B(x)=0 pour déterminer l'intervalle où le bénéfice est positif.",
+        "corrige": "Pour trouver le nombre d'appels où le bénéfice est nul, on résout B(x) = 0, soit -x² + 20x - 84 = 0.\nOn peut multiplier par -1 pour simplifier : x² - 20x + 84 = 0.\nCalcul du discriminant Δ = b² - 4ac = (-20)² - 4 * 1 * 84 = 400 - 336 = 64.\nLes racines sont x₁ = (20 - √64) / (2 * 1) = (20 - 8) / 2 = 12 / 2 = 6.\nEt x₂ = (20 + √64) / (2 * 1) = (20 + 8) / 2 = 28 / 2 = 14.\nComme le coefficient 'a' de B(x) est -1 (négatif), la parabole est orientée vers le bas. Le bénéfice B(x) est positif entre les racines 6 et 14.\nLe commercial commence à faire du bénéfice à partir de 6 appels.\nRéponse : 6 appels."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une entreprise de vente en ligne modélise sa satisfaction client S(t) (sur une échelle de 0 à 100) en fonction du temps t (en semaines) après le lancement d'un nouveau produit par la fonction S(t) = -t² + 12t + 20. Pour des raisons de réputation, l'entreprise considère que le produit est un échec si la satisfaction tombe en dessous de 50. Au bout de combien de semaines (approximativement) la satisfaction atteindra-t-elle 50 pour la première fois ?",
+        "type": "numerique",
+        "reponse": 3.55,
+        "unite": "semaines",
+        "tolerance": 0.05,
+        "indice": "Égalez la fonction S(t) à 50, puis réarrangez l'équation pour obtenir une forme ax² + bx + c = 0 et calculez les racines.",
+        "corrige": "On cherche t tel que S(t) = 50.\n-t² + 12t + 20 = 50\n-t² + 12t + 20 - 50 = 0\n-t² + 12t - 30 = 0\nMultiplions par -1 : t² - 12t + 30 = 0.\nCalcul du discriminant Δ = b² - 4ac = (-12)² - 4 * 1 * 30 = 144 - 120 = 24.\nLes racines sont t₁ = (12 - √24) / 2 et t₂ = (12 + √24) / 2.\n√24 ≈ 4.899.\nt₁ = (12 - 4.899) / 2 = 7.101 / 2 ≈ 3.5505.\nt₂ = (12 + 4.899) / 2 = 16.899 / 2 ≈ 8.4495.\nLa satisfaction atteint 50 pour la première fois à t ≈ 3.55 semaines.\nRéponse : 3.55 semaines."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un commercial a observé que le nombre de ventes V(x) réalisées lors d'une promotion spéciale peut être modélisé par la fonction V(x) = -2(x - 5)(x - 15), où x représente le nombre de jours écoulés depuis le début de la promotion. Quel est le nombre maximal de ventes qu'il peut espérer faire lors de cette promotion ?",
+        "type": "numerique",
+        "reponse": 50.0,
+        "unite": "ventes",
+        "tolerance": 0.5,
+        "indice": "La fonction est sous forme factorisée. Le maximum d'une parabole orientée vers le bas (coefficient 'a' négatif) se trouve au sommet. L'abscisse du sommet est au milieu des deux racines.",
+        "corrige": "La fonction V(x) = -2(x - 5)(x - 15) est sous forme factorisée. Les racines sont x₁ = 5 et x₂ = 15. Ces valeurs correspondent aux jours où le nombre de ventes est nul.\nLe coefficient 'a' est -2, ce qui signifie que la parabole est ouverte vers le bas et possède donc un maximum.\nL'abscisse du sommet (où le maximum de ventes est atteint) est la moyenne des racines : x_sommet = (x₁ + x₂) / 2 = (5 + 15) / 2 = 20 / 2 = 10 jours.\nPour trouver le nombre maximal de ventes, on substitue x = 10 dans la fonction :\nV(10) = -2(10 - 5)(10 - 15) = -2(5)(-5) = -2(-25) = 50.\nRéponse : 50 ventes."
+      },
+      {
+        "numero": 4,
+        "enonce": "Le coût de publicité C(x) (en euros) pour attirer x nouveaux clients est modélisé par une fonction du second degré de la forme C(x) = 0.5x² - Bx + 100. On sait que si l'on attire 10 nouveaux clients (x=10), le coût de publicité est de 150 €. Déterminez la valeur du coefficient B.",
+        "type": "numerique",
+        "reponse": 0.0,
+        "unite": "",
+        "tolerance": 0.01,
+        "indice": "Remplacez les valeurs connues de x et C(x) dans l'équation de la fonction, puis résolvez l'équation obtenue pour trouver B.",
+        "corrige": "Nous savons que C(10) = 150. Nous substituons ces valeurs dans l'équation :\nC(x) = 0.5x² - Bx + 100\n150 = 0.5 * (10)² - B * (10) + 100\n150 = 0.5 * 100 - 10B + 100\n150 = 50 - 10B + 100\n150 = 150 - 10B\nSoustraire 150 des deux côtés :\n0 = -10B\nDiviser par -10 :\nB = 0 / -10\nB = 0.\nRéponse : 0"
+      }
+    ]
+  }
+]

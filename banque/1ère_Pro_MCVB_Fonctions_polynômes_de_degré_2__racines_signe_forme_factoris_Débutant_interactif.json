@@ -1,0 +1,86 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Fonctions polynômes de degré 2 — racines, signe, forme factorisée",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-08",
+    "contexte": "Dans le cadre de la gestion commerciale d'une entreprise, il est souvent nécessaire d'analyser l'évolution de grandeurs économiques comme le profit, la commission ou la satisfaction client. Ces grandeurs peuvent parfois être modélisées par des fonctions polynômes de degré 2, dont l'étude permet de prendre des décisions éclairées.",
+    "rappel_cours": "Une fonction polynôme de degré 2 est de la forme f(x) = ax² + bx + c. Ses racines sont les valeurs de x pour lesquelles f(x) = 0. Elles sont calculées à l'aide du discriminant Δ = b² - 4ac : si Δ > 0, x₁ = (-b - √Δ) / (2a) et x₂ = (-b + √Δ) / (2a). Le sommet de la parabole (minimum ou maximum) a pour abscisse x = -b / (2a).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un commercial reçoit une commission C(x) en euros qui dépend du nombre de produits x qu'il vend, selon la fonction C(x) = -0.5x² + 20x + 50. Pour quel nombre de produits x le commercial atteint-il une commission de 200 euros ? (Indiquer la valeur la plus faible si plusieurs sont possibles).",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "produits",
+        "tolerance": 0.1,
+        "indice": "Pour trouver x, il faut résoudre l'équation C(x) = 200. Ramenez l'équation sous la forme ax² + bx + c = 0, puis utilisez le discriminant pour trouver les racines.",
+        "corrige": "L'équation à résoudre est -0.5x² + 20x + 50 = 200.\n1.  On réarrange l'équation : -0.5x² + 20x + 50 - 200 = 0  =>  -0.5x² + 20x - 150 = 0.\n2.  On identifie a = -0.5, b = 20, c = -150.\n3.  On calcule le discriminant Δ = b² - 4ac = (20)² - 4 * (-0.5) * (-150) = 400 - 300 = 100.\n4.  Les racines sont x = (-b ± √Δ) / (2a).\n    x₁ = (-20 - √100) / (2 * -0.5) = (-20 - 10) / (-1) = -30 / -1 = 30.\n    x₂ = (-20 + √100) / (2 * -0.5) = (-20 + 10) / (-1) = -10 / -1 = 10.\n5.  La valeur la plus faible est 10.\nLe commercial atteint une commission de 200 euros en vendant 10 produits."
+      },
+      {
+        "numero": 2,
+        "enonce": "Le profit P(x) en euros d'une boutique, en fonction du nombre x d'articles vendus, est modélisé par la fonction P(x) = -2x² + 80x - 600. À partir de quel nombre minimum d'articles vendus la boutique commence-t-elle à réaliser un profit (c'est-à-dire P(x) > 0) ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "articles",
+        "tolerance": 0.1,
+        "indice": "Il faut trouver les racines de la fonction P(x) = 0. Rappelez-vous que le signe d'une fonction de degré 2 est opposé à 'a' entre les racines si 'a' est négatif.",
+        "corrige": "Pour savoir quand la boutique réalise un profit, il faut que P(x) > 0. Commençons par trouver les racines de P(x) = 0.\n1.  Équation : -2x² + 80x - 600 = 0.\n2.  On peut simplifier en divisant par -2 : x² - 40x + 300 = 0.\n3.  On identifie a = 1, b = -40, c = 300.\n4.  Calcul du discriminant Δ = b² - 4ac = (-40)² - 4 * (1) * (300) = 1600 - 1200 = 400.\n5.  Les racines sont x = (-b ± √Δ) / (2a).\n    x₁ = (40 - √400) / (2 * 1) = (40 - 20) / 2 = 20 / 2 = 10.\n    x₂ = (40 + √400) / (2 * 1) = (40 + 20) / 2 = 60 / 2 = 30.\n6.  Puisque le coefficient 'a' de la fonction d'origine (-2x²...) est négatif (a = -2), la parabole est ouverte vers le bas. Le profit est positif entre les racines. Donc P(x) > 0 pour x compris entre 10 et 30.\n7.  Le nombre minimum d'articles pour commencer à réaliser un profit est 10.\nLa boutique commence à réaliser un profit à partir de 10 articles vendus."
+      },
+      {
+        "numero": 3,
+        "enonce": "La satisfaction client S(p) (sur une échelle de 0 à 100) dépend du prix moyen p (en euros) d'une catégorie de produits, selon la formule S(p) = -5p² + 100p - 300. Quel prix moyen p permet d'obtenir la satisfaction client maximale ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "€",
+        "tolerance": 0.1,
+        "indice": "Pour trouver le maximum ou le minimum d'une fonction quadratique ax² + bx + c, il faut calculer l'abscisse du sommet de la parabole à l'aide de la formule x = -b / (2a).",
+        "corrige": "Pour trouver le prix moyen p qui maximise la satisfaction client, il faut calculer l'abscisse du sommet de la parabole représentée par S(p).\n1.  La fonction est S(p) = -5p² + 100p - 300.\n2.  On identifie a = -5 et b = 100.\n3.  L'abscisse du sommet est donnée par la formule p = -b / (2a).\n4.  p = -100 / (2 * -5) = -100 / -10 = 10.\nUn prix moyen de 10 euros permet d'obtenir la satisfaction client maximale."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Fonctions polynômes de degré 2 — racines, signe, forme factorisée",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-08",
+    "contexte": "Dans le cadre de l'analyse des ventes et de la rentabilité, les fonctions polynômes de degré 2 sont souvent utilisées pour modéliser l'évolution du chiffre d'affaires, des coûts ou des bénéfices en fonction de la quantité vendue ou du prix de vente. Ces fonctions permettent de déterminer des seuils de rentabilité ou des optimisations de stratégies commerciales.",
+    "rappel_cours": "Une fonction polynôme de degré 2 est de la forme f(x) = ax² + bx + c. Pour trouver les racines (les valeurs de x pour lesquelles f(x) = 0), on calcule le discriminant Δ = b² - 4ac. Si Δ > 0, il y a deux racines distinctes: x₁ = (-b - √Δ) / (2a) et x₂ = (-b + √Δ) / (2a). Le sommet de la parabole (point d'optimisation) a pour abscisse x_S = -b / (2a).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un chef de rayon estime que le bénéfice B(x) (en euros) réalisé sur la vente d'un certain article, en fonction du nombre d'articles x vendus, peut être modélisé par la fonction B(x) = -0.5x² + 50x - 450. Calculez le discriminant (Δ) de cette fonction.",
+        "type": "numerique",
+        "reponse": 1600.0,
+        "unite": "",
+        "tolerance": 0.01,
+        "indice": "Rappelez-vous la formule du discriminant : Δ = b² - 4ac. Identifiez correctement a, b et c dans la fonction B(x) = ax² + bx + c.",
+        "corrige": "La fonction est B(x) = -0.5x² + 50x - 450. On a a = -0.5, b = 50 et c = -450. Le discriminant se calcule par la formule Δ = b² - 4ac.\nΔ = (50)² - 4 * (-0.5) * (-450)\nΔ = 2500 - (2 * 450)\nΔ = 2500 - 900\nΔ = 1600"
+      },
+      {
+        "numero": 2,
+        "enonce": "Reprenons la fonction de bénéfice B(x) = -0.5x² + 50x - 450. Pour que le magasin commence à être rentable, le bénéfice doit être positif. Calculez le plus petit nombre d'articles (x) à vendre pour que le bénéfice B(x) soit égal à 0 (point mort).",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "articles",
+        "tolerance": 0.5,
+        "indice": "Utilisez les formules des racines x₁ = (-b - √Δ) / (2a) et x₂ = (-b + √Δ) / (2a). Le discriminant (Δ) a été calculé précédemment. Choisissez la racine positive la plus petite.",
+        "corrige": "Nous avons a = -0.5, b = 50, c = -450 et Δ = 1600 (calculé précédemment). La racine carrée de Δ est √1600 = 40. Les racines sont données par x₁ = (-b - √Δ) / (2a) et x₂ = (-b + √Δ) / (2a).\nx₁ = (-50 - 40) / (2 * -0.5) = -90 / -1 = 90\nx₂ = (-50 + 40) / (2 * -0.5) = -10 / -1 = 10\nLes deux racines sont 10 et 90. Le plus petit nombre d'articles à vendre pour que le bénéfice soit égal à 0 est 10 articles."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un commercial analyse l'évolution de son chiffre d'affaires hebdomadaire C(x) (en milliers d'euros) en fonction du nombre de clients prospectés x. La fonction est C(x) = -0.01x² + 2x + 10. Pour maximiser son chiffre d'affaires, quel nombre de clients doit-il prospecter par semaine ?",
+        "type": "numerique",
+        "reponse": 100.0,
+        "unite": "clients",
+        "tolerance": 0.5,
+        "indice": "Le maximum d'une fonction quadratique f(x) = ax² + bx + c (lorsque a < 0) est atteint au sommet de la parabole. L'abscisse du sommet est donnée par la formule x_S = -b / (2a).",
+        "corrige": "La fonction est C(x) = -0.01x² + 2x + 10. On a a = -0.01 et b = 2. Le nombre de clients pour maximiser le chiffre d'affaires correspond à l'abscisse du sommet de la parabole.\nx_S = -b / (2a)\nx_S = -2 / (2 * -0.01)\nx_S = -2 / -0.02\nx_S = 100\nIl doit prospecter 100 clients par semaine pour maximiser son chiffre d'affaires."
+      }
+    ]
+  }
+]
