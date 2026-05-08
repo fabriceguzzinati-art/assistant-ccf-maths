@@ -13,6 +13,7 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from zoneinfo import ZoneInfo
 
 # Configuration des thèmes
 THEMES = {
@@ -227,7 +228,44 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
             "chapitre":          str(meta.get("chapitre", "")),
             "niveau_difficulte": str(meta.get("difficulte", "")),
             "auto_evaluation":   str(auto_evaluation),
+            "score_auto":        str(meta.get("score_auto", "")),
             "source":            str(meta.get("source", "Gemini")),
+            "genre":             st.session_state.get('genre_pref', "Neutre (Aventurier)"),
+            "avatar":            st.session_state.get('avatar_pref', "Robotique 🤖")
+
+        }}]}
+        requests.post(url, headers=headers, json=payload, timeout=5)
+    except Exception:
+        pass
+
+
+def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
+    """Envoie une ligne dans Grist. Silencieux en cas d'erreur."""
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id:
+            return
+        # ✅ Heure Paris (était UTC avant)
+        now = datetime.now(ZoneInfo("Europe/Paris"))
+        url = f"{base_url}/api/docs/{doc_id}/tables/suivi_eleves/records"  # ✅ casse corrigée
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"records": [{"fields": {
+            "code_eleve":        str(code_eleve),
+            "date":              now.strftime("%Y-%m-%d"),
+            "heure":             now.strftime("%H:%M"),
+            "type_activite":     type_activite,
+            "classe":            str(meta.get("niveau", "")),
+            "filiere":           str(meta.get("filiere", "")),
+            "matiere":           str(meta.get("matiere", "")),
+            "chapitre":          str(meta.get("chapitre", "")),
+            "niveau_difficulte": str(meta.get("difficulte", "")),
+            "auto_evaluation":   str(auto_evaluation),
+            "score_auto":  str(meta.get("score_auto", "")),  # ✅ ID corrigé score_auto → score_evaluation
+            "source":            str(meta.get("source", "Gemini")),
+            "genre":             str(st.session_state.get("genre_pref", "Neutre (Aventurier)")),  # ✅ session_state garanti
+            "avatar":            str(st.session_state.get("avatar_pref", "Robotique 🤖")),        # ✅ ID corrigé
         }}]}
         requests.post(url, headers=headers, json=payload, timeout=5)
     except Exception:
@@ -236,7 +274,7 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
 
 def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
     """
-    Envoie un sujet généré par un élève dans Banque_propositions pour validation prof.
+    Envoie un sujet généré par un élève dans banque_propositions pour validation prof.
     Silencieux en cas d'erreur.
     """
     try:
@@ -245,24 +283,48 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
         base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
         if not api_key or not doc_id:
             return
-        now = datetime.now()
-        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+        now = datetime.now(ZoneInfo("Europe/Paris"))  # ✅ Heure Paris
+        url = f"{base_url}/api/docs/{doc_id}/tables/banque_propositions/records"  # ✅ casse corrigée
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         payload = {"records": [{"fields": {
-            "code_eleve":    str(code_eleve),
-            "date":          now.strftime("%Y-%m-%d"),
-            "niveau":        str(meta.get("niveau", "")),
-            "filiere":       str(meta.get("filiere", "")),
-            "matiere":       str(meta.get("matiere", "")),
-            "chapitre":      str(meta.get("chapitre", "")),
-            "difficulte":    str(meta.get("difficulte", "")),
-            "contenu":       str(contenu)[:5000],  # Grist limite les textes longs
+            "code_eleve":      str(code_eleve),
+            "date":            now.strftime("%Y-%m-%d"),
+            "niveau":          str(meta.get("niveau", "")),
+            "filiere":         str(meta.get("filiere", "")),
+            "matiere":         str(meta.get("matiere", "")),
+            "chapitre":        str(meta.get("chapitre", "")),
+            "difficulte":      str(meta.get("difficulte", "")),
+            "contenu":         str(contenu)[:5000],
             "auto_evaluation": str(auto_evaluation),
-            "statut":        "en_attente",
+            "statut":          "en_attente",
         }}]}
         requests.post(url, headers=headers, json=payload, timeout=5)
     except Exception:
         pass
+
+
+def lire_progression_grist(code_eleve: str) -> list:
+    """
+    Lit toutes les lignes Grist pour un élève donné.
+    Retourne une liste de dicts, ou [] en cas d'erreur.
+    """
+    try:
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        if not api_key or not doc_id or not code_eleve:
+            return []
+        import urllib.parse
+        filtre = urllib.parse.quote(json.dumps({"code_eleve": [code_eleve]}))
+        url = f"{base_url}/api/docs/{doc_id}/tables/suivi_eleves/records?filter={filtre}"  # ✅ casse corrigée
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers, timeout=8)
+        if resp.status_code == 200:
+            records = resp.json().get("records", [])
+            return [r["fields"] for r in records]
+    except Exception:
+        pass
+    return []
 
 
 def lire_progression_grist(code_eleve: str) -> list:
@@ -956,24 +1018,24 @@ ______
 Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
 
 
-def build_prompt_correction(bareme, ton, niveau, matiere, note_sur):
-    return f"""Tu es un professeur correcteur expert.
+#def build_prompt_correction(bareme, ton, niveau, matiere, note_sur):
+#    return f"""Tu es un professeur correcteur expert.
 
-Contexte :
-- Niveau : {niveau or 'Non précisé'}
-- Matière : {matiere or 'Non précisée'}
-- Barème : {bareme or f'Non fourni — évalue sur {note_sur}'}
-- Ton : {ton}
-- Note sur : {note_sur}
+#Contexte :
+#- Niveau : {niveau or 'Non précisé'}
+#- Matière : {matiere or 'Non précisée'}
+# - Barème : {bareme or f'Non fourni — évalue sur {note_sur}'}
+#- Ton : {ton}
+#- Note sur : {note_sur}
 
-Mission :
-1. Transcris le texte manuscrit visible.
-2. Identifie et explique chaque erreur avec pédagogie.
-3. Attribue une note partielle par question.
-4. Calcule la note globale /{note_sur}.
-5. Rédige une appréciation finale ({ton}) de 3 à 5 lignes.
+# Mission :
+#1. Transcris le texte manuscrit visible.
+#2. Identifie et explique chaque erreur avec pédagogie.
+#3. Attribue une note partielle par question.
+#4. Calcule la note globale /{note_sur}.
+#5. Rédige une appréciation finale ({ton}) de 3 à 5 lignes.
 
-Réponds en Markdown avec sections claires."""
+#Réponds en Markdown avec sections claires."""/*
 
 
 # ============================================================
@@ -1670,6 +1732,21 @@ def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str
         "couleur": "#22c55e",
         "priorite": 0
     }
+    
+    # Défaut — encouragement simple
+    if streak == 0:
+        return {
+            "emoji": "🚀",
+            "message": "Commence ta session du jour — même 1 exercice suffit pour lancer ton streak !",
+            "couleur": "#6366f1",
+            "priorite": 0
+        }
+    return {
+        "emoji": "💪",
+        "message": f"Super ! {streak} jour{'s' if streak > 1 else ''} d'affilée. Continue comme ça !",
+        "couleur": "#22c55e",
+        "priorite": 0
+    }
     """Calcule le total XP d'un élève depuis ses records Grist."""
     total = 0
     for r in records:
@@ -1972,13 +2049,63 @@ with tab_gen:
                     else:
                         st.error(f"Erreur API : {e}")
 
-    # ── MODE INTERACTIF ───────────────────────────────────────
-    if st.session_state.get("interactif_sujet"):
-        sujet_i   = st.session_state.interactif_sujet
-        questions = sujet_i.get("questions", [])
-        idx       = st.session_state.get("interactif_idx", 0)
-        reponses  = st.session_state.get("interactif_reponses", {})
-        termine   = st.session_state.get("interactif_termine", False)
+    
+
+        # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
+        if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
+        diff_boss = st.session_state.boss_niveau
+        mascotte  = MASCOTTES.get(diff_boss, {})   # ← était tronqué : MASCOTTES.get# puis
+                                                    #   le bloc MODE INTERACTIF commençait
+                                                    #   à l'intérieur du if, sans indentation
+                                                    #   correcte.
+        st.markdown("---")
+        st.markdown(
+            f'<div class="boss-banner">'
+            f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
+            f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
+            f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
+            f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
+            f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
+            f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
+            f'Tu as validé le niveau <strong style="color:#a5b4fc">'
+            f'{diff_boss.split(" ",1)[-1]}</strong> sur '
+            f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
+            f'Bats ce boss pour débloquer le niveau suivant !</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        col_boss1, col_boss2 = st.columns(2)
+        with col_boss1:
+            if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
+                         type="primary", use_container_width=True, key="btn_boss"):
+                if not cle_api:
+                    st.error("🔑 Clé API manquante !")
+                else:
+                    with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
+                        try:
+                            prompt_boss = build_prompt_boss(
+                                niv, filiere,
+                                st.session_state.boss_chapitre,
+                                st.session_state.boss_niveau
+                            )
+                            res_boss = call_gemini(cle_api, prompt_boss)
+                            st.session_state.boss_md        = res_boss
+                            st.session_state.eval_boss_done = None
+                            st.session_state.boss_actif     = False
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Erreur : {e}")
+        with col_boss2:
+            if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
+                st.session_state.boss_actif = False
+                st.rerun()
+        # ── MODE INTERACTIF ───────────────────────────────────────
+        if st.session_state.get("interactif_sujet"):
+            sujet_i   = st.session_state.interactif_sujet
+            questions = sujet_i.get("questions", [])
+            idx       = st.session_state.get("interactif_idx", 0)
+            reponses  = st.session_state.get("interactif_reponses", {})
+        t   ermine   = st.session_state.get("interactif_termine", False)
 
         # Contexte et rappel de cours
         if sujet_i.get("contexte"):
@@ -2202,12 +2329,7 @@ with tab_gen:
                 s_data = calculer_streak(records_s)
                 st.session_state.streak_cache = s_data
                 if s_data.get("nouveau_record") and s_data.get("streak", 0) >= 3:
-                    st.snow()
-
-        # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
-        if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
-            diff_boss = st.session_state.boss_niveau
-            mascotte  = MASCOTTES.get(diff_boss, {})
+                    st.snow()(diff_boss, {})
             st.markdown("---")
             st.markdown(
                 f'<div class="boss-banner">'

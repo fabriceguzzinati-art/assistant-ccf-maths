@@ -512,19 +512,6 @@ def build_prompt_cointervention(niveau, filiere, theme, consignes, difficulte="�
         f"Niveau {diff_label} : {conseils_diff}"
     )
     return SYSTEM_COINTERVENTION, user
-    ctx = build_contexte_filiere(filiere)
-    diff_label = difficulte.split(" ", 1)[-1].upper()  # ex: "MOYEN"
-    user = (
-        f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
-        f"- Niveau scolaire : {niveau} ({categorie})\n"
-        f"- Matière : {matiere}\n"
-        f"- Chapitre : {chapitre}\n"
-        f"{ctx}"
-        f"- Instructions : {consignes or 'Aucune'}\n\n"
-        f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
-    )
-    return SYSTEM_EXERCICES, user
-
 
 def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes, filiere="", avec_corrige=True, chapitre_b=""):
     ctx = build_contexte_filiere(filiere)
