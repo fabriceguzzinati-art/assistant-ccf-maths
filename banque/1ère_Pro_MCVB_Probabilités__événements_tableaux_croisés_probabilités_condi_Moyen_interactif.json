@@ -1,0 +1,54 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-08",
+    "contexte": "Dans le cadre de votre formation en Métiers du Commerce et de la Vente, vous travaillez sur l'analyse de données clients pour optimiser les stratégies commerciales et les performances de vente. Comprendre les probabilités permet d'anticiper les comportements des clients et de cibler efficacement les actions marketing.",
+    "rappel_cours": "La probabilité d'un événement A, P(A), est le rapport entre le nombre de cas favorables à A et le nombre total de cas possibles. P(A) = (Cas favorables) / (Cas possibles). La probabilité conditionnelle P(A|B) est la probabilité de A sachant B. P(A et B) = P(A) * P(B|A) ou P(A et B) = P(B) * P(A|B).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un magasin de prêt-à-porter a enregistré 750 clients le mois dernier. Parmi eux, 225 ont effectué un achat dans la catégorie 'hauts', 300 dans la catégorie 'bas' et le reste dans la catégorie 'accessoires'. Si l'on choisit un client au hasard parmi ceux qui ont visité le magasin, quelle est la probabilité (en pourcentage) qu'il ait acheté un article dans la catégorie 'hauts' ?",
+        "type": "numerique",
+        "reponse": 30.0,
+        "unite": "%",
+        "tolerance": 0.5,
+        "indice": "La probabilité est le rapport entre le nombre de clients ayant acheté des 'hauts' et le nombre total de clients enregistrés.",
+        "corrige": "Nombre de clients ayant acheté des 'hauts' = 225. Nombre total de clients = 750. P(Achat Hauts) = 225 / 750 = 0,3. En pourcentage, cela représente 0,3 * 100 = 30%."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une équipe commerciale a effectué 600 visites chez des prospects. Un tableau de bord indique que 240 de ces prospects étaient des PME et 360 des grandes entreprises. Parmi les PME, 72 visites ont abouti à une proposition commerciale. Parmi les grandes entreprises, 144 visites ont abouti à une proposition commerciale. Si l'on sélectionne une visite au hasard, quelle est la probabilité (en pourcentage) que cette visite ait été effectuée chez une grande entreprise ET qu'elle ait abouti à une proposition commerciale ?",
+        "type": "numerique",
+        "reponse": 24.0,
+        "unite": "%",
+        "tolerance": 0.5,
+        "indice": "Identifiez le nombre de visites qui satisfont aux deux conditions ('grande entreprise' ET 'proposition commerciale') et divisez par le nombre total de visites.",
+        "corrige": "Nombre de visites chez les grandes entreprises ayant abouti à une proposition commerciale = 144. Nombre total de visites = 600. P(Grande entreprise et Proposition) = 144 / 600 = 0,24. En pourcentage, cela représente 0,24 * 100 = 24%."
+      },
+      {
+        "numero": 3,
+        "enonce": "Dans une campagne de fidélisation, on estime que la probabilité qu'un client réponde à une enquête de satisfaction (E) est de 0,4. Si le client a répondu à l'enquête, la probabilité qu'il renouvèle son abonnement (R) est de 0,7. Quelle est la probabilité (en pourcentage) qu'un client sélectionné au hasard réponde à l'enquête ET renouvelle son abonnement ?",
+        "type": "numerique",
+        "reponse": 28.0,
+        "unite": "%",
+        "tolerance": 0.5,
+        "indice": "Pour que les deux événements se produisent, vous devez multiplier la probabilité du premier événement par la probabilité du second événement sachant que le premier s'est produit. Utilisez P(A et B) = P(A) * P(B|A).",
+        "corrige": "P(Répondre à l'enquête) = P(E) = 0,4. P(Renouveler | Répondu à l'enquête) = P(R|E) = 0,7. P(Répondre et Renouveler) = P(E) * P(R|E) = 0,4 * 0,7 = 0,28. En pourcentage, cela représente 0,28 * 100 = 28%."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un commercial sait que chaque dossier client traité lui coûte en moyenne 15 € (en temps et ressources). Il estime que la probabilité qu'un dossier aboutisse à une vente est de 0,35. Chaque vente lui rapporte un bénéfice net de 80 €. En moyenne, quel est le bénéfice net espéré par dossier client traité ?",
+        "type": "numerique",
+        "reponse": 13.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez l'espérance mathématique du bénéfice. Prenez en compte le bénéfice en cas de vente et la perte en cas de non-vente. Bénéfice net = Gain - Coût.",
+        "corrige": "Probabilité de vente = 0,35. Probabilité de non-vente = 1 - 0,35 = 0,65. Gain par vente = 80 €. Coût par dossier = 15 €. Bénéfice si vente = 80 € - 15 € = 65 €. Bénéfice si non-vente = 0 € - 15 € = -15 €. Bénéfice net espéré = (Bénéfice si vente * P(vente)) + (Bénéfice si non-vente * P(non-vente)) = (65 € * 0,35) + (-15 € * 0,65) = 22,75 € - 9,75 € = 13,00 €."
+      }
+    ]
+  }
+]

@@ -1,6 +1,18 @@
 import google.generativeai as genai
 import PIL.Image
 import streamlit as st
+import re
+import os
+import time
+import requests
+from datetime import datetime
+import json
+from io import BytesIO
+from docx import Document as DocxDocument
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 
 # Configuration des thèmes
 THEMES = {
@@ -33,29 +45,13 @@ theme_nom = st.sidebar.selectbox(
     index=list(THEMES.keys()).index(st.session_state.theme_pref)
 )
 
-# On met à jour la mémoire si l'élève change le choix
 st.session_state.theme_pref = theme_nom
-
-# On extrait les couleurs pour le CSS
 t = THEMES[theme_nom]
-from io import BytesIO
-from docx import Document as DocxDocument
-from docx.shared import Pt, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
-import re
-import os
-import time
-import requests
-from datetime import datetime
-import json
-
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    /* ── Base ── */
+    /* ── Base & Fonts ── */
     .stApp {{
         background: {t['bg_app']};
         color: {t['text']};
@@ -69,6 +65,18 @@ st.markdown(f"""
         border-right: 1px solid {t['border']};
     }}
     [data-testid="stSidebar"] * {{ color: {t['text']} !important; }}
+
+    /* ── Widgets (Radio & Selectbox) - AJOUTÉ POUR FIXER TON PROBLÈME ── */
+    .stWidgetLabel p, div[data-testid="stMarkdownContainer"] p {{ 
+        color: {t['text']} !important; 
+        font-weight: 600; 
+    }}
+    
+    /* Couleur du point à l'intérieur du bouton radio sélectionné */
+    div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div {{
+        background-color: {t['primary']} !important;
+        border-color: {t['primary']} !important;
+    }}
 
     /* ── Onglets ── */
     .stTabs [data-baseweb="tab-list"] {{
@@ -144,7 +152,7 @@ st.markdown(f"""
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         font-size: 1.4rem;
-        color: {t['primary']}; /* Adapté au thème */
+        color: {t['primary']};
     }}
 
     /* ── Boss banner ── */
@@ -165,12 +173,34 @@ st.markdown(f"""
     ::-webkit-scrollbar-thumb:hover {{ background: {t['primary']}; }}
 
     /* ── Markdown content ── */
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{
-        color: {t['text']};
-    }}
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{ color: {t['text']}; }}
     .stMarkdown p, .stMarkdown li {{ color: {t['text']}; opacity: 0.9; }}
     </style>
 """, unsafe_allow_html=True)
+
+# 3. Interface de choix (Genre & Avatar)
+col1, col2 = st.columns(2)
+with col1:
+    genre = st.radio("Comment souhaites-tu que l'on s'adresse à toi ?", 
+                    ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
+                    key="radio_genre")
+with col2:
+    avatar_style = st.selectbox("Choisis ton style d'avatar", 
+                               ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
+                               key="select_avatar")
+
+# 4. Sauvegarde des préférences d'identité
+if 'genre_pref' not in st.session_state:
+    st.session_state.genre_pref = "Neutre (Aventurier)"
+if 'avatar_pref' not in st.session_state:
+    st.session_state.avatar_pref = "Robotique 🤖"
+
+# 5. Mise à jour si l'utilisateur change ses choix
+st.session_state.genre_pref = genre
+st.session_state.avatar_pref = avatar_style
+st.session_state.theme_pref = theme_nom
+
+
 # ============================================================
 # 0. INTÉGRATION GRIST — Suivi des élèves
 # ============================================================
@@ -2792,7 +2822,7 @@ st.divider()
 st.markdown(f"""
     <div style="text-align: center; color: #888; font-size: 0.8rem; padding: 20px;">
         Conçu et développé par <b>Fabrice GUZZINATI</b> & <b>Gemini&Claude</b> (Architecte IA)<br>
-        Version 1.4 — 2026 • Ozoir-la-Ferrière<br>
+        Version 1.5 — 2026 • Ozoir-la-Ferrière<br>
         <br>
         <i>Distribué sous licence <b>Creative Commons BY-NC-SA 4.0</b></i>
     </div>
