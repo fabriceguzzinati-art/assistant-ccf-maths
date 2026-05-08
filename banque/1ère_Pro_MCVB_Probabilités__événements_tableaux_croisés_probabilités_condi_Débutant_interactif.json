@@ -1,0 +1,44 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-09",
+    "contexte": "Une entreprise de vente de matériel électronique analyse les données de ses clients pour optimiser ses stratégies commerciales. Le service marketing souhaite mieux comprendre le comportement d'achat afin de cibler les promotions et d'améliorer la satisfaction client.",
+    "rappel_cours": "La probabilité d'un événement (A) est le rapport entre le nombre de cas favorables à A et le nombre total de cas possibles : P(A) = (Nombre de cas favorables à A) / (Nombre total de cas). Une probabilité est un nombre entre 0 et 1, souvent exprimé en pourcentage.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Sur un échantillon de 800 clients de l'entreprise, 280 ont acheté un smartphone. Quelle est la probabilité qu'un client choisi au hasard dans cet échantillon ait acheté un smartphone ? Exprimez le résultat en pourcentage.",
+        "type": "numerique",
+        "reponse": 35.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "La probabilité est le rapport entre le nombre de clients ayant acheté un smartphone et le nombre total de clients dans l'échantillon.",
+        "corrige": "Nombre de cas favorables (achat smartphone) = 280\nNombre total de cas (clients de l'échantillon) = 800\nProbabilité = 280 / 800 = 0,35\nEn pourcentage : 0,35 * 100 = 35%\nLe résultat est 35%."
+      },
+      {
+        "numero": 2,
+        "enonce": "Parmi les 280 clients qui ont acheté un smartphone (voir question 1), 112 ont également acheté une coque de protection. Quelle est la probabilité qu'un client qui a acheté un smartphone ait aussi acheté une coque de protection ? Exprimez le résultat en pourcentage.",
+        "type": "numerique",
+        "reponse": 40.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Ici, le total des cas possibles est le nombre de clients ayant acheté un smartphone. La probabilité est conditionnelle.",
+        "corrige": "Nombre de cas favorables (achat coque ET smartphone) = 112\nNombre de cas possibles (clients ayant acheté un smartphone) = 280\nProbabilité = 112 / 280 = 0,4\nEn pourcentage : 0,4 * 100 = 40%\nLe résultat est 40%."
+      },
+      {
+        "numero": 3,
+        "enonce": "L'entreprise a constaté que sur 500 appels de prospection commerciale, 125 ont abouti à une prise de rendez-vous. Pour les rendez-vous pris, 40% se sont transformés en vente. Quel est le nombre de ventes réalisées grâce à ces 500 appels de prospection ?",
+        "type": "numerique",
+        "reponse": 50.0,
+        "unite": "ventes",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le nombre de rendez-vous obtenus, puis déduisez le nombre de ventes à partir de ce nombre de rendez-vous.",
+        "corrige": "1. Calcul du nombre de rendez-vous :\n   Nombre de rendez-vous = 125 (car 125 appels ont abouti à un rendez-vous)\n2. Calcul du nombre de ventes à partir des rendez-vous :\n   Probabilité de vente après un rendez-vous = 40% = 0,40\n   Nombre de ventes = Nombre de rendez-vous * Probabilité de vente\n   Nombre de ventes = 125 * 0,40 = 50\nLe nombre de ventes réalisées est 50."
+      }
+    ]
+  }
+]
