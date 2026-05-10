@@ -214,39 +214,6 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
         base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
         if not api_key or not doc_id:
             return
-        now = datetime.now()
-        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        payload = {"records": [{"fields": {
-            "code_eleve":        str(code_eleve),
-            "date":              now.strftime("%Y-%m-%d"),
-            "heure":             now.strftime("%H:%M"),
-            "type_activite":     type_activite,
-            "classe":            str(meta.get("niveau", "")),
-            "filiere":           str(meta.get("filiere", "")),
-            "matiere":           str(meta.get("matiere", "")),
-            "chapitre":          str(meta.get("chapitre", "")),
-            "niveau_difficulte": str(meta.get("difficulte", "")),
-            "auto_evaluation":   str(auto_evaluation),
-            "score_auto":        str(meta.get("score_auto", "")),
-            "source":            str(meta.get("source", "Gemini")),
-            "genre":             st.session_state.get('genre_pref', "Neutre (Aventurier)"),
-            "avatar":            st.session_state.get('avatar_pref', "Robotique 🤖")
-
-        }}]}
-        requests.post(url, headers=headers, json=payload, timeout=5)
-    except Exception:
-        pass
-
-
-def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
-    """Envoie une ligne dans Grist. Silencieux en cas d'erreur."""
-    try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        if not api_key or not doc_id:
-            return
         # ✅ Heure Paris (était UTC avant)
         now = datetime.now(ZoneInfo("Europe/Paris"))
         url = f"{base_url}/api/docs/{doc_id}/tables/suivi_eleves/records"  # ✅ casse corrigée
@@ -284,7 +251,7 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
         if not api_key or not doc_id:
             return
         now = datetime.now(ZoneInfo("Europe/Paris"))  # ✅ Heure Paris
-        url = f"{base_url}/api/docs/{doc_id}/tables/banque_propositions/records"  # ✅ casse corrigée
+        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"  # ✅ casse corrigée
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         payload = {"records": [{"fields": {
             "code_eleve":      str(code_eleve),
@@ -302,29 +269,6 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
     except Exception:
         pass
 
-
-def lire_progression_grist(code_eleve: str) -> list:
-    """
-    Lit toutes les lignes Grist pour un élève donné.
-    Retourne une liste de dicts, ou [] en cas d'erreur.
-    """
-    try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        if not api_key or not doc_id or not code_eleve:
-            return []
-        import urllib.parse
-        filtre = urllib.parse.quote(json.dumps({"code_eleve": [code_eleve]}))
-        url = f"{base_url}/api/docs/{doc_id}/tables/suivi_eleves/records?filter={filtre}"  # ✅ casse corrigée
-        headers = {"Authorization": f"Bearer {api_key}"}
-        resp = requests.get(url, headers=headers, timeout=8)
-        if resp.status_code == 200:
-            records = resp.json().get("records", [])
-            return [r["fields"] for r in records]
-    except Exception:
-        pass
-    return []
 
 
 def lire_progression_grist(code_eleve: str) -> list:
