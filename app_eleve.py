@@ -2251,6 +2251,11 @@ with tab_gen:
                     code_eleve or "anonyme", m,
                     st.session_state.generated_md, eval_choix
                 )
+                if m.get("source") == "Gemini" and st.session_state.generated_md:
+    success = envoyer_proposition_grist(code_eleve or "anonyme", m, st.session_state.generated_md, eval_choix)
+    if success:
+        st.success("📤 Ton sujet Gemini proposé au prof ! 👏")
+        
             st.session_state.eval_gen_done = eval_choix
             st.session_state.streak_cache  = None
             if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
