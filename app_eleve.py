@@ -242,9 +242,9 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
 def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
     """Envoie un sujet généré dans Banque_propositions pour validation prof."""
     try:
-        api_key = st.secrets.get("GRISTAPIKEY")
-        doc_id = "3sgfLPsxpBkk"  # Ton DOC_ID fixe
-        base_url = "https://grist.numerique.gouv.fr"
+        api_key  = st.secrets.get("GRIST_API_KEY", "")
+        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
         
         now = datetime.now(ZoneInfo("Europe/Paris"))
         url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
