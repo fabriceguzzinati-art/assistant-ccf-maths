@@ -240,34 +240,47 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
 
 
 def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
-    """
-    Envoie un sujet généré par un élève dans banque_propositions pour validation prof.
-    Silencieux en cas d'erreur.
-    """
+    """Envoie un sujet généré dans Banque_propositions pour validation prof."""
     try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        if not api_key or not doc_id:
-            return
-        now = datetime.now(ZoneInfo("Europe/Paris"))  # ✅ Heure Paris
-        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"  # ✅ casse corrigée
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        payload = {"records": [{"fields": {
-            "code_eleve":      str(code_eleve),
-            "date":            now.strftime("%Y-%m-%d"),
-            "niveau":          str(meta.get("niveau", "")),
-            "filiere":         str(meta.get("filiere", "")),
-            "matiere":         str(meta.get("matiere", "")),
-            "chapitre":        str(meta.get("chapitre", "")),
-            "difficulte":      str(meta.get("difficulte", "")),
-            "contenu":         str(contenu)[:5000],
-            "auto_evaluation": str(auto_evaluation),
-            "statut":          "en_attente",
-        }}]}
-        requests.post(url, headers=headers, json=payload, timeout=5)
-    except Exception:
-        pass
+        api_key = st.secrets.get("GRISTAPIKEY")
+        doc_id = "3sgfLPsxpBkk"  # Ton DOC_ID fixe
+        base_url = "https://grist.numerique.gouv.fr"
+        
+        now = datetime.now(ZoneInfo("Europe/Paris"))
+        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "records": [{
+                "fields": {
+                    "codeeleve": str(code_eleve),
+                    "date": now.strftime("%Y-%m-%d"),
+                    "heure": now.strftime("%H:%M"),
+                    "niveau": str(meta.get("niveau", "")),
+                    "filiere": str(meta.get("filiere", "")),
+                    "matiere": str(meta.get("matiere", "")),
+                    "chapitre": str(meta.get("chapitre", "")),
+                    "difficulte": str(meta.get("difficulte", "")),
+                    "contenu": str(contenu)[:5000],  # Limite pour éviter les erreurs
+                    "autoevaluation": str(auto_evaluation),
+                    "statut": "en attente"
+                }
+            }]
+        }
+        
+        resp = requests.post(url, headers=headers, json=payload, timeout=8)
+        if resp.status_code in (200, 201):
+            st.success("✅ Sujet envoyé dans Banque_propositions !")
+            return True
+        else:
+            st.error(f"❌ Erreur envoi {resp.status_code}: {resp.text[:200]}")
+            return False
+            
+    except Exception as e:
+        st.error(f"❌ Erreur proposition: {e}")
+        return False
 
 
 
