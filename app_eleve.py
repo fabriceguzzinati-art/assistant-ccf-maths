@@ -255,14 +255,14 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
         payload = {
             "records": [{
                 "fields": {
-                    "codeeleve": str(code_eleve),
+                    "code_eleve": str(code_eleve),
                     "date": now.strftime("%Y-%m-%d"),
                     "heure": now.strftime("%H:%M"),
                     "niveau": str(meta.get("niveau", "")),
                     "filiere": str(meta.get("filiere", "")),
                     "matiere": str(meta.get("matiere", "")),
                     "chapitre": str(meta.get("chapitre", "")),
-                    "difficulte": str(meta.get("difficulte", "")),
+                    "niveau_difficulte": str(meta.get("difficulte", "")),
                     "contenu": str(contenu)[:5000],  # Limite pour éviter les erreurs
                     "autoevaluation": str(auto_evaluation),
                     "statut": "en attente"
