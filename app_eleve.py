@@ -1939,6 +1939,7 @@ with tab_gen:
     with col_btn2:
         btn_banque = st.button(
             f"📚 Sujet classique ({nb_banque} dispo)",
+            type="primary",
             use_container_width=True,
             disabled=(nb_banque == 0),
             key="btn_banque"
@@ -1948,6 +1949,7 @@ with tab_gen:
     with col_btn3:
         btn_gemini = st.button(
             "✨ Générer (Gemini)",
+            type="primary",
             use_container_width=True,
             key="btn_gemini"
         )
