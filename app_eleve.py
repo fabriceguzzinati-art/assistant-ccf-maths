@@ -216,7 +216,7 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
             return
         # ✅ Heure Paris (était UTC avant)
         now = datetime.now(ZoneInfo("Europe/Paris"))
-        url = f"{base_url}/api/docs/{doc_id}/tables/suivi_eleves/records"  # ✅ casse corrigée
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"  # ✅ casse corrigée
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         payload = {"records": [{"fields": {
             "code_eleve":        str(code_eleve),
