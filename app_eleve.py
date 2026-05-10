@@ -264,7 +264,7 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
                     "chapitre": str(meta.get("chapitre", "")),
                     "niveau_difficulte": str(meta.get("difficulte", "")),
                     "contenu": str(contenu)[:5000],  # Limite pour éviter les erreurs
-                    "autoevaluation": str(auto_evaluation),
+                    "auto_evaluation": str(auto_evaluation),
                     "statut": "en attente"
                 }
             }]
