@@ -2008,7 +2008,7 @@ with tab_gen:
 
 # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
 
-        m = st.session_state.metagen or {}
+        m = getattr(st.session_state, 'metagen', {}) or {}
         if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
             diff_boss = st.session_state.boss_niveau          # ← 12 espaces (3 niveaux)
             mascotte  = MASCOTTES.get(diff_boss, {})
