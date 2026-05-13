@@ -13,6 +13,8 @@ import json
 import os
 import re
 import time
+import requests
+from zoneinfo import ZoneInfo
 from datetime import datetime
 
 # ── Configuration ──────────────────────────────────────────────
@@ -47,6 +49,53 @@ CHAPITRES_MATHS_BAC_PRO = {
         "Algorithmique et programmation Python — approfondissement",
         "Automatismes — probabilités, suites, dérivation, vecteurs",
     ],
+}
+
+# ── Codes courts chapitres BO (UNIQUES !) ─────────────────────
+CHAPITRE_CODES = {
+        "2nde Pro": {
+        "Calcul numérique et algébrique": "CALC",
+        "Puissances et notations scientifiques": "PUIS",
+        "Proportionnalité et pourcentages": "PROP", 
+        "Équations du 1er degré à une inconnue": "EQ1",
+        "Inéquations du 1er degré": "INEQ",
+        "Géométrie plane — figures usuelles": "GEOP",
+        "Trigonométrie dans le triangle rectangle": "TRIG_2",
+        "Vecteurs — notions de base": "VECT_2",
+        "Notion de fonction — représentation graphique": "FCTN",
+        "Fonctions linéaires et affines": "FLIN",
+        "Statistiques descriptives — série à une variable": "STAT1",
+        "Notion de probabilité — expériences alèatoires": "PROB2",
+		},
+		"1ère Pro": {
+        "Statistique à deux variables — ajustement affine et coefficient de détermination": "S2V1",
+        "Probabilités — événements, tableaux croisés, probabilités conditionnelles": "PROB1",
+        "Suites numériques — suites arithmétiques": "S_A",
+		"Résolution graphique d'équations et d'inéquations f(x)=g(x)": "RES_G1",
+        "Fonctions polynômes de degré 2 — racines, signe, forme factorisée": "FP2",
+		"Fonction dérivée — variations, extremums, fonction inverse": "FD",
+		"Calculs commerciaux et financiers — intérêts simples, coûts (filières sans physique-chimie)": "COMF1",
+		"Géométrie dans l'espace — solides usuels et sections par un plan": "GEOE",
+		"Vecteurs du plan — coordonnées, opérations, norme (groupements A et B)": "VECT_1",
+		"Trigonométrie — cercle trigonométrique, fonctions sinus et cosinus (groupements A et B)": "TRIG_1",
+		"Algorithmique et programmation Python — listes, fonctions, boucles": "ALGO_1",
+		"Automatismes — calcul, grandeurs, lecture graphique": "AUTO_1",
+		},
+		"Term Pro": {
+        "Statistiques à deux variables — ajustements non affines, changements de variable": "S2VT",
+        "Probabilités — arbres pondérés, formule des probabilités totales, indépendance": "PROBT",
+		"Suites géométriques — terme général, sens de variation, somme": "S_G",
+		"Fonctions polynômes de degré 3 — dérivée, variations, extremums": "FP3",
+		"Fonctions exponentielles de base q et logarithme décimal": "FEXLOG",
+		"Vecteurs dans l'espace — coordonnées, norme, colinéarité (groupement B)": "VECT_T",
+		"Trigonométrie — équations, vecteurs de Fresnel (groupement A)": "TRIG_T",
+		"Algorithmique et programmation Python — approfondissement listes et fonctions": "ALGO_T",
+		"Automatismes — probabilités, suites, dérivation, vecteurs": "AUTO_T",
+		"Calcul intégral — primitives, intégrale, aire (programme complémentaire)": "INT_PRIM",
+		"Fonctions logarithme népérien et exponentielle de base e (programme complémentaire)": "Feln",
+		"Nombres complexes — forme algébrique et trigonométrique (programme complémentaire)": "NbZ",
+		"Produit scalaire de deux vecteurs du plan (programme complémentaire)": "PROD_SCAL",
+		}
 }
 
 FILIERES = ["ASSP", "MCVB", "MCVA", "AGORA"]
@@ -181,7 +230,7 @@ def sauvegarder_sujet(path: str, sujet: dict) -> None:
     sujets = charger_fichier(path)
     sujets.append(sujet)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(sujets, f, ensure_ascii=False, indent=2)
+        json.dump(sujets, f, indent=2, ensure_ascii=False)
 
 
 def generer_un_sujet(cle_api, niveau, filiere, chapitre, difficulte) -> str:
@@ -278,6 +327,38 @@ def generer_un_sujet_interactif(cle_api, niveau, filiere, chapitre, difficulte, 
             q["unite"] = ""
 
     return data
+    
+def lire_propositions_validees():
+    """Lit sujets VALIDÉS depuis Grist."""
+    try:
+        api_key = st.secrets.get("GRIST_API_KEY")
+        doc_id = st.secrets.get("GRIST_DOC_ID")
+        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        
+        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        resp = requests.get(url, headers=headers)
+        
+        if resp.status_code == 200:
+            records = resp.json().get("records", [])
+
+            validees = []
+            for r in records:
+                statut = str(r["fields"].get("statut", "")).strip().lower()
+                if statut == "validé":
+                    validees.append(r["fields"])
+            
+            return validees
+        st.error(f"Erreur Grist: {resp.status_code}")
+        return []
+    except Exception as e:
+        st.error(f"Erreur lecture: {e}")
+        return [] 
+
+def generer_nom_fichier(niveau, filiere, chapitre, difficulte):
+    """Comme _slug dans app_eleve."""
+    difflabel = difficulte.split(" ")[-1]
+    return f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{difflabel}.json"
 
 
 # ── Interface Streamlit ────────────────────────────────────────
@@ -330,7 +411,7 @@ git push
 """)
 
 # ── Onglets ────────────────────────────────────────────────────
-tab_gen, tab_inventaire, tab_interactif = st.tabs(["➕ Générer des sujets", "📋 Inventaire de la banque", "⚡ Générer mode Interactif"])
+tab_gen, tab_inventaire, tab_interactif, tabimport = st.tabs(["➕ Générer des sujets", "📋 Inventaire de la banque", "⚡ Générer mode Interactif", "📥 Import validés GRIST"])
 
 # ─────────────────────────────────────────────────────────
 # ONGLET 1 — Génération
@@ -558,7 +639,7 @@ with tab_interactif:
                                 **data,
                             })
                             with open(path, "w", encoding="utf-8") as f:
-                                json.dump(sujets_exist, f, ensure_ascii=False, indent=2)
+                                json.dump(sujets_exist, f, indent=2, ensure_ascii=False)
 
                             nb_q = len(data.get("questions", []))
                             logs.append(f"✅ {label} — {nb_q} questions")
@@ -583,7 +664,7 @@ with tab_interactif:
                                         **data,
                                     })
                                     with open(path, "w", encoding="utf-8") as f:
-                                        json.dump(sujets_exist, f, ensure_ascii=False, indent=2)
+                                        json.dump(sujets_exist, f, indent=2, ensure_ascii=False)
                                     logs.append(f"✅ {label} (2ème tentative)")
                                 except Exception as e2:
                                     logs.append(f"❌ Échec : {label} — {e2}")
@@ -617,3 +698,51 @@ with tab_interactif:
                 f'{len(sujets)} sujet(s), {nb_q_total} questions au total</span>',
                 unsafe_allow_html=True
             )
+ # ─────────────────────────────────────────────────────────
+# ONGLET 4 — Import
+# ─────────────────────────────────────────────────────────
+with tabimport:
+    st.header("📥 Import sujets validés")
+    
+    # Lire Grist
+    props = lire_propositions_validees()  # Fonction ci-dessous
+    
+    if not props:
+        st.info("Aucun sujet validé (statut='validé').")
+        st.stop()
+    
+    st.success(f"**{len(props)} sujet(s) validé(s)** → prêt(s) JSON !")
+    
+    for prop in props:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown(f"**{prop['niveau']} {prop['filiere']}**")
+            st.markdown(f"*{prop['chapitre']}* - {prop['difficulte']}")
+            st.caption(f"Par {prop['code_eleve']} - {prop['date']}")
+        
+        with col2:
+            if st.button("💾 → Banque JSON", key=f"imp_{prop.get('id', prop['code_eleve'])}"):
+                # Génère nom fichier
+                nom_fichier = generer_nom_fichier(
+                    prop['niveau'], prop['filiere'], 
+                    prop['chapitre'], prop['difficulte']
+                )
+                path = nom_fichier(prop['niveau'], prop['filiere'], prop['chapitre'], prop['difficulte'])
+                
+                # Parse Markdown → structure JSON
+                sujet = {
+                    "niveau": prop['niveau'],
+                    "categorie": "Bac Pro",
+                    "filiere": prop['filiere'],
+                    "matiere": "Mathématiques",
+                    "chapitre": prop['chapitre'],
+                    "difficulte": prop['difficulte'],
+                    "contenu": prop['contenu'],  # Markdown brut
+                    "date_generation": datetime.now().strftime("%Y-%m-%d")
+                }
+                
+                # Sauvegarde/ajoute au fichier existant
+                sauvegarder_sujet(path, sujet)
+                
+                st.success(f"✅ **{nom_fichier}** ajouté à la banque !")
+                st.balloons()

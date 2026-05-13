@@ -206,48 +206,18 @@ st.session_state.theme_pref = theme_nom
 # 0. INTÉGRATION GRIST — Suivi des élèves
 # ============================================================
 
-def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
-    """Envoie une ligne dans Grist. Silencieux en cas d'erreur."""
+def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation):
+    """Envoie une ligne dans Grist. Affiche l'erreur si ça échoue."""
     try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
+        api_key = st.secrets.get("GRISTAPIKEY")
+        doc_id = st.secrets.get("GRISTDOCID")
+        base_url = st.secrets.get("GRISTURL", "https://grist.numerique.gouv.fr")
         if not api_key or not doc_id:
-            return
-        # ✅ Heure Paris (était UTC avant)
-        now = datetime.now(ZoneInfo("Europe/Paris"))
-        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records"  # ✅ casse corrigée
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        payload = {"records": [{"fields": {
-            "code_eleve":        str(code_eleve),
-            "date":              now.strftime("%Y-%m-%d"),
-            "heure":             now.strftime("%H:%M"),
-            "type_activite":     type_activite,
-            "classe":            str(meta.get("niveau", "")),
-            "filiere":           str(meta.get("filiere", "")),
-            "matiere":           str(meta.get("matiere", "")),
-            "chapitre":          str(meta.get("chapitre", "")),
-            "niveau_difficulte": str(meta.get("difficulte", "")),
-            "auto_evaluation":   str(auto_evaluation),
-            "score_auto":  str(meta.get("score_auto", "")),  # ✅ ID corrigé score_auto → score_evaluation
-            "source":            str(meta.get("source", "Gemini")),
-            "genre":             str(st.session_state.get("genre_pref", "Neutre (Aventurier)")),  # ✅ session_state garanti
-            "avatar":            str(st.session_state.get("avatar_pref", "Robotique 🤖")),        # ✅ ID corrigé
-        }}]}
-        requests.post(url, headers=headers, json=payload, timeout=5)
-    except Exception:
-        pass
+            st.error("🔑 Clé API ou docid manquants dans secrets")
+            return False
 
-
-def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
-    """Envoie un sujet généré dans Banque_propositions pour validation prof."""
-    try:
-        api_key  = st.secrets.get("GRIST_API_KEY", "")
-        doc_id   = st.secrets.get("GRIST_DOC_ID", "")
-        base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        
         now = datetime.now(ZoneInfo("Europe/Paris"))
-        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
+        url = f"{base_url}/api/docs/3sgfLPsxpBkk/tables/Suivi_eleves/records"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -255,33 +225,69 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
         payload = {
             "records": [{
                 "fields": {
-                    "code_eleve": str(code_eleve),
+                    "codeeleve": str(code_eleve),
                     "date": now.strftime("%Y-%m-%d"),
                     "heure": now.strftime("%H:%M"),
+                    "typeactivite": type_activite,
+                    "classe": str(meta.get("niveau", "")),
+                    "filiere": str(meta.get("filiere", "")),
+                    "matiere": str(meta.get("matiere", "")),
+                    "chapitre": str(meta.get("chapitre", "")),
+                    "niveaudifficulte": str(meta.get("difficulte", "")),
+                    "autoevaluation": str(auto_evaluation),
+                    "score_auto": str(meta.get("score_auto", "")),
+                    "source": str(meta.get("source", "Gemini")),
+                    "genre": st.session_state.get("genrepref", "Neutre Aventurier"),
+                    "avatar": st.session_state.get("avatarpref", "Robotique")
+                }
+            }]
+        }
+        
+        resp = requests.post(url, headers=headers, json=payload, timeout=8)
+        if resp.status_code not in (200, 201):
+            st.error(f"❌ Grist erreur {resp.status_code}: {resp.text[:200]}")
+            return False
+        st.success("✅ Enregistré dans Grist")
+        return True
+    except Exception as e:
+        st.error(f"❌ Erreur envoi Grist: {e}")
+        return False
+
+
+def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation):
+    """Envoie un sujet généré dans Banque_propositions."""
+    try:
+        api_key = st.secrets.get("GRISTAPIKEY")
+        doc_id = st.secrets.get("GRISTDOCID")
+        base_url = st.secrets.get("GRISTURL", "https://grist.numerique.gouv.fr")
+        
+        now = datetime.now(ZoneInfo("Europe/Paris"))
+        url = f"{base_url}/api/docs/3sgfLPsxpBkk/tables/Banque_propositions/records"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {
+            "records": [{
+                "fields": {
+                    "codeeleve": str(code_eleve),
+                    "date": now.strftime("%Y-%m-%d"),
                     "niveau": str(meta.get("niveau", "")),
                     "filiere": str(meta.get("filiere", "")),
                     "matiere": str(meta.get("matiere", "")),
                     "chapitre": str(meta.get("chapitre", "")),
-                    "niveau_difficulte": str(meta.get("difficulte", "")),
-                    "contenu": str(contenu)[:5000],  # Limite pour éviter les erreurs
-                    "auto_evaluation": str(auto_evaluation),
+                    "difficulte": str(meta.get("difficulte", "")),
+                    "contenu": str(contenu)[:5000],
+                    "autoevaluation": str(auto_evaluation),
                     "statut": "en attente"
                 }
             }]
         }
         
         resp = requests.post(url, headers=headers, json=payload, timeout=8)
-        if resp.status_code in (200, 201):
-            st.success("✅ Sujet envoyé dans Banque_propositions !")
-            return True
+        if resp.status_code not in (200, 201):
+            st.error(f"❌ Proposition erreur {resp.status_code}")
         else:
-            st.error(f"❌ Erreur envoi {resp.status_code}: {resp.text[:200]}")
-            return False
-            
+            st.success("✅ Proposition envoyée")
     except Exception as e:
         st.error(f"❌ Erreur proposition: {e}")
-        return False
-
 
 
 def lire_progression_grist(code_eleve: str) -> list:
@@ -297,7 +303,7 @@ def lire_progression_grist(code_eleve: str) -> list:
             return []
         import urllib.parse
         filtre = urllib.parse.quote(json.dumps({"code_eleve": [code_eleve]}))
-        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records?filter={filtre}"
+        url = f"{base_url}/api/docs/{doc_id}/tables/Suivi_eleves/records?filter={filtre}"  # ✅ casse corrigée
         headers = {"Authorization": f"Bearer {api_key}"}
         resp = requests.get(url, headers=headers, timeout=8)
         if resp.status_code == 200:
@@ -1939,7 +1945,6 @@ with tab_gen:
     with col_btn2:
         btn_banque = st.button(
             f"📚 Sujet classique ({nb_banque} dispo)",
-            type="primary",
             use_container_width=True,
             disabled=(nb_banque == 0),
             key="btn_banque"
@@ -1949,7 +1954,6 @@ with tab_gen:
     with col_btn3:
         btn_gemini = st.button(
             "✨ Générer (Gemini)",
-            type="primary",
             use_container_width=True,
             key="btn_gemini"
         )
@@ -2010,7 +2014,7 @@ with tab_gen:
 
 # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
 
-        m = getattr(st.session_state, 'metagen', {}) or {}
+
         if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
             diff_boss = st.session_state.boss_niveau          # ← 12 espaces (3 niveaux)
             mascotte  = MASCOTTES.get(diff_boss, {})
@@ -2249,12 +2253,10 @@ with tab_gen:
         if eval_choix:
             envoyer_grist(code_eleve or "anonyme", "Exercice", m, eval_choix)
             if m.get("source") == "Gemini" and st.session_state.generated_md:
-                success = envoyer_proposition_grist(
+                envoyer_proposition_grist(
                     code_eleve or "anonyme", m,
                     st.session_state.generated_md, eval_choix
                 )
-                if success:
-                    st.success("📤 Ton sujet Gemini proposé au prof ! 👏")        
             st.session_state.eval_gen_done = eval_choix
             st.session_state.streak_cache  = None
             if eval_choix in ("😊 Bien", "🌟 Très bien") and code_eleve:
