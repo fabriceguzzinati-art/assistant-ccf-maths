@@ -1,0 +1,54 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-05-13",
+    "contexte": "Dans le cadre de votre formation en Bac Pro Accompagnement, Soins et Services à la Personne, vous êtes amené(e) à comprendre et analyser des données pour optimiser la prise en charge des patients ou résidents. Les probabilités sont un outil essentiel pour évaluer des risques, anticiper des situations ou interpréter des résultats d'études dans les domaines de la santé et du social.",
+    "rappel_cours": "La probabilité d'un événement A est P(A) = (nombre de cas favorables à A) / (nombre total de cas possibles). La probabilité conditionnelle P(A|B) est la probabilité que l'événement A se réalise sachant que l'événement B est déjà réalisé : P(A|B) = P(A et B) / P(B). Les tableaux croisés permettent de visualiser les effectifs pour calculer ces probabilités.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Dans un EHPAD accueillant 120 résidents, une étude sur les pathologies montre que 45 résidents souffrent de diabète et 30 sont atteints de troubles cardiovasculaires. Parmi les résidents diabétiques, 15 sont également atteints de troubles cardiovasculaires. Quelle est la probabilité, en pourcentage, qu'un résident choisi au hasard ne souffre d'aucun de ces deux types de pathologies ?",
+        "type": "numerique",
+        "reponse": 50.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Calculez d'abord le nombre de résidents souffrant d'au moins une des deux pathologies en utilisant la formule N(A ou B) = N(A) + N(B) - N(A et B). Ensuite, déduisez le nombre de résidents qui n'ont aucune pathologie avant de calculer la probabilité.",
+        "corrige": "1. Nombre de résidents avec diabète (D) = 45.\n2. Nombre de résidents avec troubles cardiovasculaires (C) = 30.\n3. Nombre de résidents avec diabète ET troubles cardiovasculaires (D et C) = 15.\n4. Nombre de résidents avec AU MOINS une des deux pathologies = N(D) + N(C) - N(D et C) = 45 + 30 - 15 = 60.\n5. Nombre de résidents sans aucune de ces deux pathologies = Nombre total de résidents - Nombre de résidents avec au moins une pathologie = 120 - 60 = 60.\n6. Probabilité qu'un résident choisi au hasard ne souffre d'aucune pathologie = (Nombre de résidents sans pathologie) / (Nombre total de résidents) = 60 / 120 = 0.5.\n7. En pourcentage : 0.5 * 100 = 50.0 %."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une pharmacie effectue un contrôle qualité sur 300 doses de médicaments préparées. Il a été constaté que 24 doses présentaient un problème de conditionnement (P) et 18 doses un problème d'étiquetage (E). Par ailleurs, 6 doses présentaient à la fois un problème de conditionnement et un problème d'étiquetage. Si une dose est choisie au hasard parmi celles qui ont un problème de conditionnement, quelle est la probabilité, en pourcentage, qu'elle ait également un problème d'étiquetage ?",
+        "type": "numerique",
+        "reponse": 25.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Il s'agit d'une probabilité conditionnelle. La condition est que la dose ait un problème de conditionnement. Rappelez-vous P(A|B) = N(A et B) / N(B).",
+        "corrige": "1. L'événement B est 'la dose a un problème de conditionnement'. Le nombre de cas pour B est N(P) = 24.\n2. L'événement A est 'la dose a un problème d'étiquetage'. L'événement 'A et B' est 'la dose a un problème de conditionnement ET un problème d'étiquetage'. Le nombre de cas pour (P et E) est N(P et E) = 6.\n3. La probabilité qu'une dose ait un problème d'étiquetage SACHANT qu'elle a un problème de conditionnement est P(E|P) = N(P et E) / N(P) = 6 / 24 = 0.25.\n4. En pourcentage : 0.25 * 100 = 25.0 %."
+      },
+      {
+        "numero": 3,
+        "enonce": "Dans un centre de dépistage, 400 personnes ont été testées pour une maladie. 80 de ces personnes sont effectivement porteuses de la maladie (M). Parmi les personnes porteuses de la maladie, le test est positif pour 70 d'entre elles (vrais positifs). Parmi les personnes non porteuses de la maladie (non-M), le test est positif pour 30 d'entre elles (faux positifs). Quel est le nombre de personnes ayant un test négatif (T-) ?",
+        "type": "numerique",
+        "reponse": 300.0,
+        "unite": "personnes",
+        "tolerance": 0,
+        "indice": "Commencez par déterminer le nombre de personnes ayant un test positif (T+). Ensuite, soustrayez ce nombre du total des personnes testées pour obtenir le nombre de personnes ayant un test négatif.",
+        "corrige": "1. Nombre total de personnes testées = 400.\n2. Nombre de personnes porteuses de la maladie (M) = 80.\n3. Nombre de personnes non porteuses de la maladie (non-M) = 400 - 80 = 320.\n4. Nombre de vrais positifs (personnes M et T+) = 70.\n5. Nombre de faux positifs (personnes non-M et T+) = 30.\n6. Nombre total de personnes avec un test positif (T+) = (Vrais positifs) + (Faux positifs) = 70 + 30 = 100.\n7. Nombre de personnes avec un test négatif (T-) = (Nombre total de personnes testées) - (Nombre de personnes avec un test positif) = 400 - 100 = 300 personnes."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un service d'aide à domicile suit 250 bénéficiaires. On établit un tableau croisé selon leur catégorie d'âge (Moins de 75 ans ou 75 ans et plus) et leur besoin d'aide au repas (Oui ou Non). \n- 120 bénéficiaires ont moins de 75 ans.\n- 100 bénéficiaires ont besoin d'aide au repas.\n- Parmi les bénéficiaires de 75 ans et plus, 70 n'ont pas besoin d'aide au repas.\nCombien de bénéficiaires de moins de 75 ans ont besoin d'aide au repas ?",
+        "type": "numerique",
+        "reponse": 40.0,
+        "unite": "bénéficiaires",
+        "tolerance": 0,
+        "indice": "Construisez un tableau croisé 2x2 avec les catégories d'âge en ligne et les besoins d'aide au repas en colonne. Remplissez les cases avec les données connues et déduisez les valeurs manquantes étape par étape.",
+        "corrige": "Tableau croisé à construire :\n|                       | Aide au repas (Oui) | Aide au repas (Non) | Total |\n|-----------------------|---------------------|---------------------|-------|\n| Moins de 75 ans (M75) | ?                   | ?                   | 120   |\n| 75 ans et plus (P75)  | ?                   | 70                  | ?     |\n| Total                 | 100                 | ?                   | 250   |\n\n1.  Total bénéficiaires = 250.\n2.  Bénéficiaires de moins de 75 ans (M75) = 120. Donc bénéficiaires de 75 ans et plus (P75) = 250 - 120 = 130.\n3.  Bénéficiaires ayant besoin d'aide au repas (Oui) = 100. Donc bénéficiaires n'ayant PAS besoin d'aide au repas (Non) = 250 - 100 = 150.\n4.  Parmi les P75, 70 n'ont pas besoin d'aide (P75 et Non = 70).\n5.  Calculons (P75 et Oui) = Total P75 - (P75 et Non) = 130 - 70 = 60.\n6.  Calculons (M75 et Non) = Total Non - (P75 et Non) = 150 - 70 = 80.\n7.  Nous cherchons (M75 et Oui). On peut le trouver de deux façons :\n    a) Total M75 - (M75 et Non) = 120 - 80 = 40.\n    b) Total Oui - (P75 et Oui) = 100 - 60 = 40.\n\nLe nombre de bénéficiaires de moins de 75 ans qui ont besoin d'aide au repas est de 40."
+      }
+    ]
+  }
+]

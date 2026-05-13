@@ -1,0 +1,44 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-05-13",
+    "contexte": "Dans un EHPAD, la gestion quotidienne inclut la supervision de l'état de santé des résidents, la distribution de médicaments et la planification d'activités. Les probabilités peuvent aider à analyser des situations courantes pour optimiser les soins et la sécurité des patients.",
+    "rappel_cours": "La probabilité d'un événement A se calcule par P(A) = (Nombre de cas favorables à A) / (Nombre total de cas possibles). Le résultat est souvent exprimé en pourcentage.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Dans un service de gériatrie, il y a 50 patients au total. Parmi eux, 15 souffrent d'une infection urinaire. Si un patient est choisi au hasard, quelle est la probabilité (en pourcentage) qu'il souffre d'une infection urinaire ?",
+        "type": "numerique",
+        "reponse": 30.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "La probabilité est le rapport entre le nombre de cas favorables et le nombre total de cas possibles. N'oubliez pas de convertir le résultat en pourcentage.",
+        "corrige": "Nombre de cas favorables (infection urinaire) = 15.\nNombre total de cas possibles = 50.\nP(Infection urinaire) = 15 / 50 = 0.3.\nPour convertir en pourcentage : 0.3 * 100 = 30%.\nLa probabilité est de 30%."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une pharmacie d'EHPAD gère les stocks de médicaments. Sur 120 boîtes de médicaments différentes en stock, 45 sont des génériques. Si une boîte est prise au hasard, quelle est la probabilité (en pourcentage) qu'il s'agisse d'un médicament générique ?",
+        "type": "numerique",
+        "reponse": 37.5,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Identifiez le nombre total de boîtes et le nombre de boîtes correspondant à des génériques. Pensez à exprimer la probabilité en pourcentage.",
+        "corrige": "Nombre de cas favorables (médicament générique) = 45.\nNombre total de cas possibles = 120.\nP(Générique) = 45 / 120 = 0.375.\nPour convertir en pourcentage : 0.375 * 100 = 37.5%.\nLa probabilité est de 37.5%."
+      },
+      {
+        "numero": 3,
+        "enonce": "Dans un groupe de 40 résidents participant à une séance de kinésithérapie, 18 d'entre eux utilisent une aide à la marche (canne ou déambulateur). Si on choisit au hasard un résident **parmi ceux qui participent à cette séance**, quelle est la probabilité (en pourcentage) qu'il utilise une aide à la marche ?",
+        "type": "numerique",
+        "reponse": 45.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "La phrase 'parmi ceux qui participent à cette séance' indique que le nombre total de cas possibles est le nombre de résidents participant à la séance.",
+        "corrige": "Le nombre total de cas possibles est le nombre de résidents participant à la séance de kinésithérapie, soit 40.\nLe nombre de cas favorables (utilisant une aide à la marche) est 18.\nP(Aide à la marche | Participe à la séance) = 18 / 40 = 0.45.\nPour convertir en pourcentage : 0.45 * 100 = 45%.\nLa probabilité est de 45%."
+      }
+    ]
+  }
+]
