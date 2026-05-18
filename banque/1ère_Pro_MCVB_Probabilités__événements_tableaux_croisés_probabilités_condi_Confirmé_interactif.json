@@ -1,0 +1,126 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-18",
+    "contexte": "Une équipe commerciale d'une entreprise de distribution de produits high-tech analyse les performances de ses campagnes de prospection et de ses ventes. L'objectif est d'optimiser les stratégies de contact et d'améliorer les taux de conversion pour maximiser le chiffre d'affaires et les commissions des vendeurs.",
+    "rappel_cours": "Probabilité d'un événement A : P(A) = Nombre de cas favorables / Nombre total de cas possibles. Pour deux événements A et B : P(A et B) (conjonction), P(A ou B) = P(A) + P(B) - P(A et B) (disjonction). Probabilité conditionnelle de A sachant B : P(A|B) = P(A et B) / P(B).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un commercial a contacté 350 prospects au cours du dernier mois. Parmi eux, 63 ont finalisé un achat. Calculez le taux de conversion de ce commercial (la probabilité qu'un prospect contacté effectue un achat).",
+        "type": "numerique",
+        "reponse": 18.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Le taux de conversion est une probabilité exprimée en pourcentage. Pensez au rapport entre le nombre de succès et le nombre total de tentatives.",
+        "corrige": "Nombre de prospects ayant acheté = 63\nNombre total de prospects contactés = 350\nTaux de conversion = (Nombre de prospects ayant acheté / Nombre total de prospects contactés) * 100\nTaux de conversion = (63 / 350) * 100 = 0.18 * 100 = 18%\nRéponse : 18.0"
+      },
+      {
+        "numero": 2,
+        "enonce": "Une étude de marché a analysé 1200 transactions récentes. Un tableau croisé est établi : \n- 700 transactions provenaient de clients fidèles et 500 de nouveaux clients. \n- Parmi les clients fidèles, 420 ont acheté le produit 'Premium' et 280 le produit 'Standard'. \n- Parmi les nouveaux clients, 150 ont acheté le produit 'Premium' et 350 le produit 'Standard'. \nQuelle est la probabilité (en pourcentage) qu'une transaction choisie au hasard provienne d'un 'Nouveau client' ET concerne un achat de produit 'Premium' ?",
+        "type": "numerique",
+        "reponse": 12.5,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Identifiez le nombre de cas favorables correspondant à l'intersection des deux événements ('Nouveau client' ET 'Produit Premium') et divisez par le nombre total de transactions.",
+        "corrige": "Nombre total de transactions = 1200\nNombre de transactions 'Nouveau client' ET 'Produit Premium' = 150\nProbabilité = (Nombre de transactions 'Nouveau client' ET 'Produit Premium') / Nombre total de transactions\nProbabilité = 150 / 1200 = 0.125\nEn pourcentage : 0.125 * 100 = 12.5%\nRéponse : 12.5"
+      },
+      {
+        "numero": 3,
+        "enonce": "En utilisant les données de la Question 2, quelle est la probabilité (en pourcentage) qu'une transaction choisie au hasard provienne d'un 'Nouveau client' OU concerne un achat de produit 'Premium' ?",
+        "type": "numerique",
+        "reponse": 76.67,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Appliquez la formule P(A ou B) = P(A) + P(B) - P(A et B). N'oubliez pas de calculer P(A), P(B) et P(A et B) d'abord à partir du tableau.",
+        "corrige": "P(Nouveau client) = 500 / 1200\nP(Produit Premium) = (420 + 150) / 1200 = 570 / 1200\nP(Nouveau client ET Produit Premium) = 150 / 1200\nP(Nouveau client OU Produit Premium) = P(Nouveau client) + P(Produit Premium) - P(Nouveau client ET Produit Premium)\nP(Nouveau client OU Produit Premium) = (500/1200) + (570/1200) - (150/1200)\nP(Nouveau client OU Produit Premium) = (500 + 570 - 150) / 1200 = 920 / 1200 = 0.76666...\nEn pourcentage : 0.76666... * 100 = 76.67%\nRéponse : 76.67"
+      },
+      {
+        "numero": 4,
+        "enonce": "Une entreprise de services utilise deux canaux de prospection : des appels téléphoniques (T) et des emails (E). 60% des prospects sont contactés par téléphone et 40% par email. Le taux de conversion (probabilité de réaliser une vente) est de 12% pour les prospects contactés par téléphone, et de 7% pour ceux contactés par email. Si une vente (V) a été réalisée, quelle est la probabilité (en pourcentage) que le prospect ait été contacté par email ?",
+        "type": "numerique",
+        "reponse": 28.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "C'est une probabilité conditionnelle inverse (P(E|V)). Utilisez la formule de Bayes ou construisez un arbre pondéré pour calculer P(V et E) et P(V). P(V) = P(V et T) + P(V et E).",
+        "corrige": "P(T) = 0.60, P(E) = 0.40\nP(V|T) = 0.12, P(V|E) = 0.07\n\n1. Calculer P(V et T) = P(V|T) * P(T) = 0.12 * 0.60 = 0.072\n2. Calculer P(V et E) = P(V|E) * P(E) = 0.07 * 0.40 = 0.028\n3. Calculer la probabilité totale d'une vente P(V) = P(V et T) + P(V et E) = 0.072 + 0.028 = 0.100\n4. Calculer P(E|V) = P(V et E) / P(V) = 0.028 / 0.100 = 0.28\nEn pourcentage : 0.28 * 100 = 28.0%\nRéponse : 28.0"
+      },
+      {
+        "numero": 5,
+        "enonce": "Un commercial reçoit une commission de 40€ pour chaque vente 'Standard' et 75€ pour chaque vente 'Premium'. Sur 500 prospects qu'il a contactés, l'historique montre que : \n- 25% des prospects n'effectuent aucun achat. \n- 60% des prospects achètent un produit 'Standard'. \n- 15% des prospects achètent un produit 'Premium'. \nCalculez la commission moyenne espérée par prospect contacté.",
+        "type": "numerique",
+        "reponse": 35.25,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez la commission attendue pour chaque catégorie de résultat (pas d'achat, standard, premium) en multipliant la probabilité par la commission correspondante, puis faites la somme.",
+        "corrige": "Probabilité de pas d'achat = 0.25 (Commission = 0€)\nProbabilité de vente 'Standard' = 0.60 (Commission = 40€)\nProbabilité de vente 'Premium' = 0.15 (Commission = 75€)\n\nCommission moyenne espérée = (Probabilité pas d'achat * 0€) + (Probabilité Standard * 40€) + (Probabilité Premium * 75€)\nCommission moyenne espérée = (0.25 * 0) + (0.60 * 40) + (0.15 * 75)\nCommission moyenne espérée = 0 + 24 + 11.25 = 35.25€\nRéponse : 35.25"
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-05-18",
+    "contexte": "En tant que commercial pour l'entreprise 'PromoTop', spécialisée dans les produits high-tech, vous analysez vos performances de vente et celles de votre équipe. L'entreprise met l'accent sur la prospection de nouveaux clients et la fidélisation. Vos objectifs et vos commissions dépendent directement de la compréhension et de l'atteinte de certains seuils de probabilité.",
+    "rappel_cours": "Les probabilités permettent de quantifier les chances qu'un événement se produise. P(A et B) = P(A) * P(B|A) (pour événements dépendants) ou P(A) * P(B) (pour événements indépendants). P(A ou B) = P(A) + P(B) - P(A et B). P(A|B) = P(A et B) / P(B). La formule des probabilités totales est P(A) = P(A|B)P(B) + P(A|non B)P(non B).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Votre équipe commerciale a contacté 850 prospects le mois dernier. Parmi eux, 170 ont finalement effectué un achat. Quelle est la probabilité qu'un prospect contacté au hasard par votre équipe réalise un achat ?",
+        "type": "numerique",
+        "reponse": 0.2,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "La probabilité d'un événement simple est le rapport entre le nombre de cas favorables et le nombre total de cas possibles.",
+        "corrige": "P(Achat) = (Nombre de prospects ayant acheté) / (Nombre total de prospects contactés) = 170 / 850 = 0.2 ou 20%."
+      },
+      {
+        "numero": 2,
+        "enonce": "L'entreprise 'PromoTop' a classifié ses 1200 clients selon leur ancienneté et leur dernière acquisition. Voici les données : 750 sont des clients fidèles, 450 sont de nouveaux clients. Parmi les clients fidèles, 500 ont acheté le nouveau smartphone 'UltraPro'. Parmi les nouveaux clients, 200 ont également acheté ce smartphone. Quelle est la probabilité qu'un client choisi au hasard soit un client fidèle *ET* ait acheté le smartphone 'UltraPro' ?",
+        "type": "numerique",
+        "reponse": 0.4166666666666667,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Pour trouver P(A et B) directement à partir des données d'un tableau, identifiez le nombre d'individus qui remplissent les deux conditions simultanément et divisez par le total général.",
+        "corrige": "P(Fidèle et UltraPro) = (Nombre de clients fidèles ayant acheté UltraPro) / (Nombre total de clients) = 500 / 1200 = 0.4166... ou environ 41.67%."
+      },
+      {
+        "numero": 3,
+        "enonce": "Reprenant les données de l'étude de clientèle (1200 clients: 750 fidèles, 450 nouveaux; 500 fidèles ont acheté UltraPro, 200 nouveaux ont acheté UltraPro). Sachant qu'un client est un *nouveau* client, quelle est la probabilité qu'il ait acheté le smartphone 'UltraPro' ?",
+        "type": "numerique",
+        "reponse": 0.4444444444444444,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule de la probabilité conditionnelle P(A|B) = P(A et B) / P(B). Ici, l'événement B est 'être un nouveau client'.",
+        "corrige": "P(UltraPro | Nouveau) = (Nombre de nouveaux clients ayant acheté UltraPro) / (Nombre total de nouveaux clients) = 200 / 450 = 0.4444... ou environ 44.44%."
+      },
+      {
+        "numero": 4,
+        "enonce": "Avec les mêmes données de l'étude de clientèle (1200 clients: 750 fidèles, 450 nouveaux; 500 fidèles ont acheté UltraPro, 200 nouveaux ont acheté UltraPro). Quelle est la probabilité qu'un client choisi au hasard soit un nouveau client *OU* qu'il ait acheté le smartphone 'UltraPro' ?",
+        "type": "numerique",
+        "reponse": 0.625,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Appliquez la formule P(A ou B) = P(A) + P(B) - P(A et B). Identifiez clairement P(Nouveau), P(UltraPro), et P(Nouveau et UltraPro).",
+        "corrige": "Soit N l'événement 'être un nouveau client' et U l'événement 'avoir acheté UltraPro'.\nP(N) = 450 / 1200 = 0.375\nP(U) = (500 + 200) / 1200 = 700 / 1200 = 0.5833...\nP(N et U) = 200 / 1200 = 0.1666...\nP(N ou U) = P(N) + P(U) - P(N et U) = 0.375 + 0.5833... - 0.1666... = 0.75 - 0.1666... = 0.7916... - 0.1666... = 0.625 ou 62.5%."
+      },
+      {
+        "numero": 5,
+        "enonce": "Votre manager estime que 70% des appels de prospection auprès de grandes entreprises aboutissent à un rendez-vous. Parmi les rendez-vous obtenus, la probabilité de signer un contrat est de 40%. Pour les appels de prospection auprès de PME, la probabilité d'obtenir un rendez-vous est de 50%, et la probabilité de signer un contrat est de 60%. Si 60% de vos appels de prospection sont dirigés vers des grandes entreprises et 40% vers des PME, quelle est la probabilité totale qu'un appel de prospection, quel que soit le type d'entreprise, aboutisse à la signature d'un contrat ?",
+        "type": "numerique",
+        "reponse": 0.384,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule des probabilités totales. Calculez d'abord la probabilité de signer un contrat pour chaque type d'entreprise (Grande Entreprise et PME) séparément, puis combinez-les en utilisant les probabilités de contacter chaque type d'entreprise.",
+        "corrige": "Soit C l'événement 'signer un contrat', G l'événement 'prospecter une Grande Entreprise' et P l'événement 'prospecter une PME'.\nP(C|Rendez-vous GE) = 0.40 ; P(Rendez-vous GE|Appel GE) = 0.70 => P(C et R et G) = P(C|R et G) * P(R|G) * P(G)\nP(C et GE) = P(C|Rendez-vous GE) * P(Rendez-vous GE|Appel GE) * P(Appel GE) = 0.40 * 0.70 * 0.60 = 0.168\nP(C et PME) = P(C|Rendez-vous PME) * P(Rendez-vous PME|Appel PME) * P(Appel PME) = 0.60 * 0.50 * 0.40 = 0.120\nCeci est incorrect, il faut d'abord calculer P(C|G) et P(C|P).\nProbabilité de signer un contrat avec une Grande Entreprise : P(C|G) = P(Rendez-vous|G) * P(Contrat|Rendez-vous et G) = 0.70 * 0.40 = 0.28\nProbabilité de signer un contrat avec une PME : P(C|P) = P(Rendez-vous|P) * P(Contrat|Rendez-vous et P) = 0.50 * 0.60 = 0.30\nProbabilité totale de signer un contrat : P(C) = P(C|G) * P(G) + P(C|P) * P(P)\nP(C) = (0.28 * 0.60) + (0.30 * 0.40)\nP(C) = 0.168 + 0.120 = 0.288 ou 28.8%."
+      }
+    ]
+  }
+]

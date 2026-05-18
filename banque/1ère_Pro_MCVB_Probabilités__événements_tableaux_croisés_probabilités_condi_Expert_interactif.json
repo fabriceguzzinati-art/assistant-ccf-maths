@@ -1,0 +1,126 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-18",
+    "contexte": "Dans le cadre de votre formation en Bac Pro Métiers du Commerce et de la Vente, vous travaillez pour une entreprise de distribution spécialisée dans l'équipement de bureau. Vous êtes chargé d'analyser les performances commerciales et les stratégies de prospection afin d'optimiser le chiffre d'affaires et les commissions des vendeurs.",
+    "rappel_cours": "La probabilité d'un événement A, P(A), est le rapport du nombre de cas favorables sur le nombre total de cas possibles. La probabilité conditionnelle P(A|B) est la probabilité que l'événement A se réalise sachant que l'événement B est déjà réalisé : P(A|B) = P(A et B) / P(B). Pour des événements A et B, P(A ou B) = P(A) + P(B) - P(A et B). Un tableau croisé est un outil précieux pour organiser les données et calculer les probabilités.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Une entreprise a mené une enquête de satisfaction auprès de 200 clients. Les résultats ont montré que 80 clients sont satisfaits et ont effectué leur achat en ligne, 60 sont satisfaits et ont acheté en magasin, 30 sont insatisfaits et ont acheté en ligne, et 30 sont insatisfaits et ont acheté en magasin. Quelle est la probabilité, en pourcentage, qu'un client choisi au hasard soit satisfait ET ait acheté en magasin ?",
+        "type": "numerique",
+        "reponse": 30.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Identifiez le nombre de clients correspondant aux deux critères simultanément, puis divisez par le nombre total de clients interrogés.",
+        "corrige": "Nombre de clients Satisfaits ET Acheté en magasin = 60\nNombre total de clients = 200\nProbabilité = (60 / 200) * 100 = 0.3 * 100 = 30%\nLa probabilité est de 30%."
+      },
+      {
+        "numero": 2,
+        "enonce": "En reprenant les données de l'enquête précédente sur les 200 clients (80 Satisfaits/En ligne, 60 Satisfaits/Magasin, 30 Insatisfaits/En ligne, 30 Insatisfaits/Magasin), quelle est la probabilité, en pourcentage, qu'un client choisi au hasard soit satisfait OU ait acheté en ligne ?",
+        "type": "numerique",
+        "reponse": 85.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule P(A ou B) = P(A) + P(B) - P(A et B) ou comptez directement les clients satisfaits ou ayant acheté en ligne en veillant à ne pas compter deux fois ceux qui sont les deux.",
+        "corrige": "P(Satisfait) = (80 + 60) / 200 = 140 / 200 = 0.7\nP(En ligne) = (80 + 30) / 200 = 110 / 200 = 0.55\nP(Satisfait et En ligne) = 80 / 200 = 0.4\nP(Satisfait ou En ligne) = P(Satisfait) + P(En ligne) - P(Satisfait et En ligne) = 0.7 + 0.55 - 0.4 = 0.85\nEn pourcentage : 0.85 * 100 = 85%\nAlternative : (80 clients satisfaits ET en ligne) + (60 clients satisfaits ET en magasin) + (30 clients insatisfaits ET en ligne) = 80 + 60 + 30 = 170 clients.\nProbabilité = (170 / 200) * 100 = 0.85 * 100 = 85%.\nLa probabilité est de 85%."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un commercial effectue des visites clients. On sait que 70% de ses visites aboutissent à une proposition commerciale. De plus, parmi les propositions commerciales émises, 40% sont acceptées par le client, transformant la proposition en vente. Si le commercial réalise une visite, quelle est la probabilité, en pourcentage, que cette visite se concrétise par une vente ?",
+        "type": "numerique",
+        "reponse": 28.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "La probabilité d'une série d'événements est le produit des probabilités de chaque étape, à condition que les événements soient dépendants de cette manière.",
+        "corrige": "Probabilité qu'une visite aboutisse à une proposition commerciale = 70% = 0.70\nProbabilité qu'une proposition soit acceptée (sachant qu'il y a eu une proposition) = 40% = 0.40\nProbabilité qu'une visite se concrétise par une vente = P(Proposition) * P(Vente | Proposition)\nProbabilité = 0.70 * 0.40 = 0.28\nEn pourcentage : 0.28 * 100 = 28%\nLa probabilité est de 28%."
+      },
+      {
+        "numero": 4,
+        "enonce": "Une entreprise lance un nouveau produit. 60% des ventes de ce produit sont réalisées auprès de clients existants, et 40% auprès de nouveaux clients. Le taux de satisfaction général pour ce nouveau produit est de 85%. On sait que le taux de satisfaction des clients existants ayant acheté le produit est de 90%. Quel est le taux de satisfaction (en pourcentage) des NOUVEAUX clients ayant acheté ce produit ?",
+        "type": "numerique",
+        "reponse": 77.5,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule de la probabilité totale : P(Satisfait) = P(Satisfait | Existants) * P(Existants) + P(Satisfait | Nouveaux) * P(Nouveaux). Vous connaissez toutes les valeurs sauf une.",
+        "corrige": "P(Existants) = 0.60\nP(Nouveaux) = 0.40\nP(Satisfait) = 0.85\nP(Satisfait | Existants) = 0.90\nNous cherchons P(Satisfait | Nouveaux).\nLa formule de la probabilité totale est : P(Satisfait) = P(Satisfait | Existants) * P(Existants) + P(Satisfait | Nouveaux) * P(Nouveaux)\n0.85 = (0.90 * 0.60) + (P(Satisfait | Nouveaux) * 0.40)\n0.85 = 0.54 + (P(Satisfait | Nouveaux) * 0.40)\n0.85 - 0.54 = P(Satisfait | Nouveaux) * 0.40\n0.31 = P(Satisfait | Nouveaux) * 0.40\nP(Satisfait | Nouveaux) = 0.31 / 0.40 = 0.775\nEn pourcentage : 0.775 * 100 = 77.5%\nLe taux de satisfaction des NOUVEAUX clients est de 77.5%."
+      },
+      {
+        "numero": 5,
+        "enonce": "Un commercial a deux types de prospects : le Type A représente 60% de ses contacts, et le Type B 40%. La probabilité de conclure une vente avec un prospect de Type A est de 20%, et la commission associée est de 150€ par vente. Pour un prospect de Type B, la probabilité de vente est de 35%, avec une commission de 200€ par vente. Si le commercial contacte un prospect au hasard, quel est le montant moyen (en euros) de commission qu'il peut espérer gagner par contact ?",
+        "type": "numerique",
+        "reponse": 46.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez la probabilité de réaliser une vente pour chaque type de prospect, puis multipliez cette probabilité par la commission correspondante. Faites la somme des espérances pour chaque type.",
+        "corrige": "Probabilité de vente avec un prospect de Type A = P(Vente | Type A) = 20% = 0.20\nProbabilité de rencontrer un prospect de Type A = P(Type A) = 60% = 0.60\nProbabilité qu'une vente ait lieu avec un Type A = P(Vente et Type A) = P(Vente | Type A) * P(Type A) = 0.20 * 0.60 = 0.12\nCommission espérée pour un contact de Type A = P(Vente et Type A) * Commission Type A = 0.12 * 150€ = 18€\n\nProbabilité de vente avec un prospect de Type B = P(Vente | Type B) = 35% = 0.35\nProbabilité de rencontrer un prospect de Type B = P(Type B) = 40% = 0.40\nProbabilité qu'une vente ait lieu avec un Type B = P(Vente et Type B) = P(Vente | Type B) * P(Type B) = 0.35 * 0.40 = 0.14\nCommission espérée pour un contact de Type B = P(Vente et Type B) * Commission Type B = 0.14 * 200€ = 28€\n\nMontant moyen de commission espéré par contact = Commission espérée Type A + Commission espérée Type B = 18€ + 28€ = 46€.\nLe montant moyen de commission espéré est de 46€."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Probabilités — événements, tableaux croisés, probabilités conditionnelles",
+    "difficulte": "🔴 Expert",
+    "format": "interactif",
+    "date_generation": "2026-05-18",
+    "contexte": "Un commercial de l'entreprise 'PromoVente' analyse ses performances et les comportements d'achat de ses clients pour optimiser ses stratégies. Il souhaite utiliser les probabilités pour mieux comprendre les tendances et prendre des décisions éclairées concernant la prospection et la gestion de la relation client afin d'augmenter son chiffre d'affaires et ses commissions.",
+    "rappel_cours": "La probabilité d'un événement A est P(A) = (nombre de cas favorables) / (nombre total de cas possibles). La probabilité conditionnelle de A sachant B est P(A|B) = P(A et B) / P(B). La probabilité de l'union de deux événements A et B est P(A ou B) = P(A) + P(B) - P(A et B).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Lors d'une campagne de prospection téléphonique, un commercial a contacté 350 clients potentiels. Parmi eux, 70 ont manifesté un intérêt pour le produit proposé et ont accepté de recevoir une offre détaillée. Quelle est la probabilité (en %) qu'un client potentiel contacté manifeste un intérêt ?",
+        "type": "numerique",
+        "reponse": 20.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Rappelez-vous la formule de base de la probabilité : (nombre de cas favorables) / (nombre total de cas possibles). Multipliez par 100 pour obtenir un pourcentage.",
+        "corrige": "P(intérêt) = (Nombre de clients intéressés) / (Nombre total de clients contactés) = 70 / 350 = 0.2.\nEn pourcentage, P(intérêt) = 0.2 * 100 = 20.0 %."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une entreprise a enregistré les achats de 500 clients sur le dernier mois, en distinguant s'ils ont acheté en ligne (E) ou en magasin (M), et s'ils ont acheté un produit de la catégorie A ou de la catégorie B. Voici la répartition :\n- Achat en ligne (E) et Catégorie A : 120 clients\n- Achat en ligne (E) et Catégorie B : 80 clients\n- Achat en magasin (M) et Catégorie A : 150 clients\n- Achat en magasin (M) et Catégorie B : 150 clients\nQuelle est la probabilité (en %) qu'un client choisi au hasard ait acheté en ligne (E) ET un produit de la catégorie A ?",
+        "type": "numerique",
+        "reponse": 24.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Identifiez le nombre de cas favorables à l'intersection des deux événements 'Achat en ligne' et 'Catégorie A', puis divisez-le par le nombre total de clients. N'oubliez pas de convertir en pourcentage.",
+        "corrige": "P(E et A) = (Nombre de clients ayant acheté en ligne ET en catégorie A) / (Nombre total de clients) = 120 / 500 = 0.24.\nEn pourcentage, P(E et A) = 0.24 * 100 = 24.0 %."
+      },
+      {
+        "numero": 3,
+        "enonce": "Reprenons les données de la question précédente (500 clients, achats en ligne/magasin, catégorie A/B).\n- Achat en ligne (E) et Catégorie A : 120 clients\n- Achat en ligne (E) et Catégorie B : 80 clients\n- Achat en magasin (M) et Catégorie A : 150 clients\n- Achat en magasin (M) et Catégorie B : 150 clients\nSi l'on choisit un client ayant acheté en ligne (E), quelle est la probabilité (en %) qu'il ait acheté un produit de la catégorie A ?",
+        "type": "numerique",
+        "reponse": 60.0,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Il s'agit d'une probabilité conditionnelle : P(A | E) = P(A et E) / P(E). Calculez d'abord le nombre total de clients ayant acheté en ligne.",
+        "corrige": "1. Nombre total de clients ayant acheté en ligne (E) = (Achat en ligne et Catégorie A) + (Achat en ligne et Catégorie B) = 120 + 80 = 200 clients.\n2. Nombre de clients ayant acheté en ligne ET en Catégorie A = 120 clients.\n3. P(A | E) = (Nombre de clients E et A) / (Nombre total de clients E) = 120 / 200 = 0.6.\n4. En pourcentage, P(A | E) = 0.6 * 100 = 60.0 %."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un commercial estime que la probabilité de réussir une première prise de contact (obtenir un rendez-vous) est de 30%. S'il obtient un rendez-vous, la probabilité de conclure une vente est de 45%. Quelle est la probabilité (en %) qu'un commercial réussisse la première prise de contact ET qu'il conclue une vente ?",
+        "type": "numerique",
+        "reponse": 13.5,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule des probabilités composées : P(A et B) = P(A) * P(B | A). N'oubliez pas de convertir les pourcentages en décimales pour le calcul.",
+        "corrige": "1. P(Rendez-vous) = 30% = 0.30.\n2. P(Vente | Rendez-vous) = 45% = 0.45.\n3. P(Rendez-vous et Vente) = P(Rendez-vous) * P(Vente | Rendez-vous) = 0.30 * 0.45 = 0.135.\n4. En pourcentage, P(Rendez-vous et Vente) = 0.135 * 100 = 13.5 %."
+      },
+      {
+        "numero": 5,
+        "enonce": "Une enquête auprès de 400 clients potentiels a montré que 220 sont intéressés par le nouveau produit X, 180 sont intéressés par le nouveau produit Y, et 70 sont intéressés par les deux produits X et Y. Quelle est la probabilité (en %) qu'un client potentiel choisi au hasard soit intéressé par le produit X OU par le produit Y (ou les deux) ?",
+        "type": "numerique",
+        "reponse": 82.5,
+        "unite": "%",
+        "tolerance": 0.01,
+        "indice": "Utilisez la formule de l'union des événements : P(X ou Y) = P(X) + P(Y) - P(X et Y). Commencez par calculer les probabilités individuelles ou travaillez avec les nombres de clients puis convertissez en probabilité.",
+        "corrige": "1. P(X) = 220 / 400 = 0.55.\n2. P(Y) = 180 / 400 = 0.45.\n3. P(X et Y) = 70 / 400 = 0.175.\n4. P(X ou Y) = P(X) + P(Y) - P(X et Y) = 0.55 + 0.45 - 0.175 = 1.00 - 0.175 = 0.825.\n5. En pourcentage, P(X ou Y) = 0.825 * 100 = 82.5 %."
+      }
+    ]
+  }
+]

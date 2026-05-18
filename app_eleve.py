@@ -1637,7 +1637,7 @@ def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str
     derniere = s.get("derniere_date")
     today = date.today()
 
-    # Priorité 1 — streak en danger
+    # Priorité 3 — streak en danger
     if derniere and derniere < today and streak > 0:
         return {
             "emoji": "🔥",
@@ -1660,7 +1660,7 @@ def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str
                     "priorite": 2
                 }
 
-    # Priorité 3 — proche de valider un niveau
+    # Priorité 1 — proche de valider un niveau
     if chapitre_actif and records:
         prog = calculer_progression(records, chapitre_actif)
         for diff in ORDRE_NIVEAUX_DIFF:
@@ -1675,7 +1675,7 @@ def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str
                     "priorite": 1
                 }
 
-    # Défaut — encouragement simple
+    # Priorité 0 — encouragement simple
     if streak == 0:
         return {
             "emoji": "🚀",
@@ -1690,35 +1690,7 @@ def calculer_objectif(records: list, chapitre_actif: str, difficulte_active: str
         "priorite": 0
     }
     
-    # Défaut — encouragement simple
-    if streak == 0:
-        return {
-            "emoji": "🚀",
-            "message": "Commence ta session du jour — même 1 exercice suffit pour lancer ton streak !",
-            "couleur": "#6366f1",
-            "priorite": 0
-        }
-    return {
-        "emoji": "💪",
-        "message": f"Super ! {streak} jour{'s' if streak > 1 else ''} d'affilée. Continue comme ça !",
-        "couleur": "#22c55e",
-        "priorite": 0
-    }
-    """Calcule le total XP d'un élève depuis ses records Grist."""
-    total = 0
-    for r in records:
-        if r.get("auto_evaluation", "") not in ("😊 Bien", "🌟 Très bien"):
-            continue
-        type_a = r.get("type_activite", "")
-        diff   = r.get("niveau_difficulte", "")
-        if "Boss" in type_a:
-            total += XP_PAR_ACTION["Boss"]
-        elif "CCF" in type_a:
-            total += XP_PAR_ACTION["CCF"]
-        else:
-            total += XP_PAR_ACTION.get(f"Exercice-{diff}", 10)
-    return total
-
+    
 # ── SESSION STATE ─────────────────────────────────────────────
 for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
@@ -2010,9 +1982,13 @@ with tab_gen:
 
 # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
 
-        m = getattr(st.session_state, 'metagen', {}) or {}
-        if st.session_state.boss_actif and st.session_state.boss_chapitre == m.get("chapitre", ""):
-            diff_boss = st.session_state.boss_niveau          # ← 12 espaces (3 niveaux)
+# ── BOSS DÉBLOQUÉ ─────────────────────────────────────────
+    # À 4 espaces — DANS with tab_gen:, après les boutons, avant MODE INTERACTIF
+    # Visible dès que boss_actif=True, indépendamment de generated_md
+    if st.session_state.boss_actif:
+        m_boss = st.session_state.meta_gen or {}  # ✅ corrigé — était getattr('metagen')
+        if st.session_state.boss_chapitre == m_boss.get("chapitre", ""):
+            diff_boss = st.session_state.boss_niveau
             mascotte  = MASCOTTES.get(diff_boss, {})
             st.markdown("---")
             st.markdown(
@@ -2025,7 +2001,7 @@ with tab_gen:
                 f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
                 f'Tu as validé le niveau <strong style="color:#a5b4fc">'
                 f'{diff_boss.split(" ",1)[-1]}</strong> sur '
-                f'<strong style="color:#a5b4fc">{m.get("chapitre","")[:45]}</strong>.<br>'
+                f'<strong style="color:#a5b4fc">{m_boss.get("chapitre","")[:45]}</strong>.<br>'
                 f'Bats ce boss pour débloquer le niveau suivant !</div>'
                 f'</div>',
                 unsafe_allow_html=True
@@ -2056,6 +2032,7 @@ with tab_gen:
                     st.session_state.boss_actif = False
                     st.rerun()
 
+    
 # ── MODE INTERACTIF ──────────────────────────────────────
     # À 4 espaces — HORS de generated_md pour fonctionner quand generated_md=None
     if st.session_state.get("interactif_sujet"):
