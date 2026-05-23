@@ -329,37 +329,60 @@ def generer_un_sujet_interactif(cle_api, niveau, filiere, chapitre, difficulte, 
     return data
     
 def lire_propositions_validees():
-    """Lit sujets VALIDÉS depuis Grist."""
     try:
-        api_key = st.secrets.get("GRIST_API_KEY")
-        doc_id = st.secrets.get("GRIST_DOC_ID")
+        api_key = st.secrets.get("GRIST_API_KEY", "")
+        doc_id = st.secrets.get("GRIST_DOC_ID", "")
         base_url = st.secrets.get("GRIST_URL", "https://grist.numerique.gouv.fr")
-        
-        url = f"{base_url}/api/docs/{doc_id}/tables/Banque_propositions/records"
-        headers = {"Authorization": f"Bearer {api_key}"}
-        resp = requests.get(url, headers=headers)
-        
-        if resp.status_code == 200:
-            records = resp.json().get("records", [])
 
-            validees = []
-            for r in records:
-                statut = str(r["fields"].get("statut", "")).strip().lower()
-                if statut == "validé":
-                    validees.append(r["fields"])
-            
-            return validees
-        st.error(f"Erreur Grist: {resp.status_code}")
-        return []
+        if not api_key or not doc_id:
+            st.error("Secrets Grist manquants.")
+            return []
+
+        table_name = "Banque_propositions"
+        url = f"{base_url}/api/docs/{doc_id}/tables/{table_name}/records"
+        headers = {"Authorization": f"Bearer {api_key}"}
+
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code != 200:
+            st.error(f"Erreur Grist HTTP {resp.status_code} : {resp.text[:200]}")
+            return []
+
+        records = resp.json().get("records", [])
+        st.write(f"DEBUG: {len(records)} lignes lues dans {table_name}")
+
+        validees = []
+        for r in records:
+            fields = r.get("fields", {})
+            statut = fields.get("statut", "")
+
+            if isinstance(statut, list):
+                statut = statut[-1] if statut else ""
+
+            statut = str(statut).strip().lower()
+
+            if statut == "validé":
+                validees.append(fields)
+
+        st.write(f"DEBUG: {len(validees)} sujet(s) validé(s) trouvé(s)")
+        return validees
+
     except Exception as e:
         st.error(f"Erreur lecture: {e}")
-        return [] 
+        return []
 
 def generer_nom_fichier(niveau, filiere, chapitre, difficulte):
-    """Comme _slug dans app_eleve."""
-    difflabel = difficulte.split(" ")[-1]
-    return f"{_slug(niveau)}_{_slug(filiere)}_{_slug(chapitre)}_{difflabel}.json"
+    difflabel = difficulte.split(" ", 1)[-1]
+    return os.path.join(
+        BANQUE_DIR,
+        f"{slug(niveau)}_{slug(filiere)}_{slug(chapitre)}_{slug(difflabel)}.json"
+    )
 
+def generer_nom_fichier_interactif(niveau, filiere, chapitre, difficulte):
+    difflabel = difficulte.split(" ", 1)[-1]
+    return os.path.join(
+        BANQUE_DIR,
+        f"{slug(niveau)}_{slug(filiere)}_{slug(chapitre)}_{slug(difflabel)}_interactif.json"
+    )
 
 # ── Interface Streamlit ────────────────────────────────────────
 
@@ -715,34 +738,35 @@ with tabimport:
     
     for prop in props:
         col1, col2 = st.columns([3, 1])
+
+        niveau = prop.get("niveau", "Niveau inconnu")
+        filiere = prop.get("filiere", "")
+        chapitre = prop.get("chapitre", "Chapitre inconnu")
+        difficulte = prop.get("difficulte", prop.get("niveau_difficulte", "Moyen"))
+        code_eleve = prop.get("code_eleve", "inconnu")
+        date_prop = prop.get("date", "")
+
         with col1:
-            st.markdown(f"**{prop['niveau']} {prop['filiere']}**")
-            st.markdown(f"*{prop['chapitre']}* - {prop['difficulte']}")
-            st.caption(f"Par {prop['code_eleve']} - {prop['date']}")
-        
+            st.markdown(f"**{niveau} {filiere}**")
+            st.markdown(f"*{chapitre}* - {difficulte}")
+            st.caption(f"Par {code_eleve} - {date_prop}")
+
         with col2:
-            if st.button("💾 → Banque JSON", key=f"imp_{prop.get('id', prop['code_eleve'])}"):
-                # Génère nom fichier
-                nom_fichier = generer_nom_fichier(
-                    prop['niveau'], prop['filiere'], 
-                    prop['chapitre'], prop['difficulte']
-                )
-                path = nom_fichier(prop['niveau'], prop['filiere'], prop['chapitre'], prop['difficulte'])
-                
-                # Parse Markdown → structure JSON
+            if st.button("💾 → Banque JSON", key=f"imp_{prop.get('id', code_eleve)}"):
+                path = generer_nom_fichier(niveau, filiere, chapitre, difficulte)
+
                 sujet = {
-                    "niveau": prop['niveau'],
+                    "niveau": niveau,
                     "categorie": "Bac Pro",
-                    "filiere": prop['filiere'],
+                    "filiere": filiere,
                     "matiere": "Mathématiques",
-                    "chapitre": prop['chapitre'],
-                    "difficulte": prop['difficulte'],
-                    "contenu": prop['contenu'],  # Markdown brut
+                    "chapitre": chapitre,
+                    "difficulte": difficulte,
+                    "contenu": prop.get("contenu", ""),
                     "date_generation": datetime.now().strftime("%Y-%m-%d")
                 }
-                
-                # Sauvegarde/ajoute au fichier existant
+
                 sauvegarder_sujet(path, sujet)
-                
-                st.success(f"✅ **{nom_fichier}** ajouté à la banque !")
+
+                st.success(f"✅ **{os.path.basename(path)}** ajouté à la banque !")
                 st.balloons()
