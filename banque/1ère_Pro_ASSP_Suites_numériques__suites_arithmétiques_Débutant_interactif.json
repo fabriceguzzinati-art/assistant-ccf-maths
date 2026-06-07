@@ -1,0 +1,86 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-06-08",
+    "contexte": "En tant qu'aide-soignant ou accompagnant, vous êtes souvent amené à suivre l'évolution de différentes données : le nombre de patients pris en charge, l'administration de médicaments, ou la gestion des stocks de matériel. Les suites numériques arithmétiques sont un outil simple pour modéliser des situations où une quantité augmente ou diminue de manière constante.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où l'on passe d'un terme au suivant en ajoutant toujours le même nombre, appelé la raison (r). Le terme général est donné par : Un = U0 + n * r (si le premier terme est U0) ou Un = U1 + (n-1) * r (si le premier terme est U1).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un protocole de sevrage médicamenteux indique que la dose journalière de paracétamol doit diminuer. Le premier jour (U0), le patient reçoit 2000 mg. Chaque jour suivant, la dose est réduite de 100 mg. Quelle sera la dose administrée au 5ème jour (U5) ?",
+        "type": "numerique",
+        "reponse": 1500.0,
+        "unite": "mg",
+        "tolerance": 0.5,
+        "indice": "Pensez à la formule Un = U0 + n * r. La raison est négative car la dose diminue.",
+        "corrige": "Le premier terme U0 = 2000 mg. La raison r = -100 mg. Nous cherchons U5. En utilisant la formule Un = U0 + n * r, on obtient U5 = 2000 + 5 * (-100) = 2000 - 500 = 1500 mg. La dose administrée au 5ème jour sera de 1500 mg."
+      },
+      {
+        "numero": 2,
+        "enonce": "Dans un EHPAD, le nombre de résidents augmente régulièrement chaque mois. Le premier mois (U1), il y avait 85 résidents. Le 4ème mois (U4), il y avait 94 résidents. Quelle est l'augmentation moyenne du nombre de résidents par mois, c'est-à-dire la raison de cette suite arithmétique ?",
+        "type": "numerique",
+        "reponse": 3.0,
+        "unite": "résidents",
+        "tolerance": 0.5,
+        "indice": "La raison peut être trouvée en utilisant la différence entre deux termes et la différence de leurs rangs : r = (Un - Up) / (n - p).",
+        "corrige": "Nous avons U1 = 85 et U4 = 94. On utilise la formule Un = Up + (n-p)*r. Ici, 94 = 85 + (4-1)*r. Donc 94 = 85 + 3r. En isolant r : 3r = 94 - 85 => 3r = 9 => r = 9 / 3 = 3. L'augmentation moyenne est de 3 résidents par mois."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un service de soins à domicile commence la semaine avec un stock de 120 pansements. Chaque jour, 8 pansements sont utilisés. Au bout de combien de jours le stock sera-t-il de 40 pansements ?",
+        "type": "numerique",
+        "reponse": 10.0,
+        "unite": "jours",
+        "tolerance": 0.5,
+        "indice": "Posez l'équation Un = U0 + n * r et résolvez-la pour trouver 'n'. N'oubliez pas que le stock diminue.",
+        "corrige": "Le stock initial (U0, au jour 0) est de 120 pansements. La raison (r) est de -8 pansements par jour (car le stock diminue). Nous cherchons le nombre de jours 'n' tel que le stock soit de 40 pansements (Un = 40). En utilisant la formule Un = U0 + n * r : 40 = 120 + n * (-8). Soustrayons 120 des deux côtés : 40 - 120 = -8n => -80 = -8n. Pour trouver n, divisons par -8 : n = -80 / -8 = 10. Au bout de 10 jours, le stock sera de 40 pansements."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-06-08",
+    "contexte": "En tant qu'aide-soignant(e) ou accompagnant(e) dans le secteur de l'Accompagnement, Soins et Services à la Personne (ASSP), vous êtes régulièrement confronté(e) à des situations où des quantités évoluent de manière régulière. Comprendre les suites arithmétiques vous aide à anticiper et à gérer ces évolutions, qu'il s'agisse de doses de médicaments, de stocks de matériel ou de suivis de patients.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où chaque terme est obtenu en ajoutant une valeur constante (la raison 'r') au terme précédent. La formule du terme général est `Un = U1 + (n-1)r`, où `Un` est le n-ième terme, `U1` le premier terme et `r` la raison. La somme des n premiers termes est `Sn = n * (U1 + Un) / 2`.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Dans une pharmacie d'EHPAD, la quantité d'un gel hydroalcoolique est réapprovisionnée chaque matin. Le lundi (jour 1), le stock initial est de 1500 ml. Chaque jour ouvré, 120 ml de gel sont utilisés par les soignants. Quelle sera la quantité de gel hydroalcoolique restante dans le stock le vendredi matin (jour 5), juste avant l'utilisation journalière ?",
+        "type": "numerique",
+        "reponse": 1020.0,
+        "unite": "ml",
+        "tolerance": 0.1,
+        "indice": "La quantité de gel diminue chaque jour. Identifiez le premier terme (U1), la raison (r) et le rang du terme que vous devez calculer (Un).",
+        "corrige": "U1 = 1500 ml (stock initial le lundi)\nr = -120 ml (quantité utilisée chaque jour)\nNous cherchons le stock le vendredi matin, qui est le 5ème jour (n=5).\nAppliquons la formule du terme général : Un = U1 + (n-1)r\nU5 = 1500 + (5-1) * (-120)\nU5 = 1500 + 4 * (-120)\nU5 = 1500 - 480\nU5 = 1020 ml\nLa quantité de gel restante le vendredi matin sera de 1020 ml."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un patient en rééducation voit sa capacité pulmonaire s'améliorer progressivement. Le premier jour d'exercices (jour 1), il a pu inspirer 1200 ml d'air. Le sixième jour (jour 6), sa capacité d'inspiration a atteint 1650 ml. Si l'amélioration suit une progression arithmétique, de combien de millilitres sa capacité pulmonaire augmente-t-elle chaque jour ?",
+        "type": "numerique",
+        "reponse": 90.0,
+        "unite": "ml",
+        "tolerance": 0.1,
+        "indice": "Utilisez la formule du terme général (Un = U1 + (n-1)r) en connaissant U1, Un et n pour trouver la raison 'r'.",
+        "corrige": "U1 = 1200 ml (capacité le 1er jour)\nU6 = 1650 ml (capacité le 6ème jour)\nNous cherchons la raison r.\nAppliquons la formule : Un = U1 + (n-1)r\nU6 = U1 + (6-1)r\n1650 = 1200 + 5r\n1650 - 1200 = 5r\n450 = 5r\nr = 450 / 5\nr = 90 ml\nLa capacité pulmonaire du patient augmente de 90 ml chaque jour."
+      },
+      {
+        "numero": 3,
+        "enonce": "Pour la préparation des repas d'un service, le nombre de gants jetables utilisés suit une progression. Le premier jour (jour 1), 70 paires de gants ont été utilisées. Chaque jour suivant, 5 paires de gants supplémentaires sont utilisées par rapport au jour précédent. Quel est le nombre total de paires de gants utilisées sur 7 jours ?",
+        "type": "numerique",
+        "reponse": 665.0,
+        "unite": "paires",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le nombre de paires de gants utilisées le 7ème jour (U7) avec la formule du terme général, puis utilisez la formule de la somme des termes pour les 7 jours.",
+        "corrige": "U1 = 70 paires (utilisées le 1er jour)\nr = 5 paires (augmentation par jour)\nn = 7 jours\n\n1. Calcul du nombre de paires de gants utilisées le 7ème jour (U7) :\n   Un = U1 + (n-1)r\n   U7 = 70 + (7-1) * 5\n   U7 = 70 + 6 * 5\n   U7 = 70 + 30\n   U7 = 100 paires\n\n2. Calcul de la somme totale de paires de gants utilisées sur 7 jours (S7) :\n   Sn = n * (U1 + Un) / 2\n   S7 = 7 * (70 + 100) / 2\n   S7 = 7 * (170) / 2\n   S7 = 7 * 85\n   S7 = 665 paires\nLe nombre total de paires de gants utilisées sur 7 jours est de 665."
+      }
+    ]
+  }
+]

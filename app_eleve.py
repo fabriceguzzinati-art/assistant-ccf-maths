@@ -15,191 +15,111 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from zoneinfo import ZoneInfo
 
-# Configuration des thèmes
+# ============================================================
+# ✅ 1. set_page_config — DOIT ÊTRE LE PREMIER APPEL STREAMLIT
+# ============================================================
+st.set_page_config(
+    page_title="Entraînement Bac Pro — Maths",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ============================================================
+# 2. THÈMES — définition + sélecteur sidebar + CSS
+# ============================================================
 THEMES = {
     "🌌 Nébuleuse": {
-        "primary": "#6366f1", "secondary": "#8b5cf6", "bg_app": "#0d0f1a", 
+        "primary": "#6366f1", "secondary": "#8b5cf6", "bg_app": "#0d0f1a",
         "bg_side": "#13162a", "text": "#e2e8f0", "accent": "#a5b4fc", "border": "#2d3561"
     },
     "✨ Pastel": {
-        "primary": "#ec4899", "secondary": "#f472b6", "bg_app": "#fff1f2", 
+        "primary": "#ec4899", "secondary": "#f472b6", "bg_app": "#fff1f2",
         "bg_side": "#ffe4e6", "text": "#881337", "accent": "#be185d", "border": "#fecdd3"
     },
     "🦾 Cyberpunk": {
-        "primary": "#00FF41", "secondary": "#008F11", "bg_app": "#000000", 
+        "primary": "#00FF41", "secondary": "#008F11", "bg_app": "#000000",
         "bg_side": "#050505", "text": "#00FF41", "accent": "#00FF41", "border": "#003B00"
     },
     "📄 Examen": {
-        "primary": "#2563eb", "secondary": "#1d4ed8", "bg_app": "#ffffff", 
+        "primary": "#2563eb", "secondary": "#1d4ed8", "bg_app": "#ffffff",
         "bg_side": "#f8fafc", "text": "#1e293b", "accent": "#334155", "border": "#cbd5e1"
     }
 }
 
-# 2. Le menu de choix dans la barre latérale
-if 'theme_pref' not in st.session_state:
+if "theme_pref" not in st.session_state:
     st.session_state.theme_pref = "🌌 Nébuleuse"
 
-# Le sélecteur utilise maintenant la valeur stockée en mémoire
 theme_nom = st.sidebar.selectbox(
-    "🎨 Style de l'interface", 
-    list(THEMES.keys()), 
+    "🎨 Style de l'interface",
+    list(THEMES.keys()),
     index=list(THEMES.keys()).index(st.session_state.theme_pref)
 )
-
 st.session_state.theme_pref = theme_nom
 t = THEMES[theme_nom]
+
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
-
-    /* ── Base & Fonts ── */
-    .stApp {{
-        background: {t['bg_app']};
-        color: {t['text']};
-        font-family: 'Outfit', sans-serif;
-    }}
+    .stApp {{ background: {t['bg_app']}; color: {t['text']}; font-family: 'Outfit', sans-serif; }}
     .stApp > header {{ background: transparent !important; }}
-
-    /* ── Sidebar ── */
-    [data-testid="stSidebar"] {{
-        background: {t['bg_side']} !important;
-        border-right: 1px solid {t['border']};
-    }}
+    [data-testid="stSidebar"] {{ background: {t['bg_side']} !important; border-right: 1px solid {t['border']}; }}
     [data-testid="stSidebar"] * {{ color: {t['text']} !important; }}
-
-    /* ── Widgets (Radio & Selectbox) - AJOUTÉ POUR FIXER TON PROBLÈME ── */
-    .stWidgetLabel p, div[data-testid="stMarkdownContainer"] p {{ 
-        color: {t['text']} !important; 
-        font-weight: 600; 
-    }}
-    
-    /* Couleur du point à l'intérieur du bouton radio sélectionné */
-    div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div {{
-        background-color: {t['primary']} !important;
-        border-color: {t['primary']} !important;
-    }}
-
-    /* ── Onglets ── */
-    .stTabs [data-baseweb="tab-list"] {{
-        background: {t['bg_side']};
-        border-radius: 12px;
-        padding: 4px;
-        gap: 4px;
-        border: 1px solid {t['border']};
-    }}
-    .stTabs [data-baseweb="tab"] {{
-        background: transparent;
-        color: {t['text']};
-        opacity: 0.7;
-        border-radius: 8px;
-        font-weight: 600;
-        font-family: 'Outfit', sans-serif;
-    }}
-    .stTabs [aria-selected="true"] {{
-        background: linear-gradient(135deg, {t['primary']}, {t['secondary']}) !important;
-        color: white !important;
-        box-shadow: 0 0 16px {t['primary']}80;
-    }}
-
-    /* ── Boutons primaires ── */
-    .stButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, {t['primary']}, {t['secondary']});
-        border: none;
-        border-radius: 12px;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        color: white;
-        box-shadow: 0 0 20px {t['primary']}66;
-        transition: all .25s;
-    }}
-    .stButton > button[kind="primary"]:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 0 30px {t['primary']}B3;
-    }}
-
-    /* ── Selectbox / Inputs ── */
-    .stSelectbox > div > div,
-    .stTextInput > div > div > input {{
-        background: {t['bg_side']} !important;
-        border: 1px solid {t['border']} !important;
-        color: {t['text']} !important;
-        border-radius: 10px !important;
-    }}
-
-    /* ── Metric cards ── */
-    [data-testid="stMetric"] {{
-        background: {t['bg_side']};
-        border: 1px solid {t['border']};
-        border-radius: 12px;
-        padding: 16px;
-    }}
-    [data-testid="stMetricValue"] {{
-        color: {t['accent']} !important;
-        font-weight: 800;
-    }}
-
-    /* ── XP Banner ── */
-    .xp-banner {{
-        background: linear-gradient(135deg, {t['bg_side']}, {t['bg_app']});
-        border: 1px solid {t['border']};
-        border-radius: 14px;
-        padding: 14px 20px;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }}
-    .xp-value {{
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        font-size: 1.4rem;
-        color: {t['primary']};
-    }}
-
-    /* ── Boss banner ── */
-    .boss-banner {{
-        background: linear-gradient(135deg, {t['bg_side']}, {t['secondary']}44);
-        border: 2px solid {t['primary']};
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        margin: 16px 0;
-        box-shadow: 0 0 40px {t['primary']}33;
-    }}
-
-    /* ── Scrollbar ── */
+    .stWidgetLabel p, div[data-testid="stMarkdownContainer"] p {{ color: {t['text']} !important; font-weight: 600; }}
+    div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div {{ background-color: {t['primary']} !important; border-color: {t['primary']} !important; }}
+    .stTabs [data-baseweb="tab-list"] {{ background: {t['bg_side']}; border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid {t['border']}; }}
+    .stTabs [data-baseweb="tab"] {{ background: transparent; color: {t['text']}; opacity: 0.7; border-radius: 8px; font-weight: 600; font-family: 'Outfit', sans-serif; }}
+    .stTabs [aria-selected="true"] {{ background: linear-gradient(135deg, {t['primary']}, {t['secondary']}) !important; color: white !important; box-shadow: 0 0 16px {t['primary']}80; }}
+    .stButton > button[kind="primary"] {{ background: linear-gradient(135deg, {t['primary']}, {t['secondary']}); border: none; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 700; color: white; box-shadow: 0 0 20px {t['primary']}66; transition: all .25s; }}
+    .stButton > button[kind="primary"]:hover {{ transform: translateY(-2px); box-shadow: 0 0 30px {t['primary']}B3; }}
+    .stSelectbox > div > div, .stTextInput > div > div > input {{ background: {t['bg_side']} !important; border: 1px solid {t['border']} !important; color: {t['text']} !important; border-radius: 10px !important; }}
+    [data-testid="stMetric"] {{ background: {t['bg_side']}; border: 1px solid {t['border']}; border-radius: 12px; padding: 16px; }}
+    [data-testid="stMetricValue"] {{ color: {t['accent']} !important; font-weight: 800; }}
+    .xp-banner {{ background: linear-gradient(135deg, {t['bg_side']}, {t['bg_app']}); border: 1px solid {t['border']}; border-radius: 14px; padding: 14px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }}
+    .xp-value {{ font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; color: {t['primary']}; }}
+    .boss-banner {{ background: linear-gradient(135deg, {t['bg_side']}, {t['secondary']}44); border: 2px solid {t['primary']}; border-radius: 16px; padding: 24px; text-align: center; margin: 16px 0; box-shadow: 0 0 40px {t['primary']}33; }}
     ::-webkit-scrollbar {{ width: 6px; }}
     ::-webkit-scrollbar-track {{ background: {t['bg_app']}; }}
     ::-webkit-scrollbar-thumb {{ background: {t['border']}; border-radius: 3px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: {t['primary']}; }}
-
-    /* ── Markdown content ── */
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{ color: {t['text']}; }}
     .stMarkdown p, .stMarkdown li {{ color: {t['text']}; opacity: 0.9; }}
+    .stCheckbox > label {{ color: #94a3b8 !important; }}
+    .stRadio > label {{ color: #94a3b8 !important; }}
+    .stExpander {{ background: #13162a !important; border: 1px solid #2d3561 !important; border-radius: 10px !important; }}
+    .info-box  {{ background:#f0f4ff; border-left:4px solid #4a6cf7; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
+    .warn-box  {{ background:#fff8e1; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
+    .ok-box    {{ background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
+    .badge     {{ display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px; padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }}
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Interface de choix (Genre & Avatar)
-col1, col2 = st.columns(2)
-with col1:
-    genre = st.radio("Comment souhaites-tu que l'on s'adresse à toi ?", 
-                    ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
-                    key="radio_genre")
-with col2:
-    avatar_style = st.selectbox("Choisis ton style d'avatar", 
-                               ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
-                               key="select_avatar")
-
-# 4. Sauvegarde des préférences d'identité
-if 'genre_pref' not in st.session_state:
+# ============================================================
+# 3. PRÉFÉRENCES IDENTITÉ — genre & avatar
+# ✅ Placés APRÈS set_page_config et le CSS
+# ============================================================
+if "genre_pref" not in st.session_state:
     st.session_state.genre_pref = "Neutre (Aventurier)"
-if 'avatar_pref' not in st.session_state:
+if "avatar_pref" not in st.session_state:
     st.session_state.avatar_pref = "Robotique 🤖"
 
-# 5. Mise à jour si l'utilisateur change ses choix
-st.session_state.genre_pref = genre
+col1, col2 = st.columns(2)
+with col1:
+    genre = st.radio(
+        "Comment souhaites-tu que l'on s'adresse à toi ?",
+        ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
+        key="radio_genre"
+    )
+with col2:
+    avatar_style = st.selectbox(
+        "Choisis ton style d'avatar",
+        ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
+        key="select_avatar"
+    )
+
+st.session_state.genre_pref  = genre
 st.session_state.avatar_pref = avatar_style
-st.session_state.theme_pref = theme_nom
+
 
 
 # ============================================================
@@ -239,7 +159,7 @@ def envoyer_grist(code_eleve, type_activite, meta, auto_evaluation=""):
         pass
 
 
-def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
+def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation="",json_path=""):
     """Envoie un sujet généré dans Banque_propositions pour validation prof."""
     try:
         api_key  = st.secrets.get("GRIST_API_KEY", "")
@@ -264,6 +184,7 @@ def envoyer_proposition_grist(code_eleve, meta, contenu, auto_evaluation=""):
                     "chapitre": str(meta.get("chapitre", "")),
                     "niveau_difficulte": str(meta.get("difficulte", "")),
                     "contenu": str(contenu)[:5000],  # Limite pour éviter les erreurs
+                    "json_path": str(json_path),
                     "auto_evaluation": str(auto_evaluation),
                     "statut": "en attente"
                 }
@@ -975,25 +896,6 @@ ______
 Réponds entièrement en Markdown avec mise en page soignée et professionnelle."""
 
 
-#def build_prompt_correction(bareme, ton, niveau, matiere, note_sur):
-#    return f"""Tu es un professeur correcteur expert.
-
-#Contexte :
-#- Niveau : {niveau or 'Non précisé'}
-#- Matière : {matiere or 'Non précisée'}
-# - Barème : {bareme or f'Non fourni — évalue sur {note_sur}'}
-#- Ton : {ton}
-#- Note sur : {note_sur}
-
-# Mission :
-#1. Transcris le texte manuscrit visible.
-#2. Identifie et explique chaque erreur avec pédagogie.
-#3. Attribue une note partielle par question.
-#4. Calcule la note globale /{note_sur}.
-#5. Rédige une appréciation finale ({ton}) de 3 à 5 lignes.
-
-#Réponds en Markdown avec sections claires."""/*
-
 
 # ============================================================
 # 4. APPEL API GEMINI
@@ -1696,7 +1598,7 @@ for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
             "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done",
             "streak_cache", "interactif_sujet", "interactif_idx",
-            "interactif_reponses", "interactif_termine", "classement_cache"]:
+            "interactif_reponses", "interactif_termine", "classement_cache", "interactif_done"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1928,19 +1830,73 @@ with tab_gen:
 
     if btn_interactif and nb_interactifs > 0:
         import random
-        sujet_i = random.choice(sujets_interactifs)
-        st.session_state.interactif_sujet   = sujet_i
-        st.session_state.interactif_idx     = 0
-        st.session_state.interactif_reponses = {}
-        st.session_state.interactif_termine  = False
-        st.session_state.generated_md        = None
-        st.session_state.eval_gen_done       = None
-        st.session_state.meta_gen = {
-            "niveau": niv, "matiere": mat, "chapitre": chap,
-            "filiere": filiere, "difficulte": difficulte, "source": "Banque interactif"
-        }
-        st.rerun()
 
+        # Clé unique pour cette combinaison niveau/filière/chapitre/difficulté
+        combo_key = f"{niv}|{filiere}|{chap}|{difficulte}"
+
+        # Initialiser le tracking si besoin
+        if not st.session_state.interactif_done:
+            st.session_state.interactif_done = {}
+
+        done_set = set(st.session_state.interactif_done.get(combo_key, []))
+        indices_dispo = [i for i in range(nb_interactifs) if i not in done_set]
+
+        if indices_dispo:
+            # ✅ Choisir un exercice non encore fait
+            idx = random.choice(indices_dispo)
+            done_set.add(idx)
+            st.session_state.interactif_done[combo_key] = list(done_set)
+            sujet_i = sujets_interactifs[idx]
+
+            st.session_state.interactif_sujet    = sujet_i
+            st.session_state.interactif_idx      = 0
+            st.session_state.interactif_reponses = {}
+            st.session_state.interactif_termine  = False
+            st.session_state.generated_md        = None
+            st.session_state.eval_gen_done       = None
+            st.session_state.meta_gen = {
+                "niveau": niv, "matiere": mat, "chapitre": chap,
+                "filiere": filiere, "difficulte": difficulte,
+                "source": "Banque interactif"
+            }
+            st.rerun()
+
+        else:
+            # ✅ Tous les exercices ont déjà été faits → proposer de recommencer
+            st.warning(
+                f"🎉 Tu as déjà fait les {nb_interactifs} exercice(s) disponible(s) "
+                f"pour cette combinaison !"
+            )
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                if st.button("🔄 Recommencer depuis le début", use_container_width=True,
+                             key="btn_reset_done"):
+                    # Réinitialiser le tracking pour cette combinaison
+                    st.session_state.interactif_done[combo_key] = []
+                    st.rerun()
+            with col_r2:
+                if st.button("✨ Générer un nouvel exercice (Gemini)",
+                             use_container_width=True, key="btn_gen_from_done"):
+                    if not cle_api:
+                        st.error("🔑 Clé API manquante !")
+                    else:
+                        with st.spinner("⏳ Génération…"):
+                            try:
+                                res = call_gemini(
+                                    cle_api,
+                                    build_prompt_exercices(niv, cat, mat, chap, "", filiere, difficulte)
+                                )
+                                st.session_state.generated_md     = res
+                                st.session_state.interactif_sujet = None
+                                st.session_state.eval_gen_done    = None
+                                st.session_state.meta_gen = {
+                                    "niveau": niv, "matiere": mat, "chapitre": chap,
+                                    "filiere": filiere, "difficulte": difficulte,
+                                    "source": "Gemini"
+                                }
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Erreur : {e}")
     if btn_banque and nb_banque > 0:
         import random
         sujet = random.choice(sujets_banque)
@@ -1982,55 +1938,6 @@ with tab_gen:
 
 # ── BOSS DÉBLOQUÉ ─────────────────────────────────────
 
-# ── BOSS DÉBLOQUÉ ─────────────────────────────────────────
-    # À 4 espaces — DANS with tab_gen:, après les boutons, avant MODE INTERACTIF
-    # Visible dès que boss_actif=True, indépendamment de generated_md
-    if st.session_state.boss_actif:
-        m_boss = st.session_state.meta_gen or {}  # ✅ corrigé — était getattr('metagen')
-        if st.session_state.boss_chapitre == m_boss.get("chapitre", ""):
-            diff_boss = st.session_state.boss_niveau
-            mascotte  = MASCOTTES.get(diff_boss, {})
-            st.markdown("---")
-            st.markdown(
-                f'<div class="boss-banner">'
-                f'<div style="font-size:4rem;margin-bottom:8px">{mascotte.get("animal","⚔️")}</div>'
-                f'<div style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:800;'
-                f'color:#e9d5ff;letter-spacing:1px">BOSS DÉBLOQUÉ !</div>'
-                f'<div style="font-size:1.1rem;font-weight:700;color:#c084fc;margin:6px 0">'
-                f'{mascotte.get("nom","Boss").upper()} t\'attend…</div>'
-                f'<div style="font-size:.9rem;color:#94a3b8;max-width:400px;margin:0 auto">'
-                f'Tu as validé le niveau <strong style="color:#a5b4fc">'
-                f'{diff_boss.split(" ",1)[-1]}</strong> sur '
-                f'<strong style="color:#a5b4fc">{m_boss.get("chapitre","")[:45]}</strong>.<br>'
-                f'Bats ce boss pour débloquer le niveau suivant !</div>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-            col_boss1, col_boss2 = st.columns(2)
-            with col_boss1:
-                if st.button(f"⚔️ Affronter le {mascotte.get('nom','Boss')} !",
-                             type="primary", use_container_width=True, key="btn_boss"):
-                    if not cle_api:
-                        st.error("🔑 Clé API manquante !")
-                    else:
-                        with st.spinner(f"⚔️ Le {mascotte.get('nom','Boss')} se prépare…"):
-                            try:
-                                prompt_boss = build_prompt_boss(
-                                    niv, filiere,
-                                    st.session_state.boss_chapitre,
-                                    st.session_state.boss_niveau
-                                )
-                                res_boss = call_gemini(cle_api, prompt_boss)
-                                st.session_state.boss_md        = res_boss
-                                st.session_state.eval_boss_done = None
-                                st.session_state.boss_actif     = False
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Erreur : {e}")
-            with col_boss2:
-                if st.button("⏭️ Plus tard", use_container_width=True, key="btn_boss_skip"):
-                    st.session_state.boss_actif = False
-                    st.rerun()
 
     
 # ── MODE INTERACTIF ──────────────────────────────────────
@@ -2820,17 +2727,23 @@ with tab_progression:
 
             st.divider()
 
-            # ── Historique récent ─────────────────────────────
+# ── Historique récent ─────────────────────────────
             with st.expander("📅 Voir l'historique complet"):
                 import pandas as pd
                 df = pd.DataFrame(records)
+
+                # ✅ Forcer toutes les colonnes en str pour éviter ArrowInvalid
+                # (la colonne "heure" contient "17:25" que PyArrow tente de caster en int64)
+                df = df.astype(str)
+
                 cols_affich = [c for c in ["date", "heure", "type_activite", "chapitre",
                                             "niveau_difficulte", "auto_evaluation", "source"]
                                if c in df.columns]
-                st.dataframe(df[cols_affich].sort_values("date", ascending=False),
-                             use_container_width=True, hide_index=True)
-
-            st.divider()
+                st.dataframe(
+                    df[cols_affich].sort_values("date", ascending=False),
+                    width="stretch",      # ✅ remplace use_container_width=True (déprécié)
+                    hide_index=True
+                )
 
             # ── Classement de la classe ───────────────────────
             st.markdown("### 🏆 Classement de la classe")

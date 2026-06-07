@@ -1,0 +1,106 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-06-08",
+    "contexte": "Dans le cadre de votre formation en Bac Pro Accompagnement, Soins et Services à la Personne (ASSP), vous serez amené(e) à comprendre des évolutions numériques de situations professionnelles. Cet exercice vous propose de résoudre des problèmes concrets en utilisant les suites arithmétiques, un outil essentiel pour anticiper et organiser la gestion de ressources ou de plannings.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où chaque terme est obtenu en ajoutant une constante (appelée raison 'r') au terme précédent. Le terme général peut s'écrire $u_n = u_p + (n-p)r$. Si le premier terme est $u_1$, alors $u_n = u_1 + (n-1)r$. Si le premier terme est $u_0$, alors $u_n = u_0 + nr$.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un EHPAD a ouvert avec 60 lits la première année (année 1). Grâce à une extension progressive, 4 lits supplémentaires sont ajoutés chaque année. Combien de lits l'EHPAD pourra-t-il proposer à ses résidents la 7ème année d'ouverture ?",
+        "type": "numerique",
+        "reponse": 84.0,
+        "unite": "lits",
+        "tolerance": 0.0,
+        "indice": "Pensez à la formule du terme général d'une suite arithmétique $u_n = u_p + (n-p)r$. Ici, $p=1$ et $n=7$.",
+        "corrige": "Soit $u_n$ le nombre de lits l'année n. Le premier terme est $u_1 = 60$. La raison est $r = 4$. Nous cherchons $u_7$. La formule est $u_n = u_1 + (n-1)r$. Donc $u_7 = 60 + (7-1) \\times 4 = 60 + 6 \\times 4 = 60 + 24 = 84$. L'EHPAD pourra proposer 84 lits la 7ème année."
+      },
+      {
+        "numero": 2,
+        "enonce": "Une infirmière doit administrer un médicament dont la dose est progressivement réduite. Le premier jour, la dose est de 8 mg. Chaque jour suivant, la dose diminue de 0.5 mg. Quelle sera la dose administrée au patient le 10ème jour du traitement ?",
+        "type": "numerique",
+        "reponse": 3.5,
+        "unite": "mg",
+        "tolerance": 0.01,
+        "indice": "Attention à la raison de la suite qui est une diminution. Utilisez la formule du terme général $u_n = u_1 + (n-1)r$.",
+        "corrige": "Soit $u_n$ la dose du jour n. Le premier terme est $u_1 = 8$ mg. La raison est $r = -0.5$ mg (car la dose diminue). Nous cherchons $u_{10}$. La formule est $u_n = u_1 + (n-1)r$. Donc $u_{10} = 8 + (10-1) \\times (-0.5) = 8 + 9 \\times (-0.5) = 8 - 4.5 = 3.5$. La dose administrée le 10ème jour sera de 3.5 mg."
+      },
+      {
+        "numero": 3,
+        "enonce": "Une pharmacie a un stock initial de 320 seringues. Le service des urgences utilise en moyenne 12 seringues par jour. Combien de seringues restera-t-il dans le stock de la pharmacie au début du 15ème jour, en supposant que la consommation commence dès le premier jour ?",
+        "type": "numerique",
+        "reponse": 152.0,
+        "unite": "seringues",
+        "tolerance": 0.0,
+        "indice": "Déterminez le nombre de jours de consommation. Si $u_0$ est le stock initial, après $n$ jours de consommation, le stock est $u_n = u_0 + nr$. Le 'début du 15ème jour' signifie 'après 14 jours complets de consommation'.",
+        "corrige": "Soit $u_n$ le nombre de seringues restantes après n jours de consommation. Le stock initial est $u_0 = 320$. La raison est $r = -12$ (car le stock diminue). Nous cherchons le stock au début du 15ème jour, ce qui signifie après 14 jours de consommation. Donc $n=14$. La formule est $u_n = u_0 + nr$. Donc $u_{14} = 320 + 14 \\times (-12) = 320 - 168 = 152$. Il restera 152 seringues au début du 15ème jour."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un service d'aide à domicile a enregistré 180 consultations le premier mois de l'année. En raison d'une campagne de sensibilisation, le nombre de consultations augmente de 5 par mois. Quel sera le nombre de consultations prévues pour le 8ème mois de l'année ?",
+        "type": "numerique",
+        "reponse": 215.0,
+        "unite": "consultations",
+        "tolerance": 0.0,
+        "indice": "Identifiez le premier terme et la raison de la suite. Utilisez la formule du terme général $u_n = u_1 + (n-1)r$.",
+        "corrige": "Soit $u_n$ le nombre de consultations le n-ième mois. Le premier terme est $u_1 = 180$. La raison est $r = 5$. Nous cherchons $u_8$. La formule est $u_n = u_1 + (n-1)r$. Donc $u_8 = 180 + (8-1) \\times 5 = 180 + 7 \\times 5 = 180 + 35 = 215$. Le nombre de consultations prévues pour le 8ème mois sera de 215."
+      }
+    ]
+  },
+  {
+    "niveau": "1ère Pro",
+    "filiere": "ASSP",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-06-08",
+    "contexte": "Dans un EHPAD ou un service hospitalier, la gestion quotidienne demande une rigueur constante, notamment pour le suivi des résidents, l'administration des traitements ou la commande de matériel. Les suites numériques, et plus particulièrement les suites arithmétiques, peuvent aider à modéliser des situations où une quantité évolue de manière régulière ou par paliers constants.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où l'on passe d'un terme au suivant en ajoutant toujours le même nombre, appelé la raison 'r'. Le terme général peut s'écrire Un = U1 + (n-1)r (si le premier terme est U1) ou Un = U0 + n*r (si le premier terme est U0). La somme des n premiers termes est Sn = n * (U1 + Un) / 2.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Dans un service d'hospitalisation à domicile (HAD), le nombre de patients nécessitant une surveillance post-opératoire augmente de manière régulière. Au début du premier mois (Mois 1), le service gère 35 patients. L'équipe anticipe une augmentation de 3 patients par mois. Combien de patients le service devra-t-il gérer au début du 8ème mois (Mois 8) si cette tendance se confirme ?",
+        "type": "numerique",
+        "reponse": 56.0,
+        "unite": "patients",
+        "tolerance": 0.0,
+        "indice": "Utilisez la formule du terme général d'une suite arithmétique : Un = U1 + (n-1)r, où U1 est le nombre de patients au Mois 1 et r est l'augmentation mensuelle.",
+        "corrige": "La suite est arithmétique avec U1 = 35 et r = 3.\nNous cherchons U8.\nU8 = U1 + (8-1) * r\nU8 = 35 + 7 * 3\nU8 = 35 + 21\nU8 = 56\nAu début du 8ème mois, le service devra gérer 56 patients."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un dispensaire de quartier suit l'évolution de la consommation quotidienne d'un type spécifique de compresses stériles. Le 5ème jour du suivi, 28 compresses ont été utilisées. Le 12ème jour du suivi, 56 compresses ont été utilisées. En supposant que la consommation augmente de manière arithmétique, quelle est l'augmentation moyenne (raison r) du nombre de compresses utilisées par jour ?",
+        "type": "numerique",
+        "reponse": 4.0,
+        "unite": "compresses",
+        "tolerance": 0.0,
+        "indice": "La différence entre deux termes d'une suite arithmétique est proportionnelle à la différence de leurs indices. Rappel : Uq - Up = (q-p)r.",
+        "corrige": "Soit Un le nombre de compresses utilisées le n-ième jour.\nNous avons U5 = 28 et U12 = 56.\nLa relation entre U12 et U5 est : U12 = U5 + (12-5) * r\n56 = 28 + 7 * r\n56 - 28 = 7 * r\n28 = 7 * r\nr = 28 / 7\nr = 4\nL'augmentation moyenne est de 4 compresses par jour."
+      },
+      {
+        "numero": 3,
+        "enonce": "Une infirmière prépare un traitement médicamenteux pour un patient. Le dosage commence à 15 mg le premier jour (J1) et augmente de 5 mg chaque jour suivant. Le traitement doit durer 7 jours. Quelle est la quantité totale de médicament (en mg) que le patient recevra sur l'ensemble des 7 jours de traitement ?",
+        "type": "numerique",
+        "reponse": 210.0,
+        "unite": "mg",
+        "tolerance": 0.0,
+        "indice": "Calculez d'abord le dosage du dernier jour (J7) en utilisant la formule du terme général. Ensuite, utilisez la formule de la somme des termes d'une suite arithmétique : Sn = n * (U1 + Un) / 2.",
+        "corrige": "Soit Un le dosage le n-ième jour. C'est une suite arithmétique avec U1 = 15 mg et r = 5 mg.\n1. Calcul du dosage le 7ème jour (U7) :\nU7 = U1 + (7-1) * r\nU7 = 15 + 6 * 5\nU7 = 15 + 30\nU7 = 45 mg\n2. Calcul de la somme totale sur 7 jours (S7) :\nS7 = 7 * (U1 + U7) / 2\nS7 = 7 * (15 + 45) / 2\nS7 = 7 * 60 / 2\nS7 = 7 * 30\nS7 = 210 mg\nLa quantité totale de médicament sur 7 jours est de 210 mg."
+      },
+      {
+        "numero": 4,
+        "enonce": "Une pharmacie d'officine gère son stock de masques chirurgicaux. Au début de la semaine (lundi matin), le stock est de 250 boîtes. La pharmacie vend en moyenne 12 boîtes par jour ouvrable. Après combien de jours de vente (en comptant à partir du lundi) le stock tombera-t-il pour la première fois en dessous de 100 boîtes ?",
+        "type": "numerique",
+        "reponse": 13.0,
+        "unite": "jours",
+        "tolerance": 0.0,
+        "indice": "Représentez le stock par une suite arithmétique (Un = U0 + n*r) où U0 est le stock initial. Formulez une inéquation pour trouver le premier 'n' pour lequel le stock est inférieur à 100.",
+        "corrige": "Soit U0 le stock initial (lundi matin) = 250 boîtes.\nLa raison r est la vente quotidienne, donc r = -12 boîtes/jour.\nNous cherchons le nombre de jours 'n' tel que le stock Un soit pour la première fois inférieur à 100 boîtes.\nUn = U0 + n * r\n250 + n * (-12) < 100\n250 - 12n < 100\n-12n < 100 - 250\n-12n < -150\nPour diviser par un nombre négatif, on change le sens de l'inégalité :\nn > -150 / -12\nn > 12.5\nPuisque 'n' doit être un nombre entier de jours, le stock tombera pour la première fois en dessous de 100 boîtes après 13 jours de vente."
+      }
+    ]
+  }
+]
