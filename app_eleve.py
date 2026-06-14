@@ -396,6 +396,167 @@ MESSAGES_VICTOIRE = {
     "🔴 Expert":    "🐉 Dragon vaincu ! Tu es un expert — bravo, c'est le sommet !",
 }
 
+# ============================================================
+# BADGES — Définition et calcul
+# ============================================================
+
+BADGES = [
+    # ── Premiers pas ──────────────────────────────────────
+    {
+        "id": "premier_pas",
+        "emoji": "🌱", "nom": "Premier Pas",
+        "description": "Terminer son premier exercice",
+        "categorie": "Débuts",
+    },
+    {
+        "id": "premiere_victoire",
+        "emoji": "🎯", "nom": "Première Victoire",
+        "description": "Obtenir sa première bonne évaluation (😊 ou 🌟)",
+        "categorie": "Débuts",
+    },
+    {
+        "id": "gamer",
+        "emoji": "🎮", "nom": "Gamer",
+        "description": "Terminer un exercice interactif",
+        "categorie": "Débuts",
+    },
+    # ── Streak ────────────────────────────────────────────
+    {
+        "id": "en_feu",
+        "emoji": "🔥", "nom": "En Feu",
+        "description": "Atteindre un streak de 3 jours consécutifs",
+        "categorie": "Régularité",
+    },
+    {
+        "id": "flamme",
+        "emoji": "🔥🔥", "nom": "Flamme",
+        "description": "Atteindre un streak de 7 jours consécutifs",
+        "categorie": "Régularité",
+    },
+    # ── Performance ───────────────────────────────────────
+    {
+        "id": "sans_faute",
+        "emoji": "💯", "nom": "Sans Faute",
+        "description": "Obtenir 100% sur un exercice interactif",
+        "categorie": "Performance",
+    },
+    {
+        "id": "perfectionniste",
+        "emoji": "🌟", "nom": "Perfectionniste",
+        "description": "Obtenir 5 évaluations « Très bien »",
+        "categorie": "Performance",
+    },
+    {
+        "id": "assidu",
+        "emoji": "💪", "nom": "Assidu",
+        "description": "Terminer 10 exercices avec bonne évaluation",
+        "categorie": "Performance",
+    },
+    # ── Boss ──────────────────────────────────────────────
+    {
+        "id": "premier_boss",
+        "emoji": "⚔️", "nom": "Premier Boss",
+        "description": "Vaincre son premier boss",
+        "categorie": "Boss",
+    },
+    {
+        "id": "chasseur_dragons",
+        "emoji": "🐉", "nom": "Chasseur de Dragons",
+        "description": "Vaincre le boss Expert (Dragon)",
+        "categorie": "Boss",
+    },
+    # ── Exploration ───────────────────────────────────────
+    {
+        "id": "explorateur",
+        "emoji": "🗺️", "nom": "Explorateur",
+        "description": "Travailler 3 chapitres différents",
+        "categorie": "Exploration",
+    },
+    {
+        "id": "encyclopediste",
+        "emoji": "📚", "nom": "Encyclopédiste",
+        "description": "Travailler 5 chapitres différents",
+        "categorie": "Exploration",
+    },
+    {
+        "id": "candidat_ccf",
+        "emoji": "📋", "nom": "Candidat CCF",
+        "description": "Terminer un sujet CCF",
+        "categorie": "Exploration",
+    },
+    {
+        "id": "champion",
+        "emoji": "🏆", "nom": "Champion",
+        "description": "Maîtriser complètement un chapitre (4 niveaux + boss)",
+        "categorie": "Exploration",
+    },
+]
+
+
+def calculer_badges(records: list, streak: int) -> set:
+    """
+    Retourne l'ensemble des IDs de badges débloqués pour un élève.
+    """
+    debloque = set()
+    if not records:
+        return debloque
+
+    bonnes      = [r for r in records if r.get("auto_evaluation","") in ("😊 Bien","🌟 Très bien")]
+    tres_bien   = [r for r in records if r.get("auto_evaluation","") == "🌟 Très bien"]
+    boss_ok     = [r for r in bonnes   if "Boss" in r.get("type_activite","")]
+    ccf_ok      = [r for r in bonnes   if "CCF"  in r.get("type_activite","")]
+    interactifs = [r for r in records  if "interactif" in r.get("type_activite","").lower()]
+    chapitres   = set(r.get("chapitre","") for r in records if r.get("chapitre"))
+
+    # ── Débuts ────────────────────────────────────────────
+    if records:
+        debloque.add("premier_pas")
+    if bonnes:
+        debloque.add("premiere_victoire")
+    if interactifs:
+        debloque.add("gamer")
+
+    # ── Streak ────────────────────────────────────────────
+    if streak >= 3:
+        debloque.add("en_feu")
+    if streak >= 7:
+        debloque.add("flamme")
+
+    # ── Performance ───────────────────────────────────────
+    # 100% en interactif : le type_activite contient "(100%)"
+    if any("(100%)" in r.get("type_activite","") for r in records):
+        debloque.add("sans_faute")
+    if len(tres_bien) >= 5:
+        debloque.add("perfectionniste")
+    if len(bonnes) >= 10:
+        debloque.add("assidu")
+
+    # ── Boss ──────────────────────────────────────────────
+    if boss_ok:
+        debloque.add("premier_boss")
+    if any("🔴 Expert" in r.get("niveau_difficulte","") or
+           "Expert" in r.get("type_activite","")
+           for r in boss_ok):
+        debloque.add("chasseur_dragons")
+
+    # ── Exploration ───────────────────────────────────────
+    if len(chapitres) >= 3:
+        debloque.add("explorateur")
+    if len(chapitres) >= 5:
+        debloque.add("encyclopediste")
+    if ccf_ok:
+        debloque.add("candidat_ccf")
+
+    # Champion : au moins un chapitre avec boss vaincu (= boss_ok sur ce chapitre)
+    chapitres_boss_ok = set(r.get("chapitre","") for r in boss_ok if r.get("chapitre"))
+    if chapitres_boss_ok:
+        for chap in chapitres_boss_ok:
+            prog = calculer_progression(records, chap)
+            if all(prog[d]["valide"] for d in ORDRE_NIVEAUX_DIFF):
+                debloque.add("champion")
+                break
+
+    return debloque
 
 def calculer_progression(records: list, chapitre: str) -> dict:
     """
@@ -666,6 +827,8 @@ COMPETENCES_CCF = [
         ]
     },
 ]
+
+
 
 # ============================================================
 # 3. PROMPTS
@@ -1598,7 +1761,7 @@ for key in ["generated_md", "generated_ccf_md", "meta_gen", "meta_ccf",
             "eval_gen_done", "eval_ccf_done", "grist_debug", "progression_cache",
             "boss_actif", "boss_niveau", "boss_chapitre", "boss_md", "eval_boss_done",
             "streak_cache", "interactif_sujet", "interactif_idx",
-            "interactif_reponses", "interactif_termine", "classement_cache", "interactif_done"]:
+            "interactif_reponses", "interactif_termine", "classement_cache", "interactif_done", "interactif_eval_done"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
@@ -1681,7 +1844,7 @@ with st.sidebar:
     else:
         st.markdown('<div class="warn-box">⚠️ Clé API manquante.</div>', unsafe_allow_html=True)
 
-    with st.expander("📋 Obtenir une clé gratuite (2 min)"):
+    with st.expander("📋 Obtenir une clé gratuite (ça prend 2 min)"):
         st.markdown("""
 **1.** → [aistudio.google.com](https://aistudio.google.com/app/apikey)
 
@@ -2039,61 +2202,111 @@ with tab_gen:
                 unsafe_allow_html=True
             )
 
-            st.markdown("### 📋 Correction détaillée")
-            for i, q in enumerate(questions):
-                r     = reponses.get(i, {})
-                icone = "✅" if r.get("bonne") else "❌"
-                unite = r.get("unite", "")
+            # ── ÉTAPE 1 : Ressenti (affiché EN PREMIER, avant la correction) ──
+            if not st.session_state.interactif_eval_done:
+                st.divider()
+                st.markdown("**🎯 Et ton ressenti avant de voir la correction ?**")
+                col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+                eval_choix_i = None
+                with col_e1:
+                    if st.button("😕 Difficile", use_container_width=True, key="eval_i_1"):
+                        eval_choix_i = "😕 Difficile"
+                with col_e2:
+                    if st.button("😐 Moyen", use_container_width=True, key="eval_i_2"):
+                        eval_choix_i = "😐 Moyen"
+                with col_e3:
+                    if st.button("😊 Bien", use_container_width=True, key="eval_i_3"):
+                        eval_choix_i = "😊 Bien"
+                with col_e4:
+                    if st.button("🌟 Très bien", use_container_width=True, key="eval_i_4"):
+                        eval_choix_i = "🌟 Très bien"
+
+                if eval_choix_i:
+                    m_i = st.session_state.meta_gen or {}
+                    envoyer_grist(
+                        code_eleve or "anonyme",
+                        f"Exercice-interactif ({score_pct}%)",
+                        {**m_i, "score_auto": f"{nb_bonnes_i}/{nb_total_i}"},
+                        eval_choix_i
+                    )
+                    st.session_state.interactif_eval_done = eval_choix_i
+                    st.session_state.streak_cache         = None
+                    st.rerun()  # → réaffiche avec la correction visible
+
+            else:
+                # ── ÉTAPE 2 : Correction + bouton suivant ────────────────
                 st.markdown(
-                    f'<div style="background:#13162a;border-left:3px solid '
-                    f'{"#22c55e" if r.get("bonne") else "#ef4444"};'
-                    f'border-radius:0 10px 10px 0;padding:12px 16px;margin:6px 0">'
-                    f'<div style="font-size:.8rem;color:#64748b">Q{q["numero"]}</div>'
-                    f'<div style="color:#e2e8f0;margin:4px 0">{q["enonce"]}</div>'
-                    f'<div style="font-size:.88rem;margin-top:6px">'
-                    f'{icone} Ta réponse : <strong>{r.get("saisie","?"):.2f} {unite}</strong> — '
-                    f'Bonne réponse : <strong>{float(q["reponse"]):.2f} {unite}</strong></div>'
-                    f'<div style="font-size:.82rem;color:#94a3b8;margin-top:4px">'
-                    f'💡 {r.get("corrige","")}</div>'
-                    f'</div>',
+                    f'<div class="ok-box">✅ Ressenti enregistré : '
+                    f'<strong>{st.session_state.interactif_eval_done}</strong></div>',
                     unsafe_allow_html=True
                 )
 
-            st.divider()
-            st.markdown("**🎯 Et ton ressenti ?**")
-            col_e1, col_e2, col_e3, col_e4 = st.columns(4)
-            eval_choix_i = None
-            with col_e1:
-                if st.button("😕 Difficile", use_container_width=True, key="eval_i_1"):
-                    eval_choix_i = "😕 Difficile"
-            with col_e2:
-                if st.button("😐 Moyen", use_container_width=True, key="eval_i_2"):
-                    eval_choix_i = "😐 Moyen"
-            with col_e3:
-                if st.button("😊 Bien", use_container_width=True, key="eval_i_3"):
-                    eval_choix_i = "😊 Bien"
-            with col_e4:
-                if st.button("🌟 Très bien", use_container_width=True, key="eval_i_4"):
-                    eval_choix_i = "🌟 Très bien"
+                st.markdown("### 📋 Correction détaillée")
+                for i, q in enumerate(questions):
+                    r     = reponses.get(i, {})
+                    icone = "✅" if r.get("bonne") else "❌"
+                    unite = r.get("unite", "")
+                    st.markdown(
+                        f'<div style="background:#13162a;border-left:3px solid '
+                        f'{"#22c55e" if r.get("bonne") else "#ef4444"};'
+                        f'border-radius:0 10px 10px 0;padding:12px 16px;margin:6px 0">'
+                        f'<div style="font-size:.8rem;color:#64748b">Q{q["numero"]}</div>'
+                        f'<div style="color:#e2e8f0;margin:4px 0">{q["enonce"]}</div>'
+                        f'<div style="font-size:.88rem;margin-top:6px">'
+                        f'{icone} Ta réponse : <strong>{r.get("saisie","?"):.2f} {unite}</strong> — '
+                        f'Bonne réponse : <strong>{float(q["reponse"]):.2f} {unite}</strong></div>'
+                        f'<div style="font-size:.82rem;color:#94a3b8;margin-top:4px">'
+                        f'💡 {r.get("corrige","")}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
 
-            if eval_choix_i:
-                m_i = st.session_state.meta_gen or {}
-                envoyer_grist(
-                    code_eleve or "anonyme",
-                    f"Exercice-interactif ({score_pct}%)",
-                    {**m_i, "score_auto": f"{nb_bonnes_i}/{nb_total_i}"},
-                    eval_choix_i
-                )
-                st.session_state.eval_gen_done    = eval_choix_i
-                st.session_state.streak_cache     = None
-                st.session_state.interactif_sujet = None
-                st.rerun()
+                st.divider()
 
-            if st.button("🔄 Nouvel exercice", use_container_width=True, key="btn_reset_i"):
-                st.session_state.interactif_sujet    = None
-                st.session_state.interactif_reponses = {}
-                st.session_state.interactif_termine  = False
-                st.rerun()
+                # ── Bouton exercice suivant (sélection intelligente) ──────
+                m_i       = st.session_state.meta_gen or {}
+                combo_key = f"{m_i.get('niveau')}|{m_i.get('filiere')}|{m_i.get('chapitre')}|{m_i.get('difficulte')}"
+
+                if not st.session_state.interactif_done:
+                    st.session_state.interactif_done = {}
+                done_set       = set(st.session_state.interactif_done.get(combo_key, []))
+                indices_restants = [i for i in range(nb_interactifs) if i not in done_set]
+                nb_restants    = len(indices_restants)
+
+                col_next, col_reset = st.columns(2)
+                with col_next:
+                    label_next = (
+                        f"➡️ Exercice suivant ({nb_restants} restant{'s' if nb_restants > 1 else ''})"
+                        if nb_restants > 0 else "🔄 Recommencer depuis le début"
+                    )
+                    if st.button(label_next, type="primary",
+                                 use_container_width=True, key="btn_suivant_i"):
+                        import random
+                        if nb_restants > 0:
+                            idx = random.choice(indices_restants)
+                            done_set.add(idx)
+                            st.session_state.interactif_done[combo_key] = list(done_set)
+                            sujet_suivant = sujets_interactifs[idx]
+                        else:
+                            # Tout refaire
+                            st.session_state.interactif_done[combo_key] = []
+                            sujet_suivant = random.choice(sujets_interactifs)
+
+                        st.session_state.interactif_sujet    = sujet_suivant
+                        st.session_state.interactif_idx      = 0
+                        st.session_state.interactif_reponses = {}
+                        st.session_state.interactif_termine  = False
+                        st.session_state.interactif_eval_done = None  # ✅ reset pour prochain
+                        st.rerun()
+
+                with col_reset:
+                    if st.button("🏠 Retour au menu", use_container_width=True,
+                                 key="btn_reset_i"):
+                        st.session_state.interactif_sujet    = None
+                        st.session_state.interactif_reponses = {}
+                        st.session_state.interactif_termine  = False
+                        st.session_state.interactif_eval_done = None
+                        st.rerun()
 
     # ── SUJET CLASSIQUE ───────────────────────────────────────
     # À 4 espaces — séparé du bloc interactif
@@ -2587,39 +2800,100 @@ with tab_progression:
         if not records:
             st.markdown('<div class="info-box">📭 Aucune activité enregistrée. Commence par faire des exercices !</div>', unsafe_allow_html=True)
         else:
-            # ── XP Banner ────────────────────────────────────
+# ── XP Banner ────────────────────────────────────
             total_xp  = calculer_xp(records)
             nb_total  = len(records)
             nb_bonnes = sum(1 for r in records if r.get("auto_evaluation","") in ("😊 Bien","🌟 Très bien"))
             taux      = int(nb_bonnes / nb_total * 100) if nb_total else 0
 
-            # Niveau XP
-            if total_xp < 100:    rang, rang_label = "🥉", "Apprenti"
-            elif total_xp < 300:  rang, rang_label = "🥈", "Initié"
-            elif total_xp < 600:  rang, rang_label = "🥇", "Confirmé"
-            elif total_xp < 1000: rang, rang_label = "💎", "Expert"
-            else:                 rang, rang_label = "👑", "Maître"
+            # ✅ Définition des rangs avec seuils
+            RANGS = [
+                (0,    "🥉", "Apprenti"),
+                (100,  "🥈", "Initié"),
+                (300,  "🥇", "Confirmé"),
+                (600,  "💎", "Expert"),
+                (1000, "👑", "Maître"),
+            ]
+
+            # Rang actuel et suivant
+            rang, rang_label = RANGS[-1][1], RANGS[-1][2]  # défaut : Maître
+            xp_actuel_min, xp_suivant_min = 1000, None
+            rang_suivant_label = None
+
+            for i, (seuil, emoji, label) in enumerate(RANGS):
+                if total_xp < seuil:
+                    rang, rang_label         = RANGS[i-1][1], RANGS[i-1][2]
+                    xp_actuel_min            = RANGS[i-1][0]
+                    xp_suivant_min           = seuil
+                    rang_suivant_label       = label
+                    break
+
+            # Calcul progression dans le rang courant
+            if xp_suivant_min:
+                xp_dans_rang  = total_xp - xp_actuel_min
+                xp_rang_total = xp_suivant_min - xp_actuel_min
+                pct_prog      = int(xp_dans_rang / xp_rang_total * 100)
+                xp_restants   = xp_suivant_min - total_xp
+            else:
+                pct_prog, xp_restants = 100, 0  # Maître = rang max
 
             st.markdown(
                 f'<div class="xp-banner">'
                 f'<div style="font-size:2.5rem">{rang}</div>'
                 f'<div style="flex:1">'
-                f'<div style="font-family:Outfit,sans-serif;font-weight:700;color:#e2e8f0">{rang_label}</div>'
-                f'<div class="xp-label">Rang actuel</div>'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:700;color:#e2e8f0">'
+                f'{rang_label}</div>'
+                f'<div style="font-size:.75rem;color:#64748b">Rang actuel</div>'
                 f'</div>'
                 f'<div style="text-align:center">'
                 f'<div class="xp-value">⚡ {total_xp} XP</div>'
-                f'<div class="xp-label">points d\'expérience</div>'
+                f'<div style="font-size:.75rem;color:#64748b">points d\'expérience</div>'
                 f'</div>'
                 f'<div style="text-align:center;border-left:1px solid #2d3561;padding-left:16px">'
-                f'<div style="font-family:Outfit,sans-serif;font-weight:800;font-size:1.3rem;color:#86efac">{taux}%</div>'
-                f'<div class="xp-label">taux de réussite</div>'
+                f'<div style="font-family:Outfit,sans-serif;font-weight:800;'
+                f'font-size:1.3rem;color:#86efac">{taux}%</div>'
+                f'<div style="font-size:.75rem;color:#64748b">taux de réussite</div>'
                 f'</div>'
                 f'</div>',
                 unsafe_allow_html=True
             )
 
-            st.divider()
+            # ✅ Barre de progression vers le rang suivant
+            if xp_suivant_min:
+                rang_suivant_emoji = next(e for s, e, l in RANGS if l == rang_suivant_label)
+                st.markdown(
+                    f'<div style="margin:-4px 0 16px;padding:10px 16px;'
+                    f'background:#0d0f1a;border:1px solid #2d3561;border-radius:10px">'
+                    # Texte au dessus de la barre
+                    f'<div style="display:flex;justify-content:space-between;'
+                    f'font-size:.78rem;color:#64748b;margin-bottom:6px">'
+                    f'<span>{rang} {rang_label}</span>'
+                    f'<span style="color:#a5b4fc;font-weight:700">'
+                    f'⚡ {xp_restants} XP → {rang_suivant_emoji} {rang_suivant_label}</span>'
+                    f'</div>'
+                    # Barre
+                    f'<div style="background:#1e2235;border-radius:99px;height:10px;overflow:hidden">'
+                    f'<div style="width:{pct_prog}%;height:100%;border-radius:99px;'
+                    f'background:linear-gradient(90deg,#6366f1,#a5b4fc);'
+                    f'transition:width .4s ease"></div>'
+                    f'</div>'
+                    # Pourcentage sous la barre
+                    f'<div style="text-align:right;font-size:.72rem;'
+                    f'color:#475569;margin-top:4px">{pct_prog}%</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+            else:
+                # Rang maximum atteint
+                st.markdown(
+                    f'<div style="margin:-4px 0 16px;padding:10px 16px;text-align:center;'
+                    f'background:linear-gradient(135deg,#052e16,#14532d);'
+                    f'border:1px solid #22c55e;border-radius:10px;'
+                    f'font-size:.85rem;color:#86efac;font-weight:700">'
+                    f'👑 Rang maximum atteint — tu es un Maître !'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
             # ── Progression par chapitre × niveau ────────────
             st.markdown("### 📖 Progression par chapitre")
@@ -2726,8 +3000,70 @@ with tab_progression:
                 )
 
             st.divider()
+        
+
+# ── Badges ────────────────────────────────────────────
+
+            st.markdown("### 🏅 Mes Badges")
+
+            streak_actuel  = calculer_streak(records).get("streak", 0)
+            badges_gagnes  = calculer_badges(records, streak_actuel)
+            nb_gagnes      = len(badges_gagnes)
+            nb_total_badges = len(BADGES)
+
+            st.markdown(
+                f'<div style="font-size:.82rem;color:#64748b;margin-bottom:12px">'
+                f'{nb_gagnes} / {nb_total_badges} badges débloqués</div>',
+                unsafe_allow_html=True
+            )
+
+            # Affichage par catégorie
+            categories = ["Débuts", "Régularité", "Performance", "Boss", "Exploration"]
+
+            for cat in categories:
+                badges_cat = [b for b in BADGES if b["categorie"] == cat]
+                st.markdown(
+                    f'<div style="font-size:.8rem;font-weight:700;color:#475569;'
+                    f'letter-spacing:1px;margin:12px 0 6px">{cat.upper()}</div>',
+                    unsafe_allow_html=True
+                )
+
+                cols = st.columns(len(badges_cat))
+                for col, badge in zip(cols, badges_cat):
+                    est_debloque = badge["id"] in badges_gagnes
+                    with col:
+                        if est_debloque:
+                            st.markdown(
+                                f'<div style="background:linear-gradient(135deg,#1e2235,#2d3561);'
+                                f'border:1px solid #6366f1;border-radius:12px;'
+                                f'padding:12px 8px;text-align:center;'
+                                f'box-shadow:0 0 12px #6366f144">'
+                                f'<div style="font-size:1.8rem">{badge["emoji"]}</div>'
+                                f'<div style="font-family:Outfit,sans-serif;font-weight:700;'
+                                f'font-size:.75rem;color:#a5b4fc;margin-top:4px">'
+                                f'{badge["nom"]}</div>'
+                                f'<div style="font-size:.65rem;color:#64748b;margin-top:2px">'
+                                f'{badge["description"]}</div>'
+                                f'</div>',
+                                unsafe_allow_html=True
+                            )
+                        else:
+                            st.markdown(
+                                f'<div style="background:#0d0f1a;'
+                                f'border:1px solid #1e2235;border-radius:12px;'
+                                f'padding:12px 8px;text-align:center;opacity:.45">'
+                                f'<div style="font-size:1.8rem;filter:grayscale(1)">🔒</div>'
+                                f'<div style="font-family:Outfit,sans-serif;font-weight:700;'
+                                f'font-size:.75rem;color:#475569;margin-top:4px">'
+                                f'{badge["nom"]}</div>'
+                                f'<div style="font-size:.65rem;color:#334155;margin-top:2px">'
+                                f'{badge["description"]}</div>'
+                                f'</div>',
+                                unsafe_allow_html=True
+                            )
 
 # ── Historique récent ─────────────────────────────
+
             with st.expander("📅 Voir l'historique complet"):
                 import pandas as pd
                 df = pd.DataFrame(records)
