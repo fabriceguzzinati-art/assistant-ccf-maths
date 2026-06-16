@@ -24,6 +24,25 @@ APP_DIR  = os.path.dirname(os.path.abspath(__file__))
 BANQUE_DIR = os.path.join(APP_DIR, "banque")
 
 
+THEMES = {
+    "🌌 Nébuleuse": {
+        "primary": "#6366f1", "secondary": "#8b5cf6", "bg_app": "#0d0f1a",
+        "bg_side": "#13162a", "text": "#e2e8f0", "accent": "#a5b4fc", "border": "#2d3561"
+    },
+    "✨ Pastel": {
+        "primary": "#ec4899", "secondary": "#f472b6", "bg_app": "#fff1f2",
+        "bg_side": "#ffe4e6", "text": "#881337", "accent": "#be185d", "border": "#fecdd3"
+    },
+    "🦾 Cyberpunk": {
+        "primary": "#00FF41", "secondary": "#008F11", "bg_app": "#000000",
+        "bg_side": "#050505", "text": "#00FF41", "accent": "#00FF41", "border": "#003B00"
+    },
+    "📄 Examen": {
+        "primary": "#2563eb", "secondary": "#1d4ed8", "bg_app": "#ffffff",
+        "bg_side": "#f8fafc", "text": "#1e293b", "accent": "#334155", "border": "#cbd5e1"
+    },
+}
+
 # ============================================================
 # 1. DONNÉES OFFICIELLES — BO MATHS BAC PRO
 # ============================================================
@@ -103,11 +122,6 @@ CHAPITRES_PAR_MATIERE_GENERAL = {
     "EMC":                  ["Démocratie et citoyenneté", "Droits et libertés", "Laïcité", "Engagement"],
 }
 
-# Compatibilité avec l'ancien app_eleve.py
-THEMES = NIVEAUX_CATEGORIES
-NIVEAUXCATEGORIES = NIVEAUX_CATEGORIES
-CHAPITRESMATHSBACPRO = CHAPITRES_MATHS_BAC_PRO
-CHAPITRESPARMATIEREGENERAL = CHAPITRES_PAR_MATIERE_GENERAL
 
 # ============================================================
 # 2. FILIÈRES PRO
@@ -590,6 +604,7 @@ def lire_progression_grist(code_eleve: str) -> list:
 
 def lire_classement_grist() -> list:
     """Lit les 10 meilleurs élèves par XP."""
+    import streamlit as st
     try:
         api_key, doc_id, base_url = _grist_config()
         if not api_key or not doc_id:
@@ -598,6 +613,7 @@ def lire_classement_grist() -> list:
         headers = {"Authorization": f"Bearer {api_key}"}
         resp    = requests.get(url, headers=headers, timeout=8)
         if resp.status_code != 200:
+            st.sidebar.warning(f"⚠️ Classement Grist ({resp.status_code}) : {resp.text[:100]}")
             return []
         records   = [r["fields"] for r in resp.json().get("records", [])]
         par_eleve = defaultdict(list)
@@ -607,13 +623,15 @@ def lire_classement_grist() -> list:
                 par_eleve[code].append(r)
         classement = []
         for code, recs in par_eleve.items():
-            classement.append({
-                "code":   code,
-                "xp":     calculer_xp(recs),
-                "streak": calculer_streak(recs).get("streak", 0),
-            })
+            try:
+                xp     = calculer_xp(recs)
+                streak = calculer_streak(recs).get("streak", 0)
+                classement.append({"code": code, "xp": xp, "streak": streak})
+            except Exception as e:
+                st.sidebar.warning(f"⚠️ Erreur XP pour {code} : {e}")
         return sorted(classement, key=lambda x: x["xp"], reverse=True)[:10]
-    except Exception:
+    except Exception as e:
+        st.sidebar.warning(f"⚠️ Erreur classement Grist : {e}")
         return []
 
 
