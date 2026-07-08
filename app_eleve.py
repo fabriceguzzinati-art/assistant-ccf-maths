@@ -88,23 +88,6 @@ div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div
 .badge    {{ display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px; padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }}
 </style>""", unsafe_allow_html=True)
 
-# ============================================================
-# 3. PRÉFÉRENCES IDENTITÉ
-# ============================================================
-if "genre_pref"  not in st.session_state: st.session_state.genre_pref  = "Neutre (Aventurier)"
-if "avatar_pref" not in st.session_state: st.session_state.avatar_pref = "Robotique 🤖"
-
-col1, col2 = st.columns(2)
-with col1:
-    genre = st.radio("Comment souhaites-tu que l'on s'adresse à toi ?",
-                     ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
-                     key="radio_genre")
-with col2:
-    avatar_style = st.selectbox("Choisis ton style d'avatar",
-                                ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
-                                key="select_avatar")
-st.session_state.genre_pref  = genre
-st.session_state.avatar_pref = avatar_style
 
 # ============================================================
 # 4. SESSION STATE
@@ -131,6 +114,7 @@ with st.sidebar:
     </div>""", unsafe_allow_html=True)
     st.divider()
 
+    # ── Code élève ───────────────────────────────────────────
     st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🎮 TON IDENTIFIANT</div>', unsafe_allow_html=True)
     code_eleve = st.text_input("Code élève", placeholder="Ex : ASSP-03", key="code_eleve",
                                label_visibility="collapsed",
@@ -168,6 +152,8 @@ with st.sidebar:
         st.markdown('<div class="warn-box">⚠️ Entre ton code pour sauvegarder ta progression.</div>', unsafe_allow_html=True)
 
     st.divider()
+
+    # ── Clé Gemini ───────────────────────────────────────────
     st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🔑 CLÉ GEMINI</div>', unsafe_allow_html=True)
     cle_api = st.text_input("Clé API", type="password", key="gemini_key", label_visibility="collapsed")
     if cle_api:
@@ -180,6 +166,28 @@ with st.sidebar:
 **3.** Clique **"Create API Key"**  
 **4.** Copie et colle la clé ici  
 💡 **C'est gratuit** — pas de carte bancaire requise.""")
+
+    st.divider()
+
+    # ✅ Genre & Avatar déplacés dans la sidebar
+    st.markdown('<div style="font-family:Outfit,sans-serif;font-weight:700;color:#94a3b8;font-size:.8rem;letter-spacing:1px;margin-bottom:6px">🎭 TON AVATAR</div>', unsafe_allow_html=True)
+
+    if "genre_pref"  not in st.session_state: st.session_state.genre_pref  = "Neutre (Aventurier)"
+    if "avatar_pref" not in st.session_state: st.session_state.avatar_pref = "Robotique 🤖"
+
+    genre = st.radio(
+        "Pronoms",
+        ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
+        key="radio_genre", label_visibility="collapsed"
+    )
+    avatar_style = st.selectbox(
+        "Avatar",
+        ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
+        key="select_avatar", label_visibility="collapsed"
+    )
+    st.session_state.genre_pref  = genre
+    st.session_state.avatar_pref = avatar_style
+
     st.divider()
     st.caption("Entraînement Bac Pro · Gemini 2.5 Flash")
 
