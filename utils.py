@@ -315,6 +315,251 @@ NIVEAUX_DIFFICULTE = {
     "🔴 Expert":   "Transfert de compétences, données brutes, problème ouvert ambitieux.",
 }
 
+# ============================================================
+# À COLLER dans utils.py (remplace PROGRAMME_BO et build_bloc_programme)
+# Source : BO — Annexe 2, Mathématiques, classe terminale professionnelle
+# Clés "au_programme" / "limites" / "hors_programme" (ces deux dernières facultatives)
+# ============================================================
+
+REGLES_GENERALES_BO = {
+    "Term Pro": [
+        "Éviter les excès de technicité : calculs algébriques, résolution d'équations, d'inéquations ou de systèmes",
+        "Ne pas faire construire de courbes représentatives de fonctions non étudiées",
+        "Les symboles ∀ et ∃ sont hors programme",
+        "Les outils numériques (calculatrice, tableur, Python, GeoGebra) sont utilisables",
+    ],
+}
+
+PROGRAMME_BO = {
+    "1ère Pro": {
+        # À remplir avec le BO de première (annexe 1)
+    },
+    "Term Pro": {
+
+        "Statistiques à deux variables — ajustements non affines, changements de variable": {
+            "au_programme": [
+                "Choisir un modèle adapté pour ajuster un nuage de points (outils numériques)",
+                "Utiliser un ajustement pour interpoler ou extrapoler des valeurs inconnues",
+                "Ajustements non uniquement affines",
+                "Changement de variable INDIQUÉ aux élèves (z = log(y), z = 1/x, z = q^x) pour se ramener à un ajustement affine",
+                "Coefficient de détermination calculé à l'aide d'outils numériques, comme indicateur de pertinence",
+            ],
+            "limites": [
+                "Aucune justification théorique du modèle choisi n'est attendue",
+                "L'énoncé indique l'ajustement à réaliser (x en y ou y en x)",
+            ],
+        },
+
+        "Probabilités — arbres pondérés, formule des probabilités totales, indépendance": {
+            "au_programme": [
+                "Représenter une situation aléatoire par un arbre pondéré (nœud, branche, chemin)",
+                "Lire un arbre pour déterminer les probabilités des événements associés aux chemins",
+                "Probabilité conditionnée par un événement de probabilité non nulle, règles de calcul",
+                "Formule des probabilités totales, dans des cas simples",
+                "Montrer que deux événements sont indépendants ; P(A∩B) = P(A) × P(B) si indépendants",
+                "Expériences aléatoires à plusieurs épreuves, indépendantes ou non",
+            ],
+            "limites": [
+                "Formule des probabilités totales toujours liée à un arbre pondéré, appliquée sans formalisme",
+            ],
+        },
+
+        "Suites géométriques — terme général, sens de variation, somme": {
+            "au_programme": [
+                "Suites géométriques de raison strictement positive, définies par u(n+1) = u(n) × q et le premier terme",
+                "Expression du terme de rang n en fonction du premier terme et de la raison",
+                "Calculer un terme de rang donné (récurrence ou expression de u(n))",
+                "Sens de variation à l'aide de q > 0 et du premier terme",
+                "Représentation graphique du nuage de points (n ; u(n))",
+                "Somme des n premiers termes, avec ou sans outils numériques",
+                "Modélisation d'une évolution à taux fixe ; réinvestissement des suites arithmétiques en contexte",
+            ],
+            "limites": [
+                "La connaissance de la formule de la somme n'est pas exigée (la fournir ou utiliser un outil numérique)",
+                "La notation Σ peut être introduite mais n'est pas exigible",
+            ],
+        },
+
+        "Fonctions polynômes de degré 3 — dérivée, variations, extremums": {
+            "au_programme": [
+                "Fonction cube : dérivée, variations, représentation graphique",
+                "Dérivée d'un polynôme de degré inférieur ou égal à 3 (formules et règles de dérivation)",
+                "Tableau de variations dressé à partir du signe de la dérivée",
+                "Exploiter le tableau : nombre de solutions de f(x) = c, extremums locaux",
+                "Valeur approchée d'une solution de f(x) = g(x) par balayage dans un intervalle donné",
+            ],
+            "limites": [
+                "Une dérivée qui s'annule ne suffit pas pour conclure à un extremum (exemple de la fonction cube)",
+                "Si la dérivée n'est pas facilement factorisable, l'outil numérique donne ses racines",
+            ],
+        },
+
+        "Fonctions exponentielles de base q et logarithme décimal": {
+            "au_programme": [
+                "Fonctions x ↦ q^x (q > 0, q ≠ 1) : représentation graphique, variations, propriétés opératoires",
+                "Fonction logarithme décimal : représentation graphique, variations, propriétés opératoires",
+                "Transformer des écritures numériques ou littérales avec les propriétés opératoires",
+                "Résoudre q^x = a, log(x) = a, q^x ≥ a (ou ≤), log(x) ≥ a (ou ≤) par le calcul, graphiquement ou avec outils numériques",
+                "Lien avec les suites géométriques (modélisations discrètes d'évolution)",
+            ],
+            "limites": [
+                "Variations et propriétés des fonctions q^x admises après conjecture à l'aide d'outils numériques",
+                "log(b) défini comme l'unique solution de 10^x = b ; log(10^x) = x se déduit de la définition",
+                "Papier semi-logarithmique possible",
+            ],
+        },
+
+        "Calculs commerciaux et financiers — intérêts composés, amortissements (filières sans physique-chimie)": {
+            "au_programme": [
+                "Intérêts composés : formule c(n) = c0 × (1 + t)^n",
+                "Calculer le capital obtenu après n périodes",
+                "Déterminer la durée n pour obtenir un capital donné à un taux t donné",
+                "Compléter un tableau d'amortissement (annuités constantes ou amortissement constant)",
+                "Coût d'un emprunt, montant des annuités ou mensualités",
+                "Taux mensuel équivalent à un taux annuel ; taux moyen",
+            ],
+            "limites": [
+                "Dans un tableau d'amortissement, la première ligne est fournie entièrement et la deuxième partiellement",
+            ],
+        },
+
+        "Vecteurs dans l'espace — coordonnées, norme, colinéarité (groupement B)": {
+            "au_programme": [
+                "Dans l'espace muni d'un repère orthonormé : coordonnées d'un point et d'un vecteur",
+                "Déterminer graphiquement les coordonnées d'un vecteur ; représenter un vecteur de coordonnées données",
+                "Norme d'un vecteur",
+                "Coordonnées du vecteur somme de deux vecteurs",
+                "Coordonnées du produit d'un vecteur par un réel ; reconnaître des vecteurs égaux ou colinéaires",
+            ],
+            "limites": [
+                "Extension à l'espace, sans formalisme, des notions vues sur les vecteurs du plan",
+                "La norme est la longueur d'un représentant du vecteur",
+            ],
+        },
+
+        "Trigonométrie — équations, vecteurs de Fresnel (groupement A)": {
+            "au_programme": [
+                "Représentation de Fresnel d'une grandeur sinusoïdale a·sin(ωt + φ) et lien avec sa courbe",
+                "Résoudre cos x = a et sin x = b sur ]-π ; π]",
+                "Résoudre sin(ωt + φ) = c sur un intervalle approprié au contexte",
+            ],
+            "limites": [
+                "Exemples concrets issus du domaine professionnel ou de la physique",
+                "Fresnel : ajouter ou soustraire des tensions ou intensités sinusoïdales de même fréquence",
+            ],
+        },
+
+        "Algorithmique et programmation Python — approfondissement listes et fonctions": {
+            "au_programme": [
+                "Langage Python ; séquences d'instructions, instructions conditionnelles",
+                "Boucles bornées (for) et non bornées (while)",
+                "Types de variables : entiers, flottants, chaînes de caractères, booléens ; affectation",
+                "Fonctions : arguments, valeurs renvoyées, compléter ou structurer un programme avec des fonctions",
+                "Listes : générer (en extension ou en compréhension), ajouter, supprimer, extraire, parcourir, itérer",
+                "Analyser un problème, le décomposer en sous-problèmes ; modifier, compléter ou concevoir un programme simple",
+            ],
+            "limites": [
+                "Se limiter aux listes : ne pas présenter d'autres types de collections",
+                "La maîtrise des propriétés des types de variables n'est pas attendue",
+                "Dans des cas simples, l'en-tête de la fonction n'est pas systématiquement donné",
+                "Langage naturel : symbole ← pour l'affectation ; en Python : =",
+            ],
+        },
+
+        "Automatismes — probabilités, suites, dérivation, vecteurs": {
+            "au_programme": [
+                "Probabilité d'un événement contraire ; d'une réunion d'événements incompatibles ; d'une réunion ou d'une intersection de deux événements",
+                "Exploiter tableaux croisés d'effectifs et diagrammes ; probabilités conditionnelles",
+                "Terme de rang donné d'une suite arithmétique (premier terme et raison donnés)",
+                "Nombre de solutions de f(x) = 0 pour un polynôme de degré 2, lu sur sa représentation graphique",
+                "Forme factorisée d'un polynôme de degré 2 dont les racines et le coefficient dominant sont connus",
+                "Dérivée d'un polynôme de degré inférieur ou égal à 2",
+                "Vecteur du plan obtenu comme somme ou comme produit par un réel non nul (groupements A et B uniquement)",
+            ],
+            "limites": [
+                "Questions courtes de type « questions flash », calcul mental, sans longue rédaction",
+                "Les automatismes de seconde et de première continuent à être entretenus",
+            ],
+        },
+
+        "Calcul intégral — primitives, intégrale, aire (programme complémentaire)": {
+            "au_programme": [
+                "Primitives des fonctions usuelles par lecture inverse du tableau des dérivées",
+                "Primitives d'une somme de fonctions, du produit d'une fonction par un réel ; F + k est une primitive",
+                "Intégrale sur [a, b] d'une fonction admettant une primitive F : F(b) - F(a)",
+                "Interpréter l'intégrale d'une fonction positive comme une aire",
+            ],
+            "limites": [
+                "Aucune virtuosité calculatoire n'est imposée",
+                "Approximation par la méthode des rectangles possible avec des outils numériques",
+            ],
+        },
+
+        "Fonctions logarithme népérien et exponentielle de base e (programme complémentaire)": {
+            "au_programme": [
+                "Fonction ln : variations, représentation graphique sur un intervalle donné, propriétés opératoires",
+                "Définition du nombre e ; passer de ln(x) = a à x = e^a et inversement",
+                "Fonction exponentielle de base e : propriétés opératoires, variations, représentation graphique sur ℝ",
+            ],
+            "limites": [
+                "Les propriétés opératoires de ln sont admises",
+                "La courbe de x ↦ e^x est obtenue à l'aide d'outils numériques à partir de celle de ln",
+            ],
+        },
+
+        "Nombres complexes — forme algébrique et trigonométrique (programme complémentaire)": {
+            "au_programme": [
+                "Forme algébrique : partie réelle, partie imaginaire, conjugué, module ; égalité de deux complexes",
+                "Représentation dans le plan orthonormé direct : affixe d'un point, d'un vecteur",
+                "Somme, produit, quotient ; conjugué d'une somme, d'un produit, d'un quotient ; module d'un produit et d'un quotient",
+                "Argument et forme trigonométrique d'un complexe non nul ; passage d'une forme à l'autre",
+            ],
+            "limites": [
+                "Somme et produit peuvent être illustrés avec un logiciel de géométrie dynamique",
+            ],
+        },
+
+        "Produit scalaire de deux vecteurs du plan (programme complémentaire)": {
+            "au_programme": [
+                "Produit scalaire dans le plan rapporté à un repère orthonormé",
+                "Trois expressions : (1/2)(‖u+v‖² - ‖u‖² - ‖v‖²) ; ‖u‖ × ‖v‖ × cos θ ; xx' + yy'",
+                "Propriétés : u·v = v·u ; α(u·v) = (αu)·v ; u·(v+w) = u·v + u·w",
+                "Déterminer des longueurs et des angles",
+                "Vecteurs orthogonaux : produit scalaire nul, reconnu à l'aide des coordonnées",
+            ],
+            "limites": [
+                "Une seule expression est prise comme définition, les deux autres sont admises",
+                "La notion d'angle orienté de vecteurs est abordée de façon intuitive",
+            ],
+        },
+    },
+}
+
+
+def build_bloc_programme(niveau: str, chapitre: str) -> str:
+    """Bloc de contraintes BO à injecter dans un prompt. Vide si le chapitre n'est pas référencé."""
+    ref = PROGRAMME_BO.get(niveau, {}).get(chapitre)
+    if not ref:
+        return ""
+
+    def _liste(items):
+        return "\n".join(f"  - {c}" for c in items)
+
+    bloc = (
+        f"\n## PÉRIMÈTRE OFFICIEL (Bulletin officiel) — chapitre « {chapitre} »\n"
+        f"AU PROGRAMME (seules notions autorisées) :\n{_liste(ref.get('au_programme', []))}\n"
+    )
+    if ref.get("limites"):
+        bloc += f"LIMITES FIXÉES PAR LE BO :\n{_liste(ref['limites'])}\n"
+    if ref.get("hors_programme"):
+        bloc += f"HORS PROGRAMME (interdit) :\n{_liste(ref['hors_programme'])}\n"
+    regles = REGLES_GENERALES_BO.get(niveau)
+    if regles:
+        bloc += f"RÈGLES GÉNÉRALES DU NIVEAU :\n{_liste(regles)}\n"
+    bloc += ("RÈGLE ABSOLUE : toute notion absente de la liste AU PROGRAMME est interdite, "
+             "dans l'énoncé comme dans la correction.\n")
+    return bloc
+
 SYSTEM_EXERCICES = """\
 Tu es un professeur expert en pédagogie différenciée pour lycée professionnel (Bac Pro).
 Tes élèves ont un niveau en mathématiques fragile : tes énoncés sont toujours clairs, bienveillants et ancrés dans des contextes professionnels concrets.
@@ -363,15 +608,23 @@ Structure de sortie (Markdown) :
 """
 
 
-def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, filiere="", difficulte="🟡 Moyen"):
+# ============================================================
+# À REMPLACER dans utils.py : ces 3 fonctions entières
+# (supprimer les anciennes versions, garder SYSTEM_EXERCICES tel quel)
+# ============================================================
+
+def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes,
+                           filiere="", difficulte="🟡 Moyen"):
     ctx        = build_contexte_filiere(filiere)
     diff_label = difficulte.split(" ", 1)[-1].upper()
+    bloc_bo    = build_bloc_programme(niveau, chapitre)
     user = (
         f"Génère un contenu pédagogique de niveau **{diff_label}** pour :\n"
         f"- Niveau scolaire : {niveau} ({categorie})\n"
         f"- Matière : {matiere}\n"
         f"- Chapitre : {chapitre}\n"
         f"{ctx}"
+        f"{bloc_bo}"
         f"- Instructions : {consignes or 'Aucune'}\n\n"
         f"Applique scrupuleusement les consignes du niveau {diff_label} définies dans tes instructions."
     )
@@ -379,48 +632,94 @@ def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes, fili
 
 
 def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes,
-                                   filiere="", avec_corrige=True, chapitre_b=""):
-    ctx          = build_contexte_filiere(filiere)
-    bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\nCorrection complète de chaque question.\n" if avec_corrige else ""
-    chap_a_label = f"Partie A : {chapitre}"
-    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème mathématique complémentaire au choix"
+                                  filiere="", avec_corrige=True, chapitre_b=""):
+    ctx     = build_contexte_filiere(filiere)
+    bloc_bo = build_bloc_programme(niveau, chapitre)
+    if chapitre_b:
+        bloc_bo += build_bloc_programme(niveau, chapitre_b)
+    bloc_corrige = ("\n### CORRIGÉ DÉTAILLÉ *(document professeur)*\n"
+                    "Correction complète de chaque question.\n") if avec_corrige else ""
+    chap_b_label = (f"Partie B : {chapitre_b}" if chapitre_b
+                    else "Partie B : thème mathématique complémentaire au choix")
     return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO.
 
-Génère un SUJET D'ENTRAÎNEMENT AU CCF pour :
+Génère un SUJET D'ENTRAÎNEMENT AU CCF COMPLET ET RÉDIGÉ pour :
 - Niveau : {niveau} ({categorie})
 - Matière : {matiere}
-- {chap_a_label}
+- Partie A : {chapitre}
 - {chap_b_label}
-{ctx}
+{ctx}{bloc_bo}
 - Instructions : {consignes or 'Aucune'}
 
-## RÈGLES STRICTES DU FORMAT CCF OFFICIEL :
+## RÈGLES DE RÉDACTION (OBLIGATOIRES)
 
-1. La MISE EN SITUATION présente le contexte professionnel avec données chiffrées réalistes.
-2. La PROBLÉMATIQUE est UNE SEULE question (avec ?) encadrée en gras. C'est la seule question avec un "?".
-3. Les questions sont numérotées avec le nom de la compétence en majuscules : S'APPROPRIER / RÉALISER / ANALYSER-RAISONNER / VALIDER / COMMUNIQUER.
-4. Chaque question se termine par des lignes de réponse (______).
-5. La dernière question COMMUNIQUER répond à la problématique initiale.
-6. L'évaluation est sur 10 points, répartis en niveaux 0/1/2 par compétence.
-7. Les deux parties s'appuient sur LA MÊME mise en situation.
+1. CHAQUE question doit comporter un ÉNONCÉ ENTIÈREMENT RÉDIGÉ (1 à 3 phrases) citant les données
+   chiffrées de la mise en situation. Il est INTERDIT de laisser un crochet [ ], le mot « question »
+   seul, ou un énoncé vide : un élève doit pouvoir répondre sans rien deviner.
+2. La MISE EN SITUATION décrit une structure professionnelle réaliste avec des données chiffrées
+   et un document support (tableau Markdown complet, valeurs numériques réelles).
+3. La PROBLÉMATIQUE est UNE SEULE question, en gras, se terminant par « ? ». C'est la seule
+   question du document avec un point d'interrogation.
+4. Chaque question commence par son numéro et sa compétence en gras :
+   S'APPROPRIER / RÉALISER / ANALYSER / RAISONNER / VALIDER / COMMUNIQUER.
+5. Chaque énoncé est suivi d'une ligne de réponse « ______ ».
+6. La dernière question COMMUNIQUER demande de répondre à la problématique.
+7. Notation sur 10 points par niveaux d'acquisition 0/1/2 (pas de barème en points).
+8. Les deux parties s'appuient sur LA MÊME mise en situation.
+9. Respecte strictement le périmètre du BO indiqué ci-dessus.
+
+## FORME ATTENDUE (exemple de forme uniquement — ne recopie pas son contenu)
 
 ### MISE EN SITUATION PROFESSIONNELLE
-[Description du contexte avec données chiffrées et document support]
+Rédaction du contexte, puis tableau Markdown avec les vraies valeurs.
 
 ### PROBLÉMATIQUE
-**[UNE SEULE question centrale se terminant par ?]**
+**Une phrase interrogative propre à ta situation ?**
 
-### PARTIE A — [Titre lié à : {chapitre}]
-1. **S'APPROPRIER** - [question] ______
-2. **RÉALISER** - [question] ______
-3. **ANALYSER / RAISONNER** - [question] ______
-4. **RÉALISER** 🛎️ APPELER L'EXAMINATEUR - [question] ______
-5. **VALIDER** - [question] ______
-6. **COMMUNIQUER** - Répondre à la problématique. ______
+### PARTIE A — Titre lié à « {chapitre} »
 
-### PARTIE B — [{chapitre_b if chapitre_b else "second thème mathématique"}]
-[Mêmes règles]
+1. **S'APPROPRIER**
+Relever dans le tableau le chiffre d'affaires du mois de mars et le nombre de clients correspondants.
+______
+
+2. **RÉALISER**
+Calculer le panier moyen du mois de mars en détaillant le calcul.
+______
+
+(puis questions 3 à 6 : ANALYSER / RAISONNER, RÉALISER 🛎️ APPELER L'EXAMINATEUR,
+VALIDER, COMMUNIQUER — toutes avec un énoncé rédigé)
+
+### PARTIE B — Titre lié au second chapitre
+Même format, même situation professionnelle.
 {bloc_corrige}
+Réponds entièrement en Markdown."""
+
+
+def build_prompt_boss(niveau, filiere, chapitre, niveau_valide):
+    ctx        = build_contexte_filiere(filiere)
+    bloc_bo    = build_bloc_programme(niveau, chapitre)
+    diff_label = niveau_valide.split(" ", 1)[-1].upper()
+    mascotte   = MASCOTTES[niveau_valide]["animal"]
+    return f"""Tu es un professeur expert en Bac Pro qui crée un DÉFI BOSS pour un élève.
+
+L'élève vient de valider le niveau {diff_label} sur le chapitre "{chapitre}".
+
+Crée un sujet d'exercices BOSS pour :
+- Niveau scolaire : {niveau} (Bac Pro) — Matière : Mathématiques
+- Chapitre : {chapitre} — Difficulté : {diff_label} AVANCÉ
+{ctx}{bloc_bo}
+
+RÈGLES DU BOSS :
+- Mise en situation professionnelle réaliste et complète, sans données guidées.
+- 4 à 5 questions progressives, chacune avec un ÉNONCÉ ENTIÈREMENT RÉDIGÉ, sans aide ni formule rappelée.
+- La dernière question demande un raisonnement complet et une conclusion rédigée.
+- Reste strictement dans le périmètre du BO indiqué ci-dessus.
+- PAS DE CORRIGÉ — l'élève doit s'auto-corriger ou demander au professeur.
+- Ton encourageant mais exigeant.
+
+### ⚔️ DÉFI BOSS — {mascotte} {MASCOTTES[niveau_valide]["nom"]}
+*Prouve que tu maîtrises vraiment ce chapitre !*
+
 Réponds entièrement en Markdown."""
 
 
@@ -453,32 +752,6 @@ Génère un SUJET DE CCF OFFICIEL pour :
 9. Les deux parties sur LA MÊME mise en situation.
 {bloc_corrige}
 Réponds entièrement en Markdown avec mise en page soignée."""
-
-
-def build_prompt_boss(niveau, filiere, chapitre, niveau_valide):
-    ctx        = build_contexte_filiere(filiere)
-    diff_label = niveau_valide.split(" ", 1)[-1].upper()
-    mascotte   = MASCOTTES[niveau_valide]["animal"]
-    return f"""Tu es un professeur expert en Bac Pro qui crée un DÉFI BOSS pour un élève.
-
-L'élève vient de valider le niveau {diff_label} sur le chapitre "{chapitre}".
-
-Crée un sujet d'exercices BOSS pour :
-- Niveau scolaire : {niveau} (Bac Pro) — Matière : Mathématiques
-- Chapitre : {chapitre} — Difficulté : {diff_label} AVANCÉ
-{ctx}
-
-RÈGLES DU BOSS :
-- Mise en situation professionnelle réaliste et complète, sans données guidées.
-- 4 à 5 questions progressives sans aide, sans formules rappelées.
-- La dernière question demande un raisonnement complet et une conclusion rédigée.
-- PAS DE CORRIGÉ — l'élève doit s'auto-corriger ou demander au professeur.
-- Ton encourageant mais exigeant.
-
-### ⚔️ DÉFI BOSS — {mascotte} {MASCOTTES[niveau_valide]["nom"]}
-*Prouve que tu maîtrises vraiment ce chapitre !*
-
-Réponds entièrement en Markdown."""
 
 
 # ============================================================
