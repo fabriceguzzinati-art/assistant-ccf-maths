@@ -82,10 +82,11 @@ div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div
 .stCheckbox > label {{ color:#94a3b8 !important; }}
 .stRadio > label {{ color:#94a3b8 !important; }}
 .stExpander {{ background:#13162a !important; border:1px solid #2d3561 !important; border-radius:10px !important; }}
-.info-box {{ background:#f0f4ff; border-left:4px solid #4a6cf7; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
-.warn-box {{ background:#fff8e1; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
-.ok-box   {{ background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; border-radius:4px; margin:8px 0; font-size:.9rem; }}
-.badge    {{ display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px; padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }}
+.info-box {{ background:{t['primary']}1f; border-left:4px solid {t['primary']}; color:{t['text']} !important; padding:12px 16px; border-radius:6px; margin:8px 0; font-size:.9rem; }}
+.warn-box {{ background:#f59e0b26; border-left:4px solid #f59e0b; color:{t['text']} !important; padding:12px 16px; border-radius:6px; margin:8px 0; font-size:.9rem; }}
+.ok-box   {{ background:#22c55e26; border-left:4px solid #22c55e; color:{t['text']} !important; padding:12px 16px; border-radius:6px; margin:8px 0; font-size:.9rem; }}
+.info-box *, .warn-box *, .ok-box * {{ color:{t['text']} !important; }}
+.badge    {{ display:inline-block; background:{t['primary']}33; color:{t['text']}; border:1px solid {t['primary']}66; border-radius:6px; padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }}
 </style>""", unsafe_allow_html=True)
 
 
@@ -140,8 +141,11 @@ with st.sidebar:
 
         streak_txt = (f"{feu} {streak} jour{'s' if streak > 1 else ''} d'affilée !"
                       if streak > 0 else "Lance ton premier streak aujourd'hui !")
+        
+        bg_card = t['bg_app']
+        
         st.markdown(
-            f'<div style="background:linear-gradient(135deg,#13162a,#1e2235);'
+            f'<div style="background:{bg_card};'
             f'border:1px solid {cb}44;border-radius:10px;padding:12px 14px;margin:6px 0">'
             f'<div style="font-size:.82rem;color:#94a3b8">{salut} 👋</div>'
             f'<div style="font-family:Outfit,sans-serif;font-weight:800;color:#e2e8f0;font-size:1rem;margin:2px 0">{code_eleve}</div>'
