@@ -89,6 +89,8 @@ div[data-testid="stRadio"] div[role="radiogroup"] div[aria-checked="true"] > div
 .badge    {{ display:inline-block; background:{t['primary']}33; color:{t['text']}; border:1px solid {t['primary']}66; border-radius:6px; padding:3px 10px; font-size:.8rem; margin-right:6px; margin-bottom:4px; }}
 </style>""", unsafe_allow_html=True)
 
+GENRES  = ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"]
+AVATARS = ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"]
 
 # ============================================================
 # 4. SESSION STATE
@@ -120,7 +122,21 @@ with st.sidebar:
     code_eleve = st.text_input("Code élève", placeholder="Ex : ASSP-03", key="code_eleve",
                                label_visibility="collapsed",
                                help="Code distribué par ton professeur.").strip().upper()
-
+    
+    if code_eleve and st.session_state.get("identite_code") != code_eleve:
+        _recs = lire_progression_grist(code_eleve)
+        # Du plus récent au plus ancien : on prend le dernier genre et le dernier avatar valides
+        _recs.sort(key=lambda r: (str(r.get("date", "")), str(r.get("heure", ""))), reverse=True)
+        _genre  = next((r.get("genre")  for r in _recs if r.get("genre")  in GENRES),  None)
+        _avatar = next((r.get("avatar") for r in _recs if r.get("avatar") in AVATARS), None)
+        # Possible ici : les widgets ci-dessous ne sont pas encore créés dans ce run
+        if _genre:
+            st.session_state["radio_genre"] = _genre
+        if _avatar:
+            st.session_state["select_avatar"] = _avatar
+        st.session_state.streak_cache  = calculer_streak(_recs)   # évite un 2e appel Grist
+        st.session_state.identite_code = code_eleve
+    
     if code_eleve:
         if not st.session_state.streak_cache:
             st.session_state.streak_cache = calculer_streak(lire_progression_grist(code_eleve))
@@ -180,13 +196,11 @@ with st.sidebar:
     if "avatar_pref" not in st.session_state: st.session_state.avatar_pref = "Robotique 🤖"
 
     genre = st.radio(
-        "Pronoms",
-        ["Neutre (Aventurier)", "Féminin (Aventurière)", "Masculin (Aventurier)"],
+        "Pronoms", GENRES,
         key="radio_genre", label_visibility="collapsed"
     )
     avatar_style = st.selectbox(
-        "Avatar",
-        ["Robotique 🤖", "Mage 🧙‍♂️", "Guerrier/ère 🛡️", "Animalier 🐾"],
+        "Avatar", AVATARS,
         key="select_avatar", label_visibility="collapsed"
     )
     st.session_state.genre_pref  = genre
