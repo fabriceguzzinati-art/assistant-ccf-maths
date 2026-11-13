@@ -1304,27 +1304,35 @@ def _slug(text: str) -> str:
 
 
 def _trouver_fichier_banque(niveau, filiere, chapitre, difficulte, suffixe=""):
+    """
+    Retourne le fichier de la banque qui correspond EXACTEMENT à la combinaison
+    niveau + filière + chapitre + difficulté, ou None s'il n'existe pas.
+    Les 4 critères sont obligatoires : un chapitre différent ne doit jamais
+    être servi à la place de celui demandé.
+    """
     if not os.path.exists(BANQUE_DIR):
         return None
-    niv_n  = _normalise(niveau)
-    fil_n  = _normalise(filiere)
-    diff_n = _normalise(difficulte.split(" ", 1)[-1])
-    chap_n = _normalise(chapitre)[:45]
-    ext    = f"{suffixe}.json"
 
-    meilleur, meilleur_score = None, 0
-    for fname in os.listdir(BANQUE_DIR):
+    # Critères normalisés (sans accents, ponctuation ni casse).
+    # Le chapitre est comparé sur ses 30 premiers caractères : les noms de fichiers
+    # sont tronqués, mais 30 caractères suffisent à distinguer les chapitres d'un niveau.
+    criteres = [
+        _normalise(niveau),
+        _normalise(filiere),
+        _normalise(chapitre)[:30],
+        _normalise(difficulte.split(" ", 1)[-1]),
+    ]
+    criteres = [c for c in criteres if c]      # ignore un critère vide (ex. pas de filière)
+    ext = f"{suffixe}.json"
+
+    for fname in sorted(os.listdir(BANQUE_DIR)):
         if not fname.endswith(ext):
             continue
         if suffixe == "" and fname.endswith("_interactif.json"):
             continue
         fname_n = _normalise(fname)
-        score   = sum(1 for k in [niv_n, fil_n, chap_n, diff_n] if k and k in fname_n)
-        if score > meilleur_score:
-            meilleur_score, meilleur = score, fname
-
-    if meilleur_score >= 3 and meilleur:
-        return os.path.join(BANQUE_DIR, meilleur)
+        if all(c in fname_n for c in criteres):
+            return os.path.join(BANQUE_DIR, fname)
     return None
 
 
