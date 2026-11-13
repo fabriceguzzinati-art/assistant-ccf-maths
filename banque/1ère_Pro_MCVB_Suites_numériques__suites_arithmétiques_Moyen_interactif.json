@@ -1,0 +1,54 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟡 Moyen",
+    "format": "interactif",
+    "date_generation": "2026-11-13",
+    "contexte": "Vous êtes stagiaire commercial dans une entreprise de vente en ligne. Votre tuteur vous demande de suivre l'évolution de vos performances commerciales et de celles de vos collègues pour mieux comprendre les objectifs et les résultats des stratégies de vente. Vous appliquerez les concepts de suites arithmétiques pour analyser ces données.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où chaque terme, à partir du second, est obtenu en ajoutant une constante appelée raison (r) au terme précédent. La formule générale est Un = U1 + (n-1)r (si U1 est le premier terme) ou Un = U0 + nr (si U0 est le premier terme). La somme des n premiers termes est Sn = n * (U1 + Un) / 2.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un nouveau vendeur a réalisé un chiffre d'affaires de 1 500 € la première semaine (U1). Son objectif est d'augmenter son chiffre d'affaires de 120 € chaque semaine. Quel sera son chiffre d'affaires prévu pour la 7ème semaine (U7) ?",
+        "type": "numerique",
+        "reponse": 2220.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Utilisez la formule du nième terme d'une suite arithmétique : Un = U1 + (n-1)r.",
+        "corrige": "U1 = 1500 € (chiffre d'affaires de la 1ère semaine)\nr = 120 € (augmentation hebdomadaire)\nn = 7 (semaine visée)\nU7 = U1 + (7-1)r\nU7 = 1500 + (6) * 120\nU7 = 1500 + 720\nU7 = 2220 €\nLe chiffre d'affaires prévu pour la 7ème semaine est de 2220 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un commercial a commencé le mois de janvier (mois 1) avec un portefeuille de 45 clients actifs. Au mois de juillet (mois 7), son portefeuille comptait 75 clients actifs. En supposant une augmentation constante du nombre de clients chaque mois (suite arithmétique), quelle a été l'augmentation moyenne du nombre de clients par mois (la raison 'r') ?",
+        "type": "numerique",
+        "reponse": 5.0,
+        "unite": "clients",
+        "tolerance": 0.5,
+        "indice": "Vous connaissez U1 et Un (ici U7) ainsi que n. La formule Un = U1 + (n-1)r permet de trouver 'r'.",
+        "corrige": "U1 = 45 clients (janvier, mois 1)\nU7 = 75 clients (juillet, mois 7)\nn = 7\nU7 = U1 + (n-1)r\n75 = 45 + (7-1)r\n75 = 45 + 6r\n75 - 45 = 6r\n30 = 6r\nr = 30 / 6\nr = 5 clients\nL'augmentation moyenne du nombre de clients par mois est de 5 clients."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un agent de prospection reçoit une commission basée sur le nombre de nouveaux prospects qualifiés. Le premier mois (U1), il a qualifié 10 prospects. Grâce à l'expérience, il qualifie 3 prospects de plus chaque mois par rapport au mois précédent. Quel est le nombre total de prospects qualifiés sur les 6 premiers mois de son activité ?",
+        "type": "numerique",
+        "reponse": 105.0,
+        "unite": "prospects",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le nombre de prospects au 6ème mois (U6), puis utilisez la formule de la somme des termes d'une suite arithmétique : Sn = n * (U1 + Un) / 2.",
+        "corrige": "U1 = 10 prospects (1er mois)\nr = 3 prospects (augmentation mensuelle)\nn = 6 (nombre de mois)\n1. Calcul de U6 (nombre de prospects au 6ème mois):\n   U6 = U1 + (6-1)r\n   U6 = 10 + (5) * 3\n   U6 = 10 + 15\n   U6 = 25 prospects\n2. Calcul de S6 (somme des prospects sur 6 mois):\n   S6 = n * (U1 + U6) / 2\n   S6 = 6 * (10 + 25) / 2\n   S6 = 6 * 35 / 2\n   S6 = 210 / 2\n   S6 = 105 prospects\nLe nombre total de prospects qualifiés sur les 6 premiers mois est de 105 prospects."
+      },
+      {
+        "numero": 4,
+        "enonce": "Une équipe de vente a mis en place une stratégie pour optimiser le temps passé en entretien client. Le temps moyen par entretien suit une suite arithmétique. Le 5ème jour de la stratégie, un entretien dure en moyenne 42 minutes. Le 10ème jour, un entretien dure en moyenne 57 minutes. Quel était le temps moyen par entretien le premier jour (U1) de cette stratégie ?",
+        "type": "numerique",
+        "reponse": 30.0,
+        "unite": "minutes",
+        "tolerance": 0.5,
+        "indice": "Utilisez les deux termes connus (U5 et U10) pour d'abord trouver la raison 'r', puis remontez à U1 avec U5 = U1 + (5-1)r.",
+        "corrige": "U5 = 42 minutes (5ème jour)\nU10 = 57 minutes (10ème jour)\n1. Calcul de la raison 'r' :\n   U10 = U5 + (10-5)r\n   57 = 42 + 5r\n   57 - 42 = 5r\n   15 = 5r\n   r = 15 / 5\n   r = 3 minutes (augmentation quotidienne du temps)\n2. Calcul de U1 (temps au 1er jour) :\n   U5 = U1 + (5-1)r\n   42 = U1 + 4 * 3\n   42 = U1 + 12\n   U1 = 42 - 12\n   U1 = 30 minutes\nLe temps moyen par entretien le premier jour de cette stratégie était de 30 minutes."
+      }
+    ]
+  }
+]

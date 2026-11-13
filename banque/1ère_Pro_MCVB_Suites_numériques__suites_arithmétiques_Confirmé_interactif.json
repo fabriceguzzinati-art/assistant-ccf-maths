@@ -1,0 +1,64 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟠 Confirmé",
+    "format": "interactif",
+    "date_generation": "2026-11-13",
+    "contexte": "Dans le secteur du commerce et de la vente, les objectifs de chiffre d'affaires, les primes ou même le nombre de clients peuvent suivre des progressions régulières. La compréhension des suites arithmétiques est essentielle pour prévoir ces évolutions et adapter les stratégies commerciales.",
+    "rappel_cours": "Une suite arithmétique est définie par $u_n = u_p + (n-p)r$, où $u_n$ est le terme de rang $n$, $u_p$ est un terme de rang $p$, et $r$ est la raison de la suite. La somme des $N$ premiers termes est $S_N = N \\times \\frac{u_1 + u_N}{2}$.",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un vendeur débute le mois de janvier avec un chiffre d'affaires (CA) de 12 000 €. Il s'engage à augmenter son CA de 450 € chaque mois suivant. Quel sera son chiffre d'affaires prévisionnel pour le mois de juillet de la même année ?",
+        "type": "numerique",
+        "reponse": 14700.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Le mois de janvier correspond au 1er terme ($u_1$). Le mois de juillet correspond au 7ème terme. Utilisez la formule du terme général d'une suite arithmétique.",
+        "corrige": "Le CA du 1er mois (janvier) est $u_1 = 12000$ €.\nLa raison $r = 450$ €.\nLe mois de juillet est le 7ème mois, donc nous cherchons $u_7$.\n$u_n = u_p + (n-p)r$\n$u_7 = u_1 + (7-1) \\times r$\n$u_7 = 12000 + 6 \\times 450$\n$u_7 = 12000 + 2700$\n$u_7 = 14700$ €.\nLe chiffre d'affaires prévisionnel pour le mois de juillet sera de 14 700 €."
+      },
+      {
+        "numero": 2,
+        "enonce": "Un commercial démarre son activité avec un chiffre d'affaires mensuel de 8 000 €. Il parvient à l'augmenter de 300 € par mois. Quel sera le chiffre d'affaires *total* cumulé sur les 12 premiers mois d'activité ?",
+        "type": "numerique",
+        "reponse": 115800.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "Calculez d'abord le CA du 12ème mois ($u_{12}$), puis utilisez la formule de la somme des termes d'une suite arithmétique.",
+        "corrige": "Le CA du 1er mois est $u_1 = 8000$ €.\nLa raison $r = 300$ €.\nNous devons d'abord calculer le CA du 12ème mois ($u_{12}$):\n$u_{12} = u_1 + (12-1) \\times r$\n$u_{12} = 8000 + 11 \\times 300$\n$u_{12} = 8000 + 3300$\n$u_{12} = 11300$ €.\nMaintenant, calculons la somme des 12 premiers mois ($S_{12}$):\n$S_N = N \\times \\frac{u_1 + u_N}{2}$\n$S_{12} = 12 \\times \\frac{8000 + 11300}{2}$\n$S_{12} = 12 \\times \\frac{19300}{2}$\n$S_{12} = 12 \\times 9650$\n$S_{12} = 115800$ €.\nLe chiffre d'affaires total cumulé sur les 12 premiers mois sera de 115 800 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un magasin spécialisé en articles de sport a vendu 250 paires de chaussures de running le premier mois de l'année. Le 5ème mois, il en a vendu 330. Si l'on considère que la progression des ventes suit une suite arithmétique, de combien d'unités les ventes ont-elles augmenté en moyenne chaque mois ?",
+        "type": "numerique",
+        "reponse": 20.0,
+        "unite": "unités",
+        "tolerance": 0.5,
+        "indice": "Vous connaissez $u_1$ et $u_5$. La différence entre ces deux termes est due à 4 fois la raison. Utilisez la formule $u_n = u_p + (n-p)r$ pour trouver $r$.",
+        "corrige": "Le nombre de ventes du 1er mois est $u_1 = 250$ unités.\nLe nombre de ventes du 5ème mois est $u_5 = 330$ unités.\nNous cherchons la raison $r$.\n$u_5 = u_1 + (5-1) \\times r$\n$330 = 250 + 4r$\n$330 - 250 = 4r$\n$80 = 4r$\n$r = \\frac{80}{4}$\n$r = 20$ unités.\nLes ventes ont augmenté de 20 unités en moyenne chaque mois."
+      },
+      {
+        "numero": 4,
+        "enonce": "Un jeune vendeur perçoit une commission mensuelle de 600 € au début de son contrat. Grâce à ses performances, sa commission augmente de 35 € chaque mois. À partir de quel mois sa commission mensuelle dépassera-t-elle pour la première fois les 1000 € ?",
+        "type": "numerique",
+        "reponse": 13.0,
+        "unite": "mois",
+        "tolerance": 0.0,
+        "indice": "Fixez l'équation $u_n > 1000$ en utilisant la formule $u_n = u_1 + (n-1)r$. Résolvez pour $n$ et prenez le premier entier supérieur si le résultat n'est pas un entier.",
+        "corrige": "La commission du 1er mois est $u_1 = 600$ €.\nLa raison $r = 35$ €.\nNous cherchons le rang $n$ à partir duquel $u_n > 1000$.\n$u_n = u_1 + (n-1) \\times r$\n$600 + (n-1) \\times 35 > 1000$\n$(n-1) \\times 35 > 1000 - 600$\n$(n-1) \\times 35 > 400$\n$n-1 > \\frac{400}{35}$\n$n-1 > 11.428...$\nComme $n-1$ doit être un entier pour représenter un nombre de 'sauts' mensuels, nous devons prendre l'entier suivant pour que la condition soit remplie.\nSi $n-1 = 11$, $u_{12} = 600 + 11 \\times 35 = 985$ (inférieur à 1000).\nSi $n-1 = 12$, alors $n = 13$.\nVérification: $u_{13} = 600 + (13-1) \\times 35 = 600 + 12 \\times 35 = 600 + 420 = 1020$ € (ce qui est bien supérieur à 1000 €).\nSa commission mensuelle dépassera pour la première fois les 1000 € à partir du 13ème mois."
+      },
+      {
+        "numero": 5,
+        "enonce": "Une boutique de prêt-à-porter observe que le nombre moyen de 'paniers' (ventes) par jour, pour une certaine collection, suit une progression arithmétique. Le 4ème jour du lancement de la collection, 82 paniers moyens ont été enregistrés. Le 8ème jour, ce nombre était de 98 paniers. Combien de paniers moyens avaient été enregistrés le 1er jour du lancement ?",
+        "type": "numerique",
+        "reponse": 70.0,
+        "unite": "paniers",
+        "tolerance": 0.5,
+        "indice": "Utilisez les termes $u_4$ et $u_8$ pour trouver la raison $r$. Ensuite, utilisez $u_4$ et $r$ pour trouver $u_1$.",
+        "corrige": "Nous connaissons $u_4 = 82$ paniers et $u_8 = 98$ paniers.\nPour trouver la raison $r$: $u_8 = u_4 + (8-4) \\times r$\n$98 = 82 + 4r$\n$98 - 82 = 4r$\n$16 = 4r$\n$r = \\frac{16}{4}$\n$r = 4$ paniers.\nMaintenant, pour trouver $u_1$ en utilisant $u_4$ et $r$:\n$u_4 = u_1 + (4-1) \\times r$\n$82 = u_1 + 3 \\times 4$\n$82 = u_1 + 12$\n$u_1 = 82 - 12$\n$u_1 = 70$ paniers.\nLe 1er jour du lancement, 70 paniers moyens avaient été enregistrés."
+      }
+    ]
+  }
+]

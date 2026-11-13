@@ -1,0 +1,44 @@
+[
+  {
+    "niveau": "1ère Pro",
+    "filiere": "MCVB",
+    "chapitre": "Suites numériques — suites arithmétiques",
+    "difficulte": "🟢 Débutant",
+    "format": "interactif",
+    "date_generation": "2026-11-13",
+    "contexte": "Vous êtes un(e) apprenti(e) en Bac Pro Métiers du Commerce et de la Vente. Votre entreprise utilise les suites numériques pour suivre l'évolution de ses performances commerciales, comme le nombre de ventes, les commissions ou l'évolution d'un portefeuille clients. Ces outils mathématiques vous aident à anticiper et à planifier.",
+    "rappel_cours": "Une suite arithmétique est une suite de nombres où l'on passe d'un terme au suivant en ajoutant toujours le même nombre, appelé raison (r). Le terme général Un se calcule par Un = U0 + n * r (si le premier terme est U0) ou Un = U1 + (n-1) * r (si le premier terme est U1).",
+    "questions": [
+      {
+        "numero": 1,
+        "enonce": "Un commercial débute sa première semaine (U1) avec 12 ventes réalisées. Chaque semaine, grâce à une formation continue, il améliore ses techniques et réalise 3 ventes de plus que la semaine précédente. Combien de ventes aura-t-il réalisées lors de sa 5ème semaine (U5) d'activité ?",
+        "type": "numerique",
+        "reponse": 24.0,
+        "unite": "ventes",
+        "tolerance": 0,
+        "indice": "Rappelez-vous la formule Un = U1 + (n-1) * r. Identifiez le premier terme (U1), la raison (r) et le rang du terme que vous cherchez (n).",
+        "corrige": "Le premier terme U1 = 12 ventes. La raison r = 3 ventes/semaine. Nous cherchons le 5ème terme (U5).\nEn utilisant la formule Un = U1 + (n-1) * r :\nU5 = 12 + (5-1) * 3\nU5 = 12 + 4 * 3\nU5 = 12 + 12\nU5 = 24.\nLe commercial aura réalisé 24 ventes lors de sa 5ème semaine."
+      },
+      {
+        "numero": 2,
+        "enonce": "Le salaire d'un commercial inclut une commission fixe de 250 € la première année (U1) d'ancienneté. Chaque année, pour valoriser son expérience, cette commission augmente de 30 €. Quelle sera sa commission annuelle lors de sa 7ème année (U7) de service dans l'entreprise ?",
+        "type": "numerique",
+        "reponse": 430.0,
+        "unite": "€",
+        "tolerance": 0.5,
+        "indice": "La commission annuelle forme une suite arithmétique. Appliquez la formule du terme général Un = U1 + (n-1) * r pour trouver la commission de la 7ème année.",
+        "corrige": "Le premier terme U1 = 250 €. La raison r = 30 €/an. Nous cherchons le 7ème terme (U7).\nEn utilisant la formule Un = U1 + (n-1) * r :\nU7 = 250 + (7-1) * 30\nU7 = 250 + 6 * 30\nU7 = 250 + 180\nU7 = 430.\nSa commission annuelle lors de sa 7ème année sera de 430 €."
+      },
+      {
+        "numero": 3,
+        "enonce": "Un agent immobilier commence l'année (U1) avec 45 annonces immobilières dans son portefeuille. Son objectif est d'augmenter son nombre d'annonces de manière constante chaque mois. Au bout du 6ème mois (U6), il constate qu'il a atteint 75 annonces. Quelle est la raison (l'augmentation constante en nombre d'annonces par mois) de cette suite arithmétique ?",
+        "type": "numerique",
+        "reponse": 6.0,
+        "unite": "annonces",
+        "tolerance": 0,
+        "indice": "Vous connaissez U1, U6 et le nombre de périodes (n). Utilisez la formule Un = U1 + (n-1) * r pour isoler et calculer r.",
+        "corrige": "Le premier terme U1 = 45 annonces. Le 6ème terme U6 = 75 annonces. Nous avons n = 6.\nEn utilisant la formule Un = U1 + (n-1) * r :\n75 = 45 + (6-1) * r\n75 = 45 + 5r\nPour trouver r, nous isolons la variable :\n75 - 45 = 5r\n30 = 5r\nr = 30 / 5\nr = 6.\nLa raison de cette suite arithmétique est de 6 annonces par mois."
+      }
+    ]
+  }
+]
