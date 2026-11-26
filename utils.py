@@ -126,6 +126,8 @@ CHAPITRES_PAR_MATIERE_GENERAL = {
 # ============================================================
 # 2. FILIÈRES PRO
 # ============================================================
+GROUPEMENT_FILIERES = {"ASSP": "C", "MCVA": "C", "MCVB": "C", "AGORA": "C"}
+FILIERES_SANS_PC    = {"ASSP", "MCVA", "MCVB", "AGORA"}
 
 LISTE_FILIERES = ["ASSP", "MCVB", "MCVA", "AGORA", "Autre (Préciser ci-dessous)"]
 
@@ -175,6 +177,69 @@ CONTEXTES_FILIERES = {
         "mots_cles": "entreprise, comptabilité, salaire, facture, devis, ressources humaines, secrétariat",
     },
 }
+
+CONTEXTES_PAR_FAMILLE = {
+    "ASSP": {
+        "stat": ["Évolution du poids ou de la taille d'un enfant selon l'âge (carnet de santé)",
+                 "Consommation d'eau de résidents d'EHPAD selon la température extérieure en période de canicule"],
+        "proba": ["Résidents classés par niveau de dépendance et par risque de chute (tableau croisé)",
+                  "Dépistage : proportion de personnes présentant un facteur de risque selon la tranche d'âge"],
+        "suites": ["Dose de médicament augmentée d'un palier fixe chaque jour",
+                   "Quantité de médicament restant dans l'organisme, diminuant d'un même pourcentage après chaque prise",
+                   "Nombre de bénéficiaires d'un service d'aide à domicile augmentant d'un taux fixe par an"],
+        "fonctions": ["Coût mensuel d'une prise en charge selon le nombre d'heures d'intervention",
+                      "Concentration d'un produit dans le sang en fonction du temps (courbe donnée)"],
+        "exp_log": ["Prolifération de bactéries au cours du temps (hygiène)",
+                    "pH d'un produit d'entretien (logarithme décimal)"],
+        "financier": ["Reste à charge d'une prise en charge après aides",
+                      "Coût d'un emprunt contracté par une association pour un équipement"],
+        "geometrie": ["Volume de contenants (flacons, seringues, bassines)",
+                      "Surface et agencement d'une chambre à aménager"],
+    },
+    "MCVB": {
+        "stat": ["Budget publicitaire et chiffre d'affaires mensuel",
+                 "Nombre de visites de prospection et nombre de contrats signés"],
+        "proba": ["Clients selon le canal de contact (téléphone, visite, e-mail) et la signature du contrat (tableau croisé)",
+                  "Taux de transformation d'un fichier de prospects"],
+        "suites": ["Objectif de ventes augmentant d'un palier fixe chaque mois",
+                   "Chiffre d'affaires évoluant à taux de croissance fixe"],
+        "fonctions": ["Bénéfice d'une opération commerciale selon la quantité vendue (coût et recette)",
+                      "Coût total et coût moyen d'une gamme de produits"],
+        "exp_log": ["Produit perdant un même pourcentage de valeur chaque année",
+                    "Diffusion d'une offre par bouche-à-oreille"],
+        "financier": ["Marge, coefficient multiplicateur, intérêts d'un crédit client",
+                      "Placement de trésorerie de l'entreprise"],
+        "geometrie": ["Volume et surface de colis et d'emballages", "Implantation d'un stand"],
+    },
+    "MCVA": {
+        "stat": ["Fréquentation du magasin selon la période ou la température",
+                 "Chiffre d'affaires d'un rayon selon la longueur de linéaire"],
+        "proba": ["Clients selon le rayon visité et l'achat réalisé (tableau croisé)",
+                  "Produits défectueux reçus selon le fournisseur"],
+        "suites": ["Stock augmenté d'une quantité fixe à chaque livraison",
+                   "Décote d'un produit de saison : prix réduit d'un même pourcentage chaque semaine"],
+        "fonctions": ["Recette et coût d'un rayon selon la quantité vendue ; coût moyen unitaire"],
+        "exp_log": ["Démarque successive d'un produit saisonnier"],
+        "financier": ["Coefficient multiplicateur, TVA, intérêts simples, coût marginal",
+                      "Financement d'un nouvel agencement par emprunt"],
+        "geometrie": ["Surface de vente, linéaire développé", "Volume d'un conteneur ou d'une palette"],
+    },
+    "AGORA": {
+        "stat": ["Ancienneté et salaire dans une entreprise",
+                 "Dépenses de formation et taux d'absentéisme"],
+        "proba": ["Salariés répartis par service et par type de contrat (tableau croisé)",
+                  "Retards de paiement de clients"],
+        "suites": ["Épargne ou remboursement par versements réguliers de même montant",
+                   "Placement dont le capital augmente d'un même pourcentage chaque année"],
+        "fonctions": ["Coût de reprographie selon le nombre de copies",
+                      "Résultat d'une association selon le nombre d'adhérents"],
+        "exp_log": ["Placement de trésorerie à taux fixe : durée pour atteindre un capital donné"],
+        "financier": ["Intérêts simples ou composés, tableau d'amortissement d'un emprunt",
+                      "Taux mensuel équivalent, coût d'un crédit"],
+        "geometrie": ["Plan de bureaux et calcul de surfaces", "Volume de stockage d'archives"],
+    },
+}
+
 
 COMPETENCES_CCF = [
     {
@@ -284,18 +349,52 @@ BADGES = [
 # 4. HELPERS — Chapitres
 # ============================================================
 
-def get_chapitres(matiere: str, niveau: str, categorie: str) -> list:
+def chapitre_autorise(chapitre: str, filiere: str) -> bool:
+    """False si le titre indique un groupement ou une condition qui exclut la filière."""
+    if filiere not in GROUPEMENT_FILIERES:      # "Autre" ou vide : aucun filtre
+        return True
+    m = re.search(r"\(groupements? ([A-C](?: et [A-C])*)\)", chapitre)
+    if m and GROUPEMENT_FILIERES[filiere] not in re.findall(r"[A-C]", m.group(1)):
+        return False
+    if "sans physique-chimie" in chapitre and filiere not in FILIERES_SANS_PC:
+        return False
+    return True
+
+def get_chapitres(matiere: str, niveau: str, categorie: str, filiere: str = "") -> list:
     if matiere == "Mathématiques" and categorie == "Bac Pro" and niveau in CHAPITRES_MATHS_BAC_PRO:
-        return CHAPITRES_MATHS_BAC_PRO[niveau]
+        return [c for c in CHAPITRES_MATHS_BAC_PRO[niveau] if chapitre_autorise(c, filiere)]
     return CHAPITRES_PAR_MATIERE_GENERAL.get(matiere, ["Chapitre général"])
 
+def famille_chapitre(chapitre: str):
+    """Famille de chapitre déduite du titre ; None si aucune (contexte générique alors)."""
+    n = _normalise(chapitre)
+    if "calculscommerciaux" in n:                          return "financier"
+    if "statistique" in n:                                 return "stat"
+    if "probabilit" in n:                                  return "proba"
+    if "suites" in n:                                      return "suites"
+    if "exponentielle" in n or "logarithme" in n:          return "exp_log"
+    if any(k in n for k in ("polynome", "derivee", "resolutiongraphique", "fonction")):
+        return "fonctions"
+    if any(k in n for k in ("geometrie", "vecteurs", "trigonometrie", "produitscalaire")):
+        return "geometrie"
+    return None
 
-def build_contexte_filiere(filiere: str) -> str:
-    if filiere in CONTEXTES_FILIERES:
-        ctx    = CONTEXTES_FILIERES[filiere]
+def build_contexte_filiere(filiere: str, chapitre: str = "") -> str:
+    if filiere not in CONTEXTES_FILIERES:
+        return f"\nFilière : {filiere}\n" if filiere else ""
+    ctx        = CONTEXTES_FILIERES[filiere]
+    situations = CONTEXTES_PAR_FAMILLE.get(filiere, {}).get(famille_chapitre(chapitre) or "")
+    if situations:
+        intro  = "Situations professionnelles adaptées à CE chapitre (choisis-en UNE et construis tout le sujet dessus)"
+        lignes = "\n".join(f"- {s}" for s in situations)
+    else:
+        intro  = "Contextes professionnels possibles"
         lignes = "\n".join(f"- {c}" for c in ctx["contextes_maths"])
-        return f"\n**Filière : {ctx['nom_complet']}**\nUnivers : {ctx['mots_cles']}\nContextes maths :\n{lignes}\n"
-    return f"\nFilière : {filiere}\n" if filiere else ""
+    return (f"\n**Filière : {ctx['nom_complet']}**\nUnivers : {ctx['mots_cles']}\n"
+            f"{intro} :\n{lignes}\n"
+            "Le contexte sert le chapitre, jamais l'inverse : si une situation exige une notion "
+            "hors du périmètre officiel, choisis-en une autre.\n")
+
     
 # ============================================================
 # utils.py — PARTIE 2 : Prompts + Gemini + Grist + Fonctions métier
@@ -331,216 +430,7 @@ REGLES_GENERALES_BO = {
 }
 
 PROGRAMME_BO = {
-    "1ère Pro": {
-        # À remplir avec le BO de première (annexe 1)
-    },
-    "Term Pro": {
-
-        "Statistiques à deux variables — ajustements non affines, changements de variable": {
-            "au_programme": [
-                "Choisir un modèle adapté pour ajuster un nuage de points (outils numériques)",
-                "Utiliser un ajustement pour interpoler ou extrapoler des valeurs inconnues",
-                "Ajustements non uniquement affines",
-                "Changement de variable INDIQUÉ aux élèves (z = log(y), z = 1/x, z = q^x) pour se ramener à un ajustement affine",
-                "Coefficient de détermination calculé à l'aide d'outils numériques, comme indicateur de pertinence",
-            ],
-            "limites": [
-                "Aucune justification théorique du modèle choisi n'est attendue",
-                "L'énoncé indique l'ajustement à réaliser (x en y ou y en x)",
-            ],
-        },
-
-        "Probabilités — arbres pondérés, formule des probabilités totales, indépendance": {
-            "au_programme": [
-                "Représenter une situation aléatoire par un arbre pondéré (nœud, branche, chemin)",
-                "Lire un arbre pour déterminer les probabilités des événements associés aux chemins",
-                "Probabilité conditionnée par un événement de probabilité non nulle, règles de calcul",
-                "Formule des probabilités totales, dans des cas simples",
-                "Montrer que deux événements sont indépendants ; P(A∩B) = P(A) × P(B) si indépendants",
-                "Expériences aléatoires à plusieurs épreuves, indépendantes ou non",
-            ],
-            "limites": [
-                "Formule des probabilités totales toujours liée à un arbre pondéré, appliquée sans formalisme",
-            ],
-        },
-
-        "Suites géométriques — terme général, sens de variation, somme": {
-            "au_programme": [
-                "Suites géométriques de raison strictement positive, définies par u(n+1) = u(n) × q et le premier terme",
-                "Expression du terme de rang n en fonction du premier terme et de la raison",
-                "Calculer un terme de rang donné (récurrence ou expression de u(n))",
-                "Sens de variation à l'aide de q > 0 et du premier terme",
-                "Représentation graphique du nuage de points (n ; u(n))",
-                "Somme des n premiers termes, avec ou sans outils numériques",
-                "Modélisation d'une évolution à taux fixe ; réinvestissement des suites arithmétiques en contexte",
-            ],
-            "limites": [
-                "La connaissance de la formule de la somme n'est pas exigée (la fournir ou utiliser un outil numérique)",
-                "La notation Σ peut être introduite mais n'est pas exigible",
-            ],
-        },
-
-        "Fonctions polynômes de degré 3 — dérivée, variations, extremums": {
-            "au_programme": [
-                "Fonction cube : dérivée, variations, représentation graphique",
-                "Dérivée d'un polynôme de degré inférieur ou égal à 3 (formules et règles de dérivation)",
-                "Tableau de variations dressé à partir du signe de la dérivée",
-                "Exploiter le tableau : nombre de solutions de f(x) = c, extremums locaux",
-                "Valeur approchée d'une solution de f(x) = g(x) par balayage dans un intervalle donné",
-            ],
-            "limites": [
-                "Une dérivée qui s'annule ne suffit pas pour conclure à un extremum (exemple de la fonction cube)",
-                "Si la dérivée n'est pas facilement factorisable, l'outil numérique donne ses racines",
-            ],
-        },
-
-        "Fonctions exponentielles de base q et logarithme décimal": {
-            "au_programme": [
-                "Fonctions x ↦ q^x (q > 0, q ≠ 1) : représentation graphique, variations, propriétés opératoires",
-                "Fonction logarithme décimal : représentation graphique, variations, propriétés opératoires",
-                "Transformer des écritures numériques ou littérales avec les propriétés opératoires",
-                "Résoudre q^x = a, log(x) = a, q^x ≥ a (ou ≤), log(x) ≥ a (ou ≤) par le calcul, graphiquement ou avec outils numériques",
-                "Lien avec les suites géométriques (modélisations discrètes d'évolution)",
-            ],
-            "limites": [
-                "Variations et propriétés des fonctions q^x admises après conjecture à l'aide d'outils numériques",
-                "log(b) défini comme l'unique solution de 10^x = b ; log(10^x) = x se déduit de la définition",
-                "Papier semi-logarithmique possible",
-            ],
-        },
-
-        "Calculs commerciaux et financiers — intérêts composés, amortissements (filières sans physique-chimie)": {
-            "au_programme": [
-                "Intérêts composés : formule c(n) = c0 × (1 + t)^n",
-                "Calculer le capital obtenu après n périodes",
-                "Déterminer la durée n pour obtenir un capital donné à un taux t donné",
-                "Compléter un tableau d'amortissement (annuités constantes ou amortissement constant)",
-                "Coût d'un emprunt, montant des annuités ou mensualités",
-                "Taux mensuel équivalent à un taux annuel ; taux moyen",
-            ],
-            "limites": [
-                "Dans un tableau d'amortissement, la première ligne est fournie entièrement et la deuxième partiellement",
-            ],
-        },
-
-        "Vecteurs dans l'espace — coordonnées, norme, colinéarité (groupement B)": {
-            "au_programme": [
-                "Dans l'espace muni d'un repère orthonormé : coordonnées d'un point et d'un vecteur",
-                "Déterminer graphiquement les coordonnées d'un vecteur ; représenter un vecteur de coordonnées données",
-                "Norme d'un vecteur",
-                "Coordonnées du vecteur somme de deux vecteurs",
-                "Coordonnées du produit d'un vecteur par un réel ; reconnaître des vecteurs égaux ou colinéaires",
-            ],
-            "limites": [
-                "Extension à l'espace, sans formalisme, des notions vues sur les vecteurs du plan",
-                "La norme est la longueur d'un représentant du vecteur",
-            ],
-        },
-
-        "Trigonométrie — équations, vecteurs de Fresnel (groupement A)": {
-            "au_programme": [
-                "Représentation de Fresnel d'une grandeur sinusoïdale a·sin(ωt + φ) et lien avec sa courbe",
-                "Résoudre cos x = a et sin x = b sur ]-π ; π]",
-                "Résoudre sin(ωt + φ) = c sur un intervalle approprié au contexte",
-            ],
-            "limites": [
-                "Exemples concrets issus du domaine professionnel ou de la physique",
-                "Fresnel : ajouter ou soustraire des tensions ou intensités sinusoïdales de même fréquence",
-            ],
-        },
-
-        "Algorithmique et programmation Python — approfondissement listes et fonctions": {
-            "au_programme": [
-                "Langage Python ; séquences d'instructions, instructions conditionnelles",
-                "Boucles bornées (for) et non bornées (while)",
-                "Types de variables : entiers, flottants, chaînes de caractères, booléens ; affectation",
-                "Fonctions : arguments, valeurs renvoyées, compléter ou structurer un programme avec des fonctions",
-                "Listes : générer (en extension ou en compréhension), ajouter, supprimer, extraire, parcourir, itérer",
-                "Analyser un problème, le décomposer en sous-problèmes ; modifier, compléter ou concevoir un programme simple",
-            ],
-            "limites": [
-                "Se limiter aux listes : ne pas présenter d'autres types de collections",
-                "La maîtrise des propriétés des types de variables n'est pas attendue",
-                "Dans des cas simples, l'en-tête de la fonction n'est pas systématiquement donné",
-                "Langage naturel : symbole ← pour l'affectation ; en Python : =",
-            ],
-        },
-
-        "Automatismes — probabilités, suites, dérivation, vecteurs": {
-            "au_programme": [
-                "Probabilité d'un événement contraire ; d'une réunion d'événements incompatibles ; d'une réunion ou d'une intersection de deux événements",
-                "Exploiter tableaux croisés d'effectifs et diagrammes ; probabilités conditionnelles",
-                "Terme de rang donné d'une suite arithmétique (premier terme et raison donnés)",
-                "Nombre de solutions de f(x) = 0 pour un polynôme de degré 2, lu sur sa représentation graphique",
-                "Forme factorisée d'un polynôme de degré 2 dont les racines et le coefficient dominant sont connus",
-                "Dérivée d'un polynôme de degré inférieur ou égal à 2",
-                "Vecteur du plan obtenu comme somme ou comme produit par un réel non nul (groupements A et B uniquement)",
-            ],
-            "limites": [
-                "Questions courtes de type « questions flash », calcul mental, sans longue rédaction",
-                "Les automatismes de seconde et de première continuent à être entretenus",
-            ],
-        },
-
-        "Calcul intégral — primitives, intégrale, aire (programme complémentaire)": {
-            "au_programme": [
-                "Primitives des fonctions usuelles par lecture inverse du tableau des dérivées",
-                "Primitives d'une somme de fonctions, du produit d'une fonction par un réel ; F + k est une primitive",
-                "Intégrale sur [a, b] d'une fonction admettant une primitive F : F(b) - F(a)",
-                "Interpréter l'intégrale d'une fonction positive comme une aire",
-            ],
-            "limites": [
-                "Aucune virtuosité calculatoire n'est imposée",
-                "Approximation par la méthode des rectangles possible avec des outils numériques",
-            ],
-        },
-
-        "Fonctions logarithme népérien et exponentielle de base e (programme complémentaire)": {
-            "au_programme": [
-                "Fonction ln : variations, représentation graphique sur un intervalle donné, propriétés opératoires",
-                "Définition du nombre e ; passer de ln(x) = a à x = e^a et inversement",
-                "Fonction exponentielle de base e : propriétés opératoires, variations, représentation graphique sur ℝ",
-            ],
-            "limites": [
-                "Les propriétés opératoires de ln sont admises",
-                "La courbe de x ↦ e^x est obtenue à l'aide d'outils numériques à partir de celle de ln",
-            ],
-        },
-
-        "Nombres complexes — forme algébrique et trigonométrique (programme complémentaire)": {
-            "au_programme": [
-                "Forme algébrique : partie réelle, partie imaginaire, conjugué, module ; égalité de deux complexes",
-                "Représentation dans le plan orthonormé direct : affixe d'un point, d'un vecteur",
-                "Somme, produit, quotient ; conjugué d'une somme, d'un produit, d'un quotient ; module d'un produit et d'un quotient",
-                "Argument et forme trigonométrique d'un complexe non nul ; passage d'une forme à l'autre",
-            ],
-            "limites": [
-                "Somme et produit peuvent être illustrés avec un logiciel de géométrie dynamique",
-            ],
-        },
-
-        "Produit scalaire de deux vecteurs du plan (programme complémentaire)": {
-            "au_programme": [
-                "Produit scalaire dans le plan rapporté à un repère orthonormé",
-                "Trois expressions : (1/2)(‖u+v‖² - ‖u‖² - ‖v‖²) ; ‖u‖ × ‖v‖ × cos θ ; xx' + yy'",
-                "Propriétés : u·v = v·u ; α(u·v) = (αu)·v ; u·(v+w) = u·v + u·w",
-                "Déterminer des longueurs et des angles",
-                "Vecteurs orthogonaux : produit scalaire nul, reconnu à l'aide des coordonnées",
-            ],
-            "limites": [
-                "Une seule expression est prise comme définition, les deux autres sont admises",
-                "La notion d'angle orienté de vecteurs est abordée de façon intuitive",
-            ],
-        },
-    },
-}
-
-# ============================================================
-# À COLLER dans utils.py, juste APRÈS la définition de PROGRAMME_BO
-# Source : BO — Mathématiques, classe de première professionnelle
-# ============================================================
-
-REGLES_GENERALES_BO["1ère Pro"] = [
+    REGLES_GENERALES_BO["1ère Pro"] = [
     "Les outils numériques (calculatrice, tableur, Python, GeoGebra) sont utilisables",
     "Les automatismes du programme de seconde professionnelle continuent à être entretenus",
 ]
@@ -747,6 +637,213 @@ PROGRAMME_BO["1ère Pro"] = {
         ],
     },
 }
+    "Term Pro": {
+
+        "Statistiques à deux variables — ajustements non affines, changements de variable": {
+            "au_programme": [
+                "Choisir un modèle adapté pour ajuster un nuage de points (outils numériques)",
+                "Utiliser un ajustement pour interpoler ou extrapoler des valeurs inconnues",
+                "Ajustements non uniquement affines",
+                "Changement de variable INDIQUÉ aux élèves (z = log(y), z = 1/x, z = q^x) pour se ramener à un ajustement affine",
+                "Coefficient de détermination calculé à l'aide d'outils numériques, comme indicateur de pertinence",
+            ],
+            "limites": [
+                "Aucune justification théorique du modèle choisi n'est attendue",
+                "L'énoncé indique l'ajustement à réaliser (x en y ou y en x)",
+            ],
+        },
+
+        "Probabilités — arbres pondérés, formule des probabilités totales, indépendance": {
+            "au_programme": [
+                "Représenter une situation aléatoire par un arbre pondéré (nœud, branche, chemin)",
+                "Lire un arbre pour déterminer les probabilités des événements associés aux chemins",
+                "Probabilité conditionnée par un événement de probabilité non nulle, règles de calcul",
+                "Formule des probabilités totales, dans des cas simples",
+                "Montrer que deux événements sont indépendants ; P(A∩B) = P(A) × P(B) si indépendants",
+                "Expériences aléatoires à plusieurs épreuves, indépendantes ou non",
+            ],
+            "limites": [
+                "Formule des probabilités totales toujours liée à un arbre pondéré, appliquée sans formalisme",
+            ],
+        },
+
+        "Suites géométriques — terme général, sens de variation, somme": {
+            "au_programme": [
+                "Suites géométriques de raison strictement positive, définies par u(n+1) = u(n) × q et le premier terme",
+                "Expression du terme de rang n en fonction du premier terme et de la raison",
+                "Calculer un terme de rang donné (récurrence ou expression de u(n))",
+                "Sens de variation à l'aide de q > 0 et du premier terme",
+                "Représentation graphique du nuage de points (n ; u(n))",
+                "Somme des n premiers termes, avec ou sans outils numériques",
+                "Modélisation d'une évolution à taux fixe ; réinvestissement des suites arithmétiques en contexte",
+            ],
+            "limites": [
+                "La connaissance de la formule de la somme n'est pas exigée (la fournir ou utiliser un outil numérique)",
+                "La notation Σ peut être introduite mais n'est pas exigible",
+            ],
+        },
+
+        "Fonctions polynômes de degré 3 — dérivée, variations, extremums": {
+            "au_programme": [
+                "Fonction cube : dérivée, variations, représentation graphique",
+                "Dérivée d'un polynôme de degré inférieur ou égal à 3 (formules et règles de dérivation)",
+                "Tableau de variations dressé à partir du signe de la dérivée",
+                "Exploiter le tableau : nombre de solutions de f(x) = c, extremums locaux",
+                "Valeur approchée d'une solution de f(x) = g(x) par balayage dans un intervalle donné",
+            ],
+            "limites": [
+                "Une dérivée qui s'annule ne suffit pas pour conclure à un extremum (exemple de la fonction cube)",
+                "Si la dérivée n'est pas facilement factorisable, l'outil numérique donne ses racines",
+            ],
+        },
+
+        "Fonctions exponentielles de base q et logarithme décimal": {
+            "au_programme": [
+                "Fonctions x ↦ q^x (q > 0, q ≠ 1) : représentation graphique, variations, propriétés opératoires",
+                "Fonction logarithme décimal : représentation graphique, variations, propriétés opératoires",
+                "Transformer des écritures numériques ou littérales avec les propriétés opératoires",
+                "Résoudre q^x = a, log(x) = a, q^x ≥ a (ou ≤), log(x) ≥ a (ou ≤) par le calcul, graphiquement ou avec outils numériques",
+                "Lien avec les suites géométriques (modélisations discrètes d'évolution)",
+            ],
+            "limites": [
+                "Variations et propriétés des fonctions q^x admises après conjecture à l'aide d'outils numériques",
+                "log(b) défini comme l'unique solution de 10^x = b ; log(10^x) = x se déduit de la définition",
+                "Papier semi-logarithmique possible",
+            ],
+        },
+
+        "Calculs commerciaux et financiers — intérêts composés, amortissements (filières sans physique-chimie)": {
+            "au_programme": [
+                "Intérêts composés : formule c(n) = c0 × (1 + t)^n",
+                "Calculer le capital obtenu après n périodes",
+                "Déterminer la durée n pour obtenir un capital donné à un taux t donné",
+                "Compléter un tableau d'amortissement (annuités constantes ou amortissement constant)",
+                "Coût d'un emprunt, montant des annuités ou mensualités",
+                "Taux mensuel équivalent à un taux annuel ; taux moyen",
+            ],
+            "limites": [
+                "Dans un tableau d'amortissement, la première ligne est fournie entièrement et la deuxième partiellement",
+            ],
+        },
+
+        "Vecteurs dans l'espace — coordonnées, norme, colinéarité (groupement B)": {
+            "au_programme": [
+                "Dans l'espace muni d'un repère orthonormé : coordonnées d'un point et d'un vecteur",
+                "Déterminer graphiquement les coordonnées d'un vecteur ; représenter un vecteur de coordonnées données",
+                "Norme d'un vecteur",
+                "Coordonnées du vecteur somme de deux vecteurs",
+                "Coordonnées du produit d'un vecteur par un réel ; reconnaître des vecteurs égaux ou colinéaires",
+            ],
+            "limites": [
+                "Extension à l'espace, sans formalisme, des notions vues sur les vecteurs du plan",
+                "La norme est la longueur d'un représentant du vecteur",
+            ],
+        },
+
+        "Trigonométrie — équations, vecteurs de Fresnel (groupement A)": {
+            "au_programme": [
+                "Représentation de Fresnel d'une grandeur sinusoïdale a·sin(ωt + φ) et lien avec sa courbe",
+                "Résoudre cos x = a et sin x = b sur ]-π ; π]",
+                "Résoudre sin(ωt + φ) = c sur un intervalle approprié au contexte",
+            ],
+            "limites": [
+                "Exemples concrets issus du domaine professionnel ou de la physique",
+                "Fresnel : ajouter ou soustraire des tensions ou intensités sinusoïdales de même fréquence",
+            ],
+        },
+
+        "Algorithmique et programmation Python — approfondissement listes et fonctions": {
+            "au_programme": [
+                "Langage Python ; séquences d'instructions, instructions conditionnelles",
+                "Boucles bornées (for) et non bornées (while)",
+                "Types de variables : entiers, flottants, chaînes de caractères, booléens ; affectation",
+                "Fonctions : arguments, valeurs renvoyées, compléter ou structurer un programme avec des fonctions",
+                "Listes : générer (en extension ou en compréhension), ajouter, supprimer, extraire, parcourir, itérer",
+                "Analyser un problème, le décomposer en sous-problèmes ; modifier, compléter ou concevoir un programme simple",
+            ],
+            "limites": [
+                "Se limiter aux listes : ne pas présenter d'autres types de collections",
+                "La maîtrise des propriétés des types de variables n'est pas attendue",
+                "Dans des cas simples, l'en-tête de la fonction n'est pas systématiquement donné",
+                "Langage naturel : symbole ← pour l'affectation ; en Python : =",
+            ],
+        },
+
+        "Automatismes — probabilités, suites, dérivation, vecteurs": {
+            "au_programme": [
+                "Probabilité d'un événement contraire ; d'une réunion d'événements incompatibles ; d'une réunion ou d'une intersection de deux événements",
+                "Exploiter tableaux croisés d'effectifs et diagrammes ; probabilités conditionnelles",
+                "Terme de rang donné d'une suite arithmétique (premier terme et raison donnés)",
+                "Nombre de solutions de f(x) = 0 pour un polynôme de degré 2, lu sur sa représentation graphique",
+                "Forme factorisée d'un polynôme de degré 2 dont les racines et le coefficient dominant sont connus",
+                "Dérivée d'un polynôme de degré inférieur ou égal à 2",
+                "Vecteur du plan obtenu comme somme ou comme produit par un réel non nul (groupements A et B uniquement)",
+            ],
+            "limites": [
+                "Questions courtes de type « questions flash », calcul mental, sans longue rédaction",
+                "Les automatismes de seconde et de première continuent à être entretenus",
+            ],
+        },
+
+        "Calcul intégral — primitives, intégrale, aire (programme complémentaire)": {
+            "au_programme": [
+                "Primitives des fonctions usuelles par lecture inverse du tableau des dérivées",
+                "Primitives d'une somme de fonctions, du produit d'une fonction par un réel ; F + k est une primitive",
+                "Intégrale sur [a, b] d'une fonction admettant une primitive F : F(b) - F(a)",
+                "Interpréter l'intégrale d'une fonction positive comme une aire",
+            ],
+            "limites": [
+                "Aucune virtuosité calculatoire n'est imposée",
+                "Approximation par la méthode des rectangles possible avec des outils numériques",
+            ],
+        },
+
+        "Fonctions logarithme népérien et exponentielle de base e (programme complémentaire)": {
+            "au_programme": [
+                "Fonction ln : variations, représentation graphique sur un intervalle donné, propriétés opératoires",
+                "Définition du nombre e ; passer de ln(x) = a à x = e^a et inversement",
+                "Fonction exponentielle de base e : propriétés opératoires, variations, représentation graphique sur ℝ",
+            ],
+            "limites": [
+                "Les propriétés opératoires de ln sont admises",
+                "La courbe de x ↦ e^x est obtenue à l'aide d'outils numériques à partir de celle de ln",
+            ],
+        },
+
+        "Nombres complexes — forme algébrique et trigonométrique (programme complémentaire)": {
+            "au_programme": [
+                "Forme algébrique : partie réelle, partie imaginaire, conjugué, module ; égalité de deux complexes",
+                "Représentation dans le plan orthonormé direct : affixe d'un point, d'un vecteur",
+                "Somme, produit, quotient ; conjugué d'une somme, d'un produit, d'un quotient ; module d'un produit et d'un quotient",
+                "Argument et forme trigonométrique d'un complexe non nul ; passage d'une forme à l'autre",
+            ],
+            "limites": [
+                "Somme et produit peuvent être illustrés avec un logiciel de géométrie dynamique",
+            ],
+        },
+
+        "Produit scalaire de deux vecteurs du plan (programme complémentaire)": {
+            "au_programme": [
+                "Produit scalaire dans le plan rapporté à un repère orthonormé",
+                "Trois expressions : (1/2)(‖u+v‖² - ‖u‖² - ‖v‖²) ; ‖u‖ × ‖v‖ × cos θ ; xx' + yy'",
+                "Propriétés : u·v = v·u ; α(u·v) = (αu)·v ; u·(v+w) = u·v + u·w",
+                "Déterminer des longueurs et des angles",
+                "Vecteurs orthogonaux : produit scalaire nul, reconnu à l'aide des coordonnées",
+            ],
+            "limites": [
+                "Une seule expression est prise comme définition, les deux autres sont admises",
+                "La notion d'angle orienté de vecteurs est abordée de façon intuitive",
+            ],
+        },
+    },
+}
+
+# ============================================================
+# À COLLER dans utils.py, juste APRÈS la définition de PROGRAMME_BO
+# Source : BO — Mathématiques, classe de première professionnelle
+# ============================================================
+
+
 
 def build_bloc_programme(niveau: str, chapitre: str) -> str:
     """Bloc de contraintes BO à injecter dans un prompt. Vide si le chapitre n'est pas référencé."""
@@ -810,6 +907,7 @@ En fonction du niveau de difficulté demandé, adapte PRÉCISÉMENT la structure
 
 Dans tous les cas : JAMAIS de calcul hors programme Bac Pro, JAMAIS de piège inutile.
 La correction détaillée doit être adaptée au même niveau.
+N’utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.).
 
 Structure de sortie (Markdown) :
 1. **Rappel de cours** (adapté au niveau)
@@ -827,7 +925,7 @@ Structure de sortie (Markdown) :
 
 def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes,
                            filiere="", difficulte="🟡 Moyen"):
-    ctx        = build_contexte_filiere(filiere)
+    ctx = build_contexte_filiere(filiere, chapitre)
     diff_label = difficulte.split(" ", 1)[-1].upper()
     bloc_bo    = build_bloc_programme(niveau, chapitre)
     user = (
@@ -845,7 +943,7 @@ def build_prompt_exercices(niveau, categorie, matiere, chapitre, consignes,
 
 def build_prompt_ccf_entrainement(niveau, categorie, matiere, chapitre, consignes,
                                   filiere="", avec_corrige=True, chapitre_b=""):
-    ctx     = build_contexte_filiere(filiere)
+    ctx = build_contexte_filiere(filiere, chapitre)
     bloc_bo = build_bloc_programme(niveau, chapitre)
     if chapitre_b:
         bloc_bo += build_bloc_programme(niveau, chapitre_b)
@@ -904,11 +1002,11 @@ VALIDER, COMMUNIQUER — toutes avec un énoncé rédigé)
 ### PARTIE B — Titre lié au second chapitre
 Même format, même situation professionnelle.
 {bloc_corrige}
-Réponds entièrement en Markdown."""
+Réponds entièrement en Markdown.N’utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.)."""
 
 
 def build_prompt_boss(niveau, filiere, chapitre, niveau_valide):
-    ctx        = build_contexte_filiere(filiere)
+    ctx = build_contexte_filiere(filiere, chapitre)
     bloc_bo    = build_bloc_programme(niveau, chapitre)
     diff_label = niveau_valide.split(" ", 1)[-1].upper()
     mascotte   = MASCOTTES[niveau_valide]["animal"]
@@ -932,38 +1030,80 @@ RÈGLES DU BOSS :
 ### ⚔️ DÉFI BOSS — {mascotte} {MASCOTTES[niveau_valide]["nom"]}
 *Prouve que tu maîtrises vraiment ce chapitre !*
 
-Réponds entièrement en Markdown."""
+Réponds entièrement en Markdown.N’utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.)."""
 
 
 def build_prompt_ccf_officiel(niveau, categorie, matiere, chapitre, consignes,
-                               filiere="", duree="45 min", num_sit="1",
-                               avec_corrige=True, chapitre_b=""):
-    ctx         = build_contexte_filiere(filiere)
+                              filiere="", duree="45 min", num_sit="1",
+                              avec_corrige=True, chapitre_b=""):
+    ctx         = build_contexte_filiere(filiere, chapitre)
+    bloc_bo     = build_bloc_programme(niveau, chapitre)
+    if chapitre_b:
+        bloc_bo += build_bloc_programme(niveau, chapitre_b)
     nom_filiere = CONTEXTES_FILIERES[filiere]["nom_complet"] if filiere in CONTEXTES_FILIERES else filiere
-    bloc_corrige = "\n### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*\n[Correction complète]\n" if avec_corrige else ""
-    chap_b_label = f"Partie B : {chapitre_b}" if chapitre_b else "Partie B : thème complémentaire en cohérence avec la situation"
-    return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO.
+    bloc_corrige = ("\n### CORRIGÉ DÉTAILLÉ *(document professeur — NE PAS DISTRIBUER)*\n"
+                    "Correction complète question par question avec justifications.\n") if avec_corrige else ""
+    chap_b_label = (f"Partie B : {chapitre_b}" if chapitre_b
+                    else "Partie B : thème mathématique complémentaire en cohérence avec la situation")
+    return f"""Tu es un professeur de mathématiques expert en Bac Pro et en évaluation CCF conforme au BO de l'Éducation nationale.
 
-Génère un SUJET DE CCF OFFICIEL pour :
-- Niveau : {niveau} ({categorie}) — Filière : {nom_filiere}
+Génère un SUJET DE CCF OFFICIEL complet, ENTIÈREMENT RÉDIGÉ et prêt à imprimer pour :
+- Niveau : {niveau} ({categorie})
+- Filière : {nom_filiere}
 - Matière : {matiere}
-- Partie A : {chapitre} — {chap_b_label}
-- Situation n° {num_sit} — Durée : {duree}
-{ctx}
-- Instructions : {consignes or 'Aucune'}
+- Partie A : {chapitre}
+- {chap_b_label}
+- Situation d'évaluation n° : {num_sit}
+- Durée : {duree}
+{ctx}{bloc_bo}
+- Instructions complémentaires : {consignes or 'Aucune'}
 
-## RÈGLES STRICTES :
-1. MISE EN SITUATION avec données chiffrées et document support nommé.
-2. PROBLÉMATIQUE : UNE SEULE question avec ? — c'est la SEULE avec un point d'interrogation.
-3. Questions numérotées avec compétences BO en gras : **S'APPROPRIER** / **RÉALISER** / **ANALYSER / RAISONNER** / **VALIDER** / **COMMUNIQUER**.
-4. Toutes les 5 compétences évaluées au moins une fois.
-5. Lignes de réponse (______) après chaque question.
-6. Dernière question **COMMUNIQUER** répond à la problématique.
-7. 🛎️ APPELER L'EXAMINATEUR quand calculatrice requise.
-8. Noté sur /10 avec niveaux 0/1/2 par compétence.
-9. Les deux parties sur LA MÊME mise en situation.
+## RÈGLES STRICTES DU FORMAT CCF OFFICIEL
+
+1. La MISE EN SITUATION présente une structure professionnelle réaliste, des données chiffrées et un
+   document support (tableau Markdown complet avec de vraies valeurs).
+2. La PROBLÉMATIQUE est UNE SEULE question (avec ?) en gras, juste après la mise en situation.
+   C'est la SEULE question du document avec un point d'interrogation.
+3. Les questions sont numérotées et chacune porte sa compétence en majuscules gras :
+   **S'APPROPRIER** / **RÉALISER** / **ANALYSER / RAISONNER** / **VALIDER** / **COMMUNIQUER**.
+4. Les 5 compétences sont évaluées au moins une fois.
+5. CHAQUE question comporte un ÉNONCÉ ENTIÈREMENT RÉDIGÉ (1 à 3 phrases) citant les données de la
+   situation, puis une ligne de réponse « ______ ». INTERDIT : crochets [ ], le mot « question » seul,
+   énoncé vide ou à deviner.
+6. La dernière question **COMMUNIQUER** demande de répondre à la problématique.
+7. Quand une question nécessite la calculatrice ou un outil, ajouter : 🛎️ APPELER L'EXAMINATEUR
+8. Évaluation sur /10, niveaux d'acquisition 0/1/2 par compétence (PAS de barème en points).
+9. Les deux parties s'appuient sur LA MÊME mise en situation professionnelle.
+10. Respecte STRICTEMENT le périmètre du Bulletin officiel indiqué ci-dessus.
+
+## FORME ATTENDUE (forme uniquement — ne recopie pas le contenu des exemples)
+
+### MISE EN SITUATION PROFESSIONNELLE
+Contexte rédigé, puis tableau Markdown avec les valeurs.
+
+L'usage de la calculatrice avec mode examen actif est autorisé.
+
+### PROBLÉMATIQUE
+**Une phrase interrogative propre à ta situation ?**
+
+### PARTIE A — Titre lié à « {chapitre} »
+
+1. **S'APPROPRIER**
+Relever dans le tableau la valeur de ... pour le mois de ... et la noter.
+______
+
+2. **RÉALISER**
+Calculer ... en détaillant le calcul.
+______
+
+(puis 3. ANALYSER / RAISONNER, 4. RÉALISER 🛎️ APPELER L'EXAMINATEUR, 5. VALIDER,
+6. COMMUNIQUER — toutes avec un énoncé rédigé)
+
+### PARTIE B — Titre lié au second chapitre
+Même format, même situation professionnelle.
 {bloc_corrige}
-Réponds entièrement en Markdown avec mise en page soignée."""
+Réponds entièrement en Markdown pur avec une mise en page soignée.
+N'utilise JAMAIS de balises HTML (<div>, <p>, <span>, etc.)."""
 
 
 # ============================================================
@@ -1368,6 +1508,11 @@ def charger_banque_interactif(niveau, filiere, chapitre, difficulte) -> list:
 # 10. EXPORT WORD — VERSION STANDARD
 # ============================================================
 
+def nettoyer_html(md: str) -> str:
+    md = re.sub(r'<div[^>]*>.*?</div>', '', md, flags=re.DOTALL)
+    md = re.sub(r'<[^>]+>', '', md)
+    return re.sub(r'\n{3,}', '\n\n', md)
+
 def clean_math(text: str) -> str:
     """Convertit la notation LaTeX/Markdown en texte lisible dans Word."""
     import re as _re
@@ -1449,6 +1594,7 @@ def render_inline(paragraph, text: str):
 
 
 def markdown_to_docx(md_text: str, titre: str = "Document") -> bytes:
+    md_text    = nettoyer_html(md_text)
     doc = DocxDocument()
     doc.styles["Normal"].font.name = "Arial"
     doc.styles["Normal"].font.size = Pt(11)
@@ -1487,6 +1633,7 @@ def markdown_to_docx(md_text: str, titre: str = "Document") -> bytes:
 # ============================================================
 # 11. EXPORT WORD — VERSION OFFICIELLE CCF
 # ============================================================
+
 
 def set_cell_border(cell):
     tc, tcPr   = cell._tc, cell._tc.get_or_add_tcPr()
@@ -1548,7 +1695,9 @@ def parse_questions_competences(content_md: str) -> dict:
 def generate_ccf_officiel_docx(content_md: str, metadata: dict,
                                 nom_etablissement: str = "Mon Établissement"):
     try:
+        content_md = nettoyer_html(content_md)
         doc = DocxDocument()
+        
         for section in doc.sections:
             section.top_margin    = Inches(0.8)
             section.bottom_margin = Inches(0.8)
@@ -1611,6 +1760,8 @@ def generate_ccf_officiel_docx(content_md: str, metadata: dict,
         _rb(table_h.cell(2, 1).paragraphs[0], f"Nom de l'établissement : {nom_etablissement}", 10)
 
         doc.add_paragraph()
+        
+        
 
         # ── NOTICE CALCULATRICE ──
         logo_appel_path = os.path.join(APP_DIR, "logo_appel.png")
