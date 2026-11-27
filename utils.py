@@ -178,69 +178,6 @@ CONTEXTES_FILIERES = {
     },
 }
 
-CONTEXTES_PAR_FAMILLE = {
-    "ASSP": {
-        "stat": ["Évolution du poids ou de la taille d'un enfant selon l'âge (carnet de santé)",
-                 "Consommation d'eau de résidents d'EHPAD selon la température extérieure en période de canicule"],
-        "proba": ["Résidents classés par niveau de dépendance et par risque de chute (tableau croisé)",
-                  "Dépistage : proportion de personnes présentant un facteur de risque selon la tranche d'âge"],
-        "suites": ["Dose de médicament augmentée d'un palier fixe chaque jour",
-                   "Quantité de médicament restant dans l'organisme, diminuant d'un même pourcentage après chaque prise",
-                   "Nombre de bénéficiaires d'un service d'aide à domicile augmentant d'un taux fixe par an"],
-        "fonctions": ["Coût mensuel d'une prise en charge selon le nombre d'heures d'intervention",
-                      "Concentration d'un produit dans le sang en fonction du temps (courbe donnée)"],
-        "exp_log": ["Prolifération de bactéries au cours du temps (hygiène)",
-                    "pH d'un produit d'entretien (logarithme décimal)"],
-        "financier": ["Reste à charge d'une prise en charge après aides",
-                      "Coût d'un emprunt contracté par une association pour un équipement"],
-        "geometrie": ["Volume de contenants (flacons, seringues, bassines)",
-                      "Surface et agencement d'une chambre à aménager"],
-    },
-    "MCVB": {
-        "stat": ["Budget publicitaire et chiffre d'affaires mensuel",
-                 "Nombre de visites de prospection et nombre de contrats signés"],
-        "proba": ["Clients selon le canal de contact (téléphone, visite, e-mail) et la signature du contrat (tableau croisé)",
-                  "Taux de transformation d'un fichier de prospects"],
-        "suites": ["Objectif de ventes augmentant d'un palier fixe chaque mois",
-                   "Chiffre d'affaires évoluant à taux de croissance fixe"],
-        "fonctions": ["Bénéfice d'une opération commerciale selon la quantité vendue (coût et recette)",
-                      "Coût total et coût moyen d'une gamme de produits"],
-        "exp_log": ["Produit perdant un même pourcentage de valeur chaque année",
-                    "Diffusion d'une offre par bouche-à-oreille"],
-        "financier": ["Marge, coefficient multiplicateur, intérêts d'un crédit client",
-                      "Placement de trésorerie de l'entreprise"],
-        "geometrie": ["Volume et surface de colis et d'emballages", "Implantation d'un stand"],
-    },
-    "MCVA": {
-        "stat": ["Fréquentation du magasin selon la période ou la température",
-                 "Chiffre d'affaires d'un rayon selon la longueur de linéaire"],
-        "proba": ["Clients selon le rayon visité et l'achat réalisé (tableau croisé)",
-                  "Produits défectueux reçus selon le fournisseur"],
-        "suites": ["Stock augmenté d'une quantité fixe à chaque livraison",
-                   "Décote d'un produit de saison : prix réduit d'un même pourcentage chaque semaine"],
-        "fonctions": ["Recette et coût d'un rayon selon la quantité vendue ; coût moyen unitaire"],
-        "exp_log": ["Démarque successive d'un produit saisonnier"],
-        "financier": ["Coefficient multiplicateur, TVA, intérêts simples, coût marginal",
-                      "Financement d'un nouvel agencement par emprunt"],
-        "geometrie": ["Surface de vente, linéaire développé", "Volume d'un conteneur ou d'une palette"],
-    },
-    "AGORA": {
-        "stat": ["Ancienneté et salaire dans une entreprise",
-                 "Dépenses de formation et taux d'absentéisme"],
-        "proba": ["Salariés répartis par service et par type de contrat (tableau croisé)",
-                  "Retards de paiement de clients"],
-        "suites": ["Épargne ou remboursement par versements réguliers de même montant",
-                   "Placement dont le capital augmente d'un même pourcentage chaque année"],
-        "fonctions": ["Coût de reprographie selon le nombre de copies",
-                      "Résultat d'une association selon le nombre d'adhérents"],
-        "exp_log": ["Placement de trésorerie à taux fixe : durée pour atteindre un capital donné"],
-        "financier": ["Intérêts simples ou composés, tableau d'amortissement d'un emprunt",
-                      "Taux mensuel équivalent, coût d'un crédit"],
-        "geometrie": ["Plan de bureaux et calcul de surfaces", "Volume de stockage d'archives"],
-    },
-}
-
-
 COMPETENCES_CCF = [
     {
         "nom": "S'approprier",
@@ -430,213 +367,9 @@ REGLES_GENERALES_BO = {
 }
 
 PROGRAMME_BO = {
-    REGLES_GENERALES_BO["1ère Pro"] = [
-    "Les outils numériques (calculatrice, tableur, Python, GeoGebra) sont utilisables",
-    "Les automatismes du programme de seconde professionnelle continuent à être entretenus",
-]
-
-PROGRAMME_BO["1ère Pro"] = {
-
-    "Statistique à deux variables — ajustement affine et coefficient de détermination": {
-        "au_programme": [
-            "Représenter à l'aide d'outils numériques un nuage de points associé à une série à deux variables quantitatives",
-            "Réaliser un ajustement affine ; équation réduite de la droite d'ajustement par la méthode des moindres carrés, à l'aide d'outils numériques",
-            "Interpoler ou extrapoler des valeurs inconnues",
-            "Déterminer le coefficient de détermination R² avec des outils numériques ; évaluer la pertinence d'un ajustement affine",
-            "Distinguer corrélation et causalité (réflexion critique)",
-            "Indicateurs de position et de dispersion d'une série, à l'aide de listes",
-        ],
-        "limites": [
-            "L'énoncé indique l'ajustement à réaliser (x en y ou y en x)",
-            "Aucune théorie n'est attendue sur les coefficients ; R² proche de 1 = forte corrélation, ce qui n'implique pas une relation de causalité",
-        ],
+    "1ère Pro": {
+        # À remplir avec le BO de première (annexe 1)
     },
-
-    "Probabilités — événements, tableaux croisés, probabilités conditionnelles": {
-        "au_programme": [
-            "Probabilité d'un événement dans un univers fini (événements élémentaires équiprobables ou non)",
-            "Événement contraire ; réunion d'événements incompatibles",
-            "Compléter ou exploiter tableaux croisés d'effectifs et diagrammes",
-            "Réunion et intersection de deux événements ; P(A ∪ B) = P(A) + P(B) - P(A ∩ B)",
-            "Fréquences conditionnelles calculées à partir de tableaux croisés d'effectifs",
-            "Probabilité conditionnelle : P_A(B) = P(A ∩ B) / P(A), avec P(A) ≠ 0",
-            "Traduire un événement du langage courant en langage probabiliste et réciproquement",
-        ],
-        "hors_programme": [
-            "Arbres de probabilités pondérés",
-            "Formule des probabilités totales (abordés en terminale)",
-        ],
-        "limites": [
-            "Les probabilités conditionnelles se ramènent à des tableaux d'effectifs ou de fréquences",
-        ],
-    },
-
-    "Suites numériques — suites arithmétiques": {
-        "au_programme": [
-            "Générer les termes de différentes suites, par le calcul ou avec un outil numérique",
-            "Notation u(n) puis u_n ; suites données par u_n = f(n)",
-            "Sens de variation d'une suite donnée par u_n = f(n), dans des cas simples",
-            "Suites arithmétiques : u(n+1) = u(n) + r et premier terme ; expression du terme de rang n ; lien avec les fonctions affines",
-            "Calculer un terme de rang donné ; reconnaître les premiers termes d'une suite arithmétique",
-            "Sens de variation d'une suite arithmétique à l'aide de sa raison",
-            "Nuage de points (n ; u_n) d'une suite arithmétique",
-            "Somme des n premiers termes d'une suite arithmétique, avec ou sans outils numériques",
-        ],
-        "hors_programme": [
-            "Étude des suites définies par une relation de récurrence autres que les suites arithmétiques",
-        ],
-        "limites": [
-            "La formule de la somme des n premiers termes n'est pas exigée (la fournir ou utiliser un outil numérique)",
-            "La notation Σ peut être introduite mais n'est pas exigible",
-            "On peut présenter des suites qui ne sont pas arithmétiques",
-        ],
-    },
-
-    "Résolution graphique d'équations et d'inéquations f(x)=g(x)": {
-        "au_programme": [
-            "Résoudre graphiquement ou avec un outil numérique des équations f(x) = g(x)",
-            "Résoudre graphiquement ou avec un outil numérique des inéquations f(x) ≥ g(x)",
-            "Encadrement ou valeur approchée d'une solution par balayage, si elle existe dans un intervalle donné",
-        ],
-        "limites": [
-            "Les fonctions f et g sont définies sur le même intervalle",
-            "Si les fonctions ne sont pas étudiées en première, leurs représentations graphiques sont fournies ou obtenues avec un outil numérique",
-        ],
-    },
-
-    "Fonctions polynômes de degré 2 — racines, signe, forme factorisée": {
-        "au_programme": [
-            "Fonction polynôme de degré 2 à coefficients réels",
-            "Nombre de solutions de f(x) = 0, lu sur la représentation graphique",
-            "Allure de la courbe d'une fonction donnée sous forme factorisée a(x - x1)(x - x2) : signe de a, sommet, ordonnée à l'origine, axe de symétrie",
-            "Associer une parabole à une expression algébrique de degré 2",
-            "Tester si un réel est racine ; factoriser un polynôme dont les racines sont connues",
-            "Racines et signe d'un polynôme de degré 2 donné sous forme factorisée",
-            "Déterminer la deuxième solution d'une équation du second degré dont une solution est connue",
-        ],
-        "hors_programme": [
-            "Calcul des racines à l'aide du discriminant",
-        ],
-        "limites": [
-            "Équations du second degré : uniquement sous forme factorisée, ou avec au moins une solution connue ou évidente",
-            "Dans les autres cas, valeur approchée par solveur ou script",
-            "Les polynômes factorisés ont deux racines réelles distinctes ou une racine double",
-        ],
-    },
-
-    "Fonction dérivée — variations, extremums, fonction inverse": {
-        "au_programme": [
-            "Sécantes, tangente à une courbe en un point ; nombre dérivé (lecture graphique)",
-            "Construire la tangente connaissant le nombre dérivé ; équation réduite de la tangente",
-            "Fonction dérivée, notation f' ; dérivées des fonctions affines et carré",
-            "Règles : dérivée d'une constante × fonction, dérivée d'une somme",
-            "Dérivée d'une fonction polynôme de degré inférieur ou égal à 2",
-            "Signe de la dérivée et variations ; tableau de variations",
-            "Extremum local et global sur un intervalle",
-            "Fonction inverse : dérivée, variations, représentation graphique, tableau de variations",
-        ],
-        "limites": [
-            "Les formules de dérivation de la somme et du produit par une constante sont admises, sans virtuosité de calcul",
-            "Les formules des dérivées des fonctions affines et carré sont à connaître",
-            "Une dérivée qui s'annule ne suffit pas pour conclure à un extremum local",
-        ],
-    },
-
-    "Calculs commerciaux et financiers — intérêts simples, coûts (filières sans physique-chimie)": {
-        "au_programme": [
-            "Intérêts simples : capital disponible après n périodes ; déterminer un taux",
-            "Taux annuel, mensuel, par quinzaine, journalier",
-            "Coût total de production, résultat, coût marginal",
-            "Coût moyen unitaire",
-        ],
-        "limites": [
-            "Coût marginal Cm(x) = C(x + 1) - C(x) ; pour de grandes productions, Cm(x) peut être approché par C'(x)",
-            "Réinvestit : suites arithmétiques (intérêts simples), dérivation (coût marginal), fonction inverse (coût moyen)",
-        ],
-    },
-
-    "Géométrie dans l'espace — solides usuels et sections par un plan": {
-        "au_programme": [
-            "Solides usuels : cube, pavé droit, pyramide, cylindre droit, cône, boule",
-            "Représenter un solide avec un logiciel de géométrie dynamique ou un logiciel métier",
-            "Exploiter la représentation d'un solide ou d'un assemblage de solides usuels",
-            "Réaliser la section d'un solide usuel par un plan ; construire la section plane passant par des points donnés (avec un logiciel)",
-        ],
-        "limites": [
-            "Repères orthogonaux introduits à l'occasion, sans formalisme",
-        ],
-    },
-
-    "Vecteurs du plan — coordonnées, opérations, norme (groupements A et B)": {
-        "au_programme": [
-            "Représentants d'un vecteur ; direction, sens, norme",
-            "Reconnaître graphiquement vecteurs égaux, opposés, colinéaires ; vecteur nul",
-            "Construire la somme de deux vecteurs et le produit d'un vecteur par un réel non nul",
-            "Coordonnées d'un vecteur dans un repère orthogonal (lecture graphique, représentation)",
-            "Coordonnées du vecteur AB, de la somme de deux vecteurs, du produit par un réel",
-            "Reconnaître des vecteurs égaux ou colinéaires à l'aide des coordonnées",
-            "Norme d'un vecteur dans un repère orthonormé",
-            "Applications : nature de figures usuelles, alignement de trois points, parallélisme de deux droites",
-        ],
-        "limites": [
-            "Liens établis entre produit par un réel et colinéarité, entre vecteurs égaux et parallélogramme",
-            "La norme est la longueur d'un représentant du vecteur",
-        ],
-    },
-
-    "Trigonométrie — cercle trigonométrique, fonctions sinus et cosinus (groupements A et B)": {
-        "au_programme": [
-            "Cercle trigonométrique, radian ; point image d'un réel x par enroulement de la droite des réels",
-            "Points images de -x, π - x, π + x, π/2 - x, π/2 + x",
-            "Conversions degrés ↔ radians",
-            "Cosinus et sinus d'un réel (lecture sur le cercle) ; valeurs particulières pour 0, π/6, π/4, π/3, π/2, π",
-            "-1 ≤ cos x ≤ 1 ; -1 ≤ sin x ≤ 1 ; cos²x + sin²x = 1",
-            "Courbe de la fonction sinus construite point par point, périodicité, exploitation",
-            "Courbe du cosinus par translation de celle du sinus : cos x = sin(x + π/2)",
-        ],
-        "limites": [
-            "Plan muni d'un repère orthonormé direct",
-            "Lien avec les lignes trigonométriques d'un triangle rectangle d'hypoténuse 1",
-        ],
-    },
-
-    "Algorithmique et programmation Python — listes, fonctions, boucles": {
-        "au_programme": [
-            "Langage Python ; séquences d'instructions, instructions conditionnelles",
-            "Boucles bornées (for) et non bornées (while)",
-            "Types de variables : entiers, flottants, chaînes de caractères, booléens ; affectation",
-            "Fonctions : arguments, valeurs renvoyées, compléter la définition d'une fonction",
-            "Listes (nouveauté de première) : générer, ajouter, supprimer, extraire, parcourir, itérer",
-            "Analyser un problème, le décomposer en sous-problèmes ; modifier, compléter ou concevoir un programme simple",
-        ],
-        "limites": [
-            "Se limiter aux listes : ne pas présenter d'autres types de collections",
-            "Aucune maîtrise attendue des propriétés des types de variables",
-            "Dans des cas simples, l'en-tête de la fonction n'est plus donné systématiquement",
-            "Langage naturel : symbole ← pour l'affectation ; en Python : =",
-            "Listes propices aux suites numériques et à la statistique à une variable",
-        ],
-    },
-
-    "Automatismes — calcul, grandeurs, lecture graphique": {
-        "au_programme": [
-            "Probabilité d'un événement dans une situation aléatoire simple ; dénombrement avec tableaux à double entrée ou arbres donnés",
-            "Lecture de graphiques, diagrammes (secteurs, bâtons, colonnes, boîte à moustaches) ; associer un graphique à des données",
-            "Indicateurs de position ou de dispersion avec outils numériques",
-            "Équation ax + b = c et inéquation ax + b < c (a, b, c entiers relatifs)",
-            "Proportionnalité et fonction linéaire ; allure d'une courbe à partir d'un tableau de variations, et réciproquement",
-            "Extremums globaux lus sur un graphique ; ordonnée d'un point connaissant l'abscisse et l'expression ; coefficient directeur d'une droite ; parallélisme de deux droites",
-            "Résolution graphique de f(x) = c ou f(x) < c",
-            "Intérêt simple et valeur acquise",
-            "Cercle, disque, sphère, boule ; reconnaissance des solides usuels",
-            "Aire d'un triangle, carré, rectangle, disque ; volume d'un cube, pavé droit, cylindre",
-            "Factorisation de x² - a² ; développement de a(x + b) et de (x + a)(x + b) avec a, b entiers relatifs",
-        ],
-        "limites": [
-            "Questions courtes de type « questions flash », calcul mental, sans longue rédaction",
-        ],
-    },
-}
     "Term Pro": {
 
         "Statistiques à deux variables — ajustements non affines, changements de variable": {
@@ -843,7 +576,213 @@ PROGRAMME_BO["1ère Pro"] = {
 # Source : BO — Mathématiques, classe de première professionnelle
 # ============================================================
 
+REGLES_GENERALES_BO["1ère Pro"] = [
+    "Les outils numériques (calculatrice, tableur, Python, GeoGebra) sont utilisables",
+    "Les automatismes du programme de seconde professionnelle continuent à être entretenus",
+]
 
+PROGRAMME_BO["1ère Pro"] = {
+
+    "Statistique à deux variables — ajustement affine et coefficient de détermination": {
+        "au_programme": [
+            "Représenter à l'aide d'outils numériques un nuage de points associé à une série à deux variables quantitatives",
+            "Réaliser un ajustement affine ; équation réduite de la droite d'ajustement par la méthode des moindres carrés, à l'aide d'outils numériques",
+            "Interpoler ou extrapoler des valeurs inconnues",
+            "Déterminer le coefficient de détermination R² avec des outils numériques ; évaluer la pertinence d'un ajustement affine",
+            "Distinguer corrélation et causalité (réflexion critique)",
+            "Indicateurs de position et de dispersion d'une série, à l'aide de listes",
+        ],
+        "limites": [
+            "L'énoncé indique l'ajustement à réaliser (x en y ou y en x)",
+            "Aucune théorie n'est attendue sur les coefficients ; R² proche de 1 = forte corrélation, ce qui n'implique pas une relation de causalité",
+        ],
+    },
+
+    "Probabilités — événements, tableaux croisés, probabilités conditionnelles": {
+        "au_programme": [
+            "Probabilité d'un événement dans un univers fini (événements élémentaires équiprobables ou non)",
+            "Événement contraire ; réunion d'événements incompatibles",
+            "Compléter ou exploiter tableaux croisés d'effectifs et diagrammes",
+            "Réunion et intersection de deux événements ; P(A ∪ B) = P(A) + P(B) - P(A ∩ B)",
+            "Fréquences conditionnelles calculées à partir de tableaux croisés d'effectifs",
+            "Probabilité conditionnelle : P_A(B) = P(A ∩ B) / P(A), avec P(A) ≠ 0",
+            "Traduire un événement du langage courant en langage probabiliste et réciproquement",
+        ],
+        "hors_programme": [
+            "Arbres de probabilités pondérés",
+            "Formule des probabilités totales (abordés en terminale)",
+        ],
+        "limites": [
+            "Les probabilités conditionnelles se ramènent à des tableaux d'effectifs ou de fréquences",
+        ],
+    },
+
+    "Suites numériques — suites arithmétiques": {
+        "au_programme": [
+            "Générer les termes de différentes suites, par le calcul ou avec un outil numérique",
+            "Notation u(n) puis u_n ; suites données par u_n = f(n)",
+            "Sens de variation d'une suite donnée par u_n = f(n), dans des cas simples",
+            "Suites arithmétiques : u(n+1) = u(n) + r et premier terme ; expression du terme de rang n ; lien avec les fonctions affines",
+            "Calculer un terme de rang donné ; reconnaître les premiers termes d'une suite arithmétique",
+            "Sens de variation d'une suite arithmétique à l'aide de sa raison",
+            "Nuage de points (n ; u_n) d'une suite arithmétique",
+            "Somme des n premiers termes d'une suite arithmétique, avec ou sans outils numériques",
+        ],
+        "hors_programme": [
+            "Étude des suites définies par une relation de récurrence autres que les suites arithmétiques",
+        ],
+        "limites": [
+            "La formule de la somme des n premiers termes n'est pas exigée (la fournir ou utiliser un outil numérique)",
+            "La notation Σ peut être introduite mais n'est pas exigible",
+            "On peut présenter des suites qui ne sont pas arithmétiques",
+        ],
+    },
+
+    "Résolution graphique d'équations et d'inéquations f(x)=g(x)": {
+        "au_programme": [
+            "Résoudre graphiquement ou avec un outil numérique des équations f(x) = g(x)",
+            "Résoudre graphiquement ou avec un outil numérique des inéquations f(x) ≥ g(x)",
+            "Encadrement ou valeur approchée d'une solution par balayage, si elle existe dans un intervalle donné",
+        ],
+        "limites": [
+            "Les fonctions f et g sont définies sur le même intervalle",
+            "Si les fonctions ne sont pas étudiées en première, leurs représentations graphiques sont fournies ou obtenues avec un outil numérique",
+        ],
+    },
+
+    "Fonctions polynômes de degré 2 — racines, signe, forme factorisée": {
+        "au_programme": [
+            "Fonction polynôme de degré 2 à coefficients réels",
+            "Nombre de solutions de f(x) = 0, lu sur la représentation graphique",
+            "Allure de la courbe d'une fonction donnée sous forme factorisée a(x - x1)(x - x2) : signe de a, sommet, ordonnée à l'origine, axe de symétrie",
+            "Associer une parabole à une expression algébrique de degré 2",
+            "Tester si un réel est racine ; factoriser un polynôme dont les racines sont connues",
+            "Racines et signe d'un polynôme de degré 2 donné sous forme factorisée",
+            "Déterminer la deuxième solution d'une équation du second degré dont une solution est connue",
+        ],
+        "hors_programme": [
+            "Calcul des racines à l'aide du discriminant",
+        ],
+        "limites": [
+            "Équations du second degré : uniquement sous forme factorisée, ou avec au moins une solution connue ou évidente",
+            "Dans les autres cas, valeur approchée par solveur ou script",
+            "Les polynômes factorisés ont deux racines réelles distinctes ou une racine double",
+        ],
+    },
+
+    "Fonction dérivée — variations, extremums, fonction inverse": {
+        "au_programme": [
+            "Sécantes, tangente à une courbe en un point ; nombre dérivé (lecture graphique)",
+            "Construire la tangente connaissant le nombre dérivé ; équation réduite de la tangente",
+            "Fonction dérivée, notation f' ; dérivées des fonctions affines et carré",
+            "Règles : dérivée d'une constante × fonction, dérivée d'une somme",
+            "Dérivée d'une fonction polynôme de degré inférieur ou égal à 2",
+            "Signe de la dérivée et variations ; tableau de variations",
+            "Extremum local et global sur un intervalle",
+            "Fonction inverse : dérivée, variations, représentation graphique, tableau de variations",
+        ],
+        "limites": [
+            "Les formules de dérivation de la somme et du produit par une constante sont admises, sans virtuosité de calcul",
+            "Les formules des dérivées des fonctions affines et carré sont à connaître",
+            "Une dérivée qui s'annule ne suffit pas pour conclure à un extremum local",
+        ],
+    },
+
+    "Calculs commerciaux et financiers — intérêts simples, coûts (filières sans physique-chimie)": {
+        "au_programme": [
+            "Intérêts simples : capital disponible après n périodes ; déterminer un taux",
+            "Taux annuel, mensuel, par quinzaine, journalier",
+            "Coût total de production, résultat, coût marginal",
+            "Coût moyen unitaire",
+        ],
+        "limites": [
+            "Coût marginal Cm(x) = C(x + 1) - C(x) ; pour de grandes productions, Cm(x) peut être approché par C'(x)",
+            "Réinvestit : suites arithmétiques (intérêts simples), dérivation (coût marginal), fonction inverse (coût moyen)",
+        ],
+    },
+
+    "Géométrie dans l'espace — solides usuels et sections par un plan": {
+        "au_programme": [
+            "Solides usuels : cube, pavé droit, pyramide, cylindre droit, cône, boule",
+            "Représenter un solide avec un logiciel de géométrie dynamique ou un logiciel métier",
+            "Exploiter la représentation d'un solide ou d'un assemblage de solides usuels",
+            "Réaliser la section d'un solide usuel par un plan ; construire la section plane passant par des points donnés (avec un logiciel)",
+        ],
+        "limites": [
+            "Repères orthogonaux introduits à l'occasion, sans formalisme",
+        ],
+    },
+
+    "Vecteurs du plan — coordonnées, opérations, norme (groupements A et B)": {
+        "au_programme": [
+            "Représentants d'un vecteur ; direction, sens, norme",
+            "Reconnaître graphiquement vecteurs égaux, opposés, colinéaires ; vecteur nul",
+            "Construire la somme de deux vecteurs et le produit d'un vecteur par un réel non nul",
+            "Coordonnées d'un vecteur dans un repère orthogonal (lecture graphique, représentation)",
+            "Coordonnées du vecteur AB, de la somme de deux vecteurs, du produit par un réel",
+            "Reconnaître des vecteurs égaux ou colinéaires à l'aide des coordonnées",
+            "Norme d'un vecteur dans un repère orthonormé",
+            "Applications : nature de figures usuelles, alignement de trois points, parallélisme de deux droites",
+        ],
+        "limites": [
+            "Liens établis entre produit par un réel et colinéarité, entre vecteurs égaux et parallélogramme",
+            "La norme est la longueur d'un représentant du vecteur",
+        ],
+    },
+
+    "Trigonométrie — cercle trigonométrique, fonctions sinus et cosinus (groupements A et B)": {
+        "au_programme": [
+            "Cercle trigonométrique, radian ; point image d'un réel x par enroulement de la droite des réels",
+            "Points images de -x, π - x, π + x, π/2 - x, π/2 + x",
+            "Conversions degrés ↔ radians",
+            "Cosinus et sinus d'un réel (lecture sur le cercle) ; valeurs particulières pour 0, π/6, π/4, π/3, π/2, π",
+            "-1 ≤ cos x ≤ 1 ; -1 ≤ sin x ≤ 1 ; cos²x + sin²x = 1",
+            "Courbe de la fonction sinus construite point par point, périodicité, exploitation",
+            "Courbe du cosinus par translation de celle du sinus : cos x = sin(x + π/2)",
+        ],
+        "limites": [
+            "Plan muni d'un repère orthonormé direct",
+            "Lien avec les lignes trigonométriques d'un triangle rectangle d'hypoténuse 1",
+        ],
+    },
+
+    "Algorithmique et programmation Python — listes, fonctions, boucles": {
+        "au_programme": [
+            "Langage Python ; séquences d'instructions, instructions conditionnelles",
+            "Boucles bornées (for) et non bornées (while)",
+            "Types de variables : entiers, flottants, chaînes de caractères, booléens ; affectation",
+            "Fonctions : arguments, valeurs renvoyées, compléter la définition d'une fonction",
+            "Listes (nouveauté de première) : générer, ajouter, supprimer, extraire, parcourir, itérer",
+            "Analyser un problème, le décomposer en sous-problèmes ; modifier, compléter ou concevoir un programme simple",
+        ],
+        "limites": [
+            "Se limiter aux listes : ne pas présenter d'autres types de collections",
+            "Aucune maîtrise attendue des propriétés des types de variables",
+            "Dans des cas simples, l'en-tête de la fonction n'est plus donné systématiquement",
+            "Langage naturel : symbole ← pour l'affectation ; en Python : =",
+            "Listes propices aux suites numériques et à la statistique à une variable",
+        ],
+    },
+
+    "Automatismes — calcul, grandeurs, lecture graphique": {
+        "au_programme": [
+            "Probabilité d'un événement dans une situation aléatoire simple ; dénombrement avec tableaux à double entrée ou arbres donnés",
+            "Lecture de graphiques, diagrammes (secteurs, bâtons, colonnes, boîte à moustaches) ; associer un graphique à des données",
+            "Indicateurs de position ou de dispersion avec outils numériques",
+            "Équation ax + b = c et inéquation ax + b < c (a, b, c entiers relatifs)",
+            "Proportionnalité et fonction linéaire ; allure d'une courbe à partir d'un tableau de variations, et réciproquement",
+            "Extremums globaux lus sur un graphique ; ordonnée d'un point connaissant l'abscisse et l'expression ; coefficient directeur d'une droite ; parallélisme de deux droites",
+            "Résolution graphique de f(x) = c ou f(x) < c",
+            "Intérêt simple et valeur acquise",
+            "Cercle, disque, sphère, boule ; reconnaissance des solides usuels",
+            "Aire d'un triangle, carré, rectangle, disque ; volume d'un cube, pavé droit, cylindre",
+            "Factorisation de x² - a² ; développement de a(x + b) et de (x + a)(x + b) avec a, b entiers relatifs",
+        ],
+        "limites": [
+            "Questions courtes de type « questions flash », calcul mental, sans longue rédaction",
+        ],
+    },
+}
 
 def build_bloc_programme(niveau: str, chapitre: str) -> str:
     """Bloc de contraintes BO à injecter dans un prompt. Vide si le chapitre n'est pas référencé."""
