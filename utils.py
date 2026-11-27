@@ -131,6 +131,68 @@ FILIERES_SANS_PC    = {"ASSP", "MCVA", "MCVB", "AGORA"}
 
 LISTE_FILIERES = ["ASSP", "MCVB", "MCVA", "AGORA", "Autre (Préciser ci-dessous)"]
 
+CONTEXTES_PAR_FAMILLE = {
+    "ASSP": {
+        "stat": ["Évolution du poids ou de la taille d'un enfant selon l'âge (carnet de santé)",
+                 "Consommation d'eau de résidents d'EHPAD selon la température extérieure en période de canicule"],
+        "proba": ["Résidents classés par niveau de dépendance et par risque de chute (tableau croisé)",
+                  "Dépistage : proportion de personnes présentant un facteur de risque selon la tranche d'âge"],
+        "suites": ["Dose de médicament augmentée d'un palier fixe chaque jour",
+                   "Quantité de médicament restant dans l'organisme, diminuant d'un même pourcentage après chaque prise",
+                   "Nombre de bénéficiaires d'un service d'aide à domicile augmentant d'un taux fixe par an"],
+        "fonctions": ["Coût mensuel d'une prise en charge selon le nombre d'heures d'intervention",
+                      "Concentration d'un produit dans le sang en fonction du temps (courbe donnée)"],
+        "exp_log": ["Prolifération de bactéries au cours du temps (hygiène)",
+                    "pH d'un produit d'entretien (logarithme décimal)"],
+        "financier": ["Reste à charge d'une prise en charge après aides",
+                      "Coût d'un emprunt contracté par une association pour un équipement"],
+        "geometrie": ["Volume de contenants (flacons, seringues, bassines)",
+                      "Surface et agencement d'une chambre à aménager"],
+    },
+    "MCVB": {
+        "stat": ["Budget publicitaire et chiffre d'affaires mensuel",
+                 "Nombre de visites de prospection et nombre de contrats signés"],
+        "proba": ["Clients selon le canal de contact (téléphone, visite, e-mail) et la signature du contrat (tableau croisé)",
+                  "Taux de transformation d'un fichier de prospects"],
+        "suites": ["Objectif de ventes augmentant d'un palier fixe chaque mois",
+                   "Chiffre d'affaires évoluant à taux de croissance fixe"],
+        "fonctions": ["Bénéfice d'une opération commerciale selon la quantité vendue (coût et recette)",
+                      "Coût total et coût moyen d'une gamme de produits"],
+        "exp_log": ["Produit perdant un même pourcentage de valeur chaque année",
+                    "Diffusion d'une offre par bouche-à-oreille"],
+        "financier": ["Marge, coefficient multiplicateur, intérêts d'un crédit client",
+                      "Placement de trésorerie de l'entreprise"],
+        "geometrie": ["Volume et surface de colis et d'emballages", "Implantation d'un stand"],
+    },
+    "MCVA": {
+        "stat": ["Fréquentation du magasin selon la période ou la température",
+                 "Chiffre d'affaires d'un rayon selon la longueur de linéaire"],
+        "proba": ["Clients selon le rayon visité et l'achat réalisé (tableau croisé)",
+                  "Produits défectueux reçus selon le fournisseur"],
+        "suites": ["Stock augmenté d'une quantité fixe à chaque livraison",
+                   "Décote d'un produit de saison : prix réduit d'un même pourcentage chaque semaine"],
+        "fonctions": ["Recette et coût d'un rayon selon la quantité vendue ; coût moyen unitaire"],
+        "exp_log": ["Démarque successive d'un produit saisonnier"],
+        "financier": ["Coefficient multiplicateur, TVA, intérêts simples, coût marginal",
+                      "Financement d'un nouvel agencement par emprunt"],
+        "geometrie": ["Surface de vente, linéaire développé", "Volume d'un conteneur ou d'une palette"],
+    },
+    "AGORA": {
+        "stat": ["Ancienneté et salaire dans une entreprise",
+                 "Dépenses de formation et taux d'absentéisme"],
+        "proba": ["Salariés répartis par service et par type de contrat (tableau croisé)",
+                  "Retards de paiement de clients"],
+        "suites": ["Épargne ou remboursement par versements réguliers de même montant",
+                   "Placement dont le capital augmente d'un même pourcentage chaque année"],
+        "fonctions": ["Coût de reprographie selon le nombre de copies",
+                      "Résultat d'une association selon le nombre d'adhérents"],
+        "exp_log": ["Placement de trésorerie à taux fixe : durée pour atteindre un capital donné"],
+        "financier": ["Intérêts simples ou composés, tableau d'amortissement d'un emprunt",
+                      "Taux mensuel équivalent, coût d'un crédit"],
+        "geometrie": ["Plan de bureaux et calcul de surfaces", "Volume de stockage d'archives"],
+    },
+}
+
 CONTEXTES_FILIERES = {
     "ASSP": {
         "nom_complet": "Accompagnement, Soins et Services à la Personne",
